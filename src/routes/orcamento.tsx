@@ -1,27 +1,34 @@
 import { useMemo } from "react";
-import { createFileRoute } from "@tanstack/react-router";
-import { AlertTriangle, CheckCircle2, Scale } from "lucide-react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { AlertTriangle, CheckCircle2, RotateCcw, Scale } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Slider } from "@/components/ui/slider";
-import { brl } from "@/lib/aurin";
+import { PILLARS, brl, type PillarId } from "@/lib/aurin";
 import { cn } from "@/lib/utils";
-import { budgetRows, currentMonthKey, monthTotals, useAurinStore } from "@/store/aurin-store";
+import {
+  budgetRows,
+  currentMonthKey,
+  monthTotals,
+  pillarUsage,
+  useAurinStore,
+} from "@/store/aurin-store";
 
 export const Route = createFileRoute("/orcamento")({
   head: () => ({
     meta: [
-      { title: "Controle de Gastos — A Regra dos 90% | AURIN" },
+      { title: "Orçamento 70/20/10 | AURIN" },
       {
         name: "description",
         content:
-          "Distribua no máximo 90% da sua renda entre as categorias e mantenha o dízimo intacto.",
+          "Divida sua renda em 70% custo de vida, 20% reservas e dívidas e 10% ouro, com alertas por pilar e categoria.",
       },
-      { property: "og:title", content: "Controle de Gastos — A Regra dos 90% | AURIN" },
+      { property: "og:title", content: "Orçamento 70/20/10 | AURIN" },
       {
         property: "og:description",
-        content: "Limites por categoria calculados sobre 90% da renda, com alertas visuais.",
+        content: "Três pilares babilônicos para manter seus gastos no lugar certo.",
       },
     ],
   }),
@@ -29,73 +36,160 @@ export const Route = createFileRoute("/orcamento")({
 });
 
 function toneFor(percent: number) {
-  if (percent > 90) return "destructive" as const;
-  if (percent >= 70) return "warning" as const;
+  if (percent > 100) return "destructive" as const;
+  if (percent >= 80) return "warning" as const;
   return "success" as const;
 }
+
+const toneText = {
+  destructive: "text-destructive",
+  warning: "text-warning",
+  success: "text-success",
+} as const;
+
+const toneBg = {
+  destructive: "bg-destructive",
+  warning: "bg-warning",
+  success: "bg-success",
+} as const;
 
 function BudgetPage() {
   const transactions = useAurinStore((s) => s.transactions);
   const split = useAurinStore((s) => s.budgetSplit);
+  const pillarSplit = useAurinStore((s) => s.pillarSplit);
   const setBudgetSplit = useAurinStore((s) => s.setBudgetSplit);
+  const setPillarSplit = useAurinStore((s) => s.setPillarSplit);
+  const resetPillarSplit = useAurinStore((s) => s.resetPillarSplit);
 
   const key = currentMonthKey();
   const month = useMemo(() => monthTotals(transactions, key), [transactions, key]);
-  const rows = useMemo(() => budgetRows(transactions, key, split), [transactions, key, split]);
+  const pillars = useMemo(
+    () => pillarUsage(transactions, key, pillarSplit, month.tithe),
+    [transactions, key, pillarSplit, month.tithe],
+  );
 
-  const ceiling = month.income * 0.9;
+  const costCeiling = (month.income * pillarSplit.custo) / 100;
+  const rows = useMemo(
+    () => budgetRows(transactions, key, split, costCeiling),
+    [transactions, key, split, costCeiling],
+  );
+
   const totalSplit = Object.values(split).reduce((a, b) => a + b, 0);
-  const usedPercent = ceiling > 0 ? (month.expense / ceiling) * 100 : 0;
+  const isDefault = pillarSplit.custo === 70 && pillarSplit.reserva === 20 && pillarSplit.ouro === 10;
 
   return (
     <div className="space-y-6">
       <header>
         <h1 className="font-display text-2xl font-extrabold sm:text-3xl">
-          Controle de Gastos — A Regra dos 90%
+          Orçamento — A Regra 70/20/10
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          "Não confunda desejos necessários com despesas necessárias." Seus gastos nunca devem
-          ultrapassar 90% do ouro que entra.
+          "Não confunda desejos necessários com despesas necessárias." Divida cada moeda que entra
+          entre os três pilares babilônicos.
         </p>
       </header>
+
+      <div className="grid gap-4 lg:grid-cols-3">
+        {PILLARS.map((pillar) => {
+          const data = pillars.find((p) => p.id === pillar.id)!;
+          const tone = toneFor(data.percent);
+          return (
+            <Card key={pillar.id} className="border-border/70">
+              <CardContent className="pt-6">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="truncate font-display text-base font-bold">{pillar.label}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {pillarSplit[pillar.id as PillarId]}% da renda
+                    </p>
+                  </div>
+                  <span className={cn("shrink-0 text-sm font-bold", toneText[tone])}>
+                    {data.percent.toFixed(0)}%
+                  </span>
+                </div>
+
+                <p className="mt-4 font-display text-2xl font-extrabold text-gold">
+                  {brl(data.target)}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Usado: {brl(data.used)} ·{" "}
+                  {data.remaining >= 0
+                    ? `sobram ${brl(data.remaining)}`
+                    : `excedeu ${brl(-data.remaining)}`}
+                </p>
+
+                <div className="mt-3 h-2.5 w-full overflow-hidden rounded-full bg-secondary">
+                  <div
+                    className={cn("h-full rounded-full transition-all", toneBg[tone])}
+                    style={{ width: `${Math.min(100, data.percent)}%` }}
+                  />
+                </div>
+
+                <p className="mt-3 text-xs text-muted-foreground">{pillar.description}</p>
+
+                <div className="mt-4 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
+                  <Slider
+                    value={[pillarSplit[pillar.id as PillarId]]}
+                    min={0}
+                    max={100}
+                    step={1}
+                    onValueChange={([v]) => setPillarSplit(pillar.id as PillarId, v)}
+                    aria-label={`Percentual do pilar ${pillar.label}`}
+                  />
+                  <span className="w-10 shrink-0 text-right text-xs text-muted-foreground">
+                    {pillarSplit[pillar.id as PillarId]}%
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
 
       <Card className="border-primary/30">
         <CardContent className="grid gap-5 pt-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
           <div className="min-w-0">
             <p className="text-xs uppercase tracking-wide text-muted-foreground">
-              Teto de gastos do mês (90% da renda)
+              Renda do mês distribuída
             </p>
-            <p className="mt-1 font-display text-3xl font-extrabold text-gold">{brl(ceiling)}</p>
+            <p className="mt-1 font-display text-3xl font-extrabold text-gold">
+              {brl(month.income)}
+            </p>
             <p className="mt-2 text-sm text-muted-foreground">
-              Renda do mês: {brl(month.income)} · Já gasto: {brl(month.expense)}
+              Gasto total: {brl(month.expense)} · Ouro guardado: {brl(month.tithe)}
             </p>
+            {!isDefault && (
+              <Button variant="outline" size="sm" className="mt-4" onClick={resetPillarSplit}>
+                <RotateCcw className="h-3.5 w-3.5" />
+                Voltar ao padrão 70/20/10
+              </Button>
+            )}
           </div>
-          <div className="min-w-0">
-            <div className="flex items-center justify-between gap-2 text-sm">
-              <span className="text-muted-foreground">Uso do teto</span>
-              <span
-                className={cn(
-                  "font-semibold",
-                  usedPercent > 90
-                    ? "text-destructive"
-                    : usedPercent >= 70
-                      ? "text-warning"
-                      : "text-success",
-                )}
-              >
-                {usedPercent.toFixed(0)}%
-              </span>
-            </div>
-            <Progress value={Math.min(100, usedPercent)} className="mt-2 h-3" />
-            <p className="mt-3 flex items-start gap-2 text-xs text-muted-foreground">
-              {usedPercent > 90 ? (
+          <div className="min-w-0 space-y-3">
+            {pillars.map((p) => {
+              const pillar = PILLARS.find((x) => x.id === p.id)!;
+              const tone = toneFor(p.percent);
+              return (
+                <div key={p.id}>
+                  <div className="flex items-center justify-between gap-2 text-sm">
+                    <span className="truncate text-muted-foreground">{pillar.label}</span>
+                    <span className={cn("shrink-0 font-semibold", toneText[tone])}>
+                      {brl(p.used)} / {brl(p.target)}
+                    </span>
+                  </div>
+                  <Progress value={Math.min(100, p.percent)} className="mt-1.5 h-2" />
+                </div>
+              );
+            })}
+            <p className="flex items-start gap-2 pt-1 text-xs text-muted-foreground">
+              {pillars.some((p) => p.percent > 100) ? (
                 <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
               ) : (
                 <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-success" />
               )}
-              {usedPercent > 90
-                ? "Sua bolsa está vazando. Reduza gastos para proteger o dízimo de Arkad."
-                : "Seus gastos estão dentro do limite babilônico. Continue assim."}
+              {pillars.some((p) => p.percent > 100)
+                ? "Um pilar estourou. Reequilibre antes que o ouro do futuro seja consumido."
+                : "Seus três pilares estão equilibrados. Continue assim."}
             </p>
           </div>
         </CardContent>
@@ -105,7 +199,7 @@ function BudgetPage() {
         <CardHeader className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
           <CardTitle className="flex items-center gap-2 text-base">
             <Scale className="h-4 w-4 text-primary" />
-            Distribuição por categoria
+            Custo de vida por categoria
           </CardTitle>
           <span
             className={cn(
@@ -113,7 +207,7 @@ function BudgetPage() {
               totalSplit === 100 ? "text-muted-foreground" : "text-warning",
             )}
           >
-            {totalSplit}% do teto alocado
+            {totalSplit}% dos {pillarSplit.custo}% alocados
           </span>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -124,32 +218,14 @@ function BudgetPage() {
                 <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
                   <p className="truncate text-sm font-medium">{row.category}</p>
                   <p className="shrink-0 text-sm">
-                    <span
-                      className={cn(
-                        "font-semibold",
-                        tone === "destructive"
-                          ? "text-destructive"
-                          : tone === "warning"
-                            ? "text-warning"
-                            : "text-success",
-                      )}
-                    >
-                      {brl(row.spent)}
-                    </span>
+                    <span className={cn("font-semibold", toneText[tone])}>{brl(row.spent)}</span>
                     <span className="text-muted-foreground"> / {brl(row.limit)}</span>
                   </p>
                 </div>
 
                 <div className="mt-2 h-2.5 w-full overflow-hidden rounded-full bg-secondary">
                   <div
-                    className={cn(
-                      "h-full rounded-full transition-all",
-                      tone === "destructive"
-                        ? "bg-destructive"
-                        : tone === "warning"
-                          ? "bg-warning"
-                          : "bg-success",
-                    )}
+                    className={cn("h-full rounded-full transition-all", toneBg[tone])}
                     style={{ width: `${Math.min(100, row.percent)}%` }}
                   />
                 </div>
@@ -161,7 +237,7 @@ function BudgetPage() {
                     max={60}
                     step={1}
                     onValueChange={([v]) => setBudgetSplit(row.category, v)}
-                    aria-label={`Percentual do teto para ${row.category}`}
+                    aria-label={`Percentual do custo de vida para ${row.category}`}
                   />
                   <span className="w-12 shrink-0 text-right text-xs text-muted-foreground">
                     {split[row.category] ?? 0}%
@@ -172,6 +248,14 @@ function BudgetPage() {
           })}
         </CardContent>
       </Card>
+
+      <p className="text-xs text-muted-foreground">
+        Gastos com dívidas entram no pilar Reservas & Dívidas — acompanhe a quitação na{" "}
+        <Link to="/dividas" className="text-primary underline-offset-4 hover:underline">
+          aba Dívidas
+        </Link>
+        .
+      </p>
     </div>
   );
 }
