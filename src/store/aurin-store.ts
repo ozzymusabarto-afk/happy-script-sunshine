@@ -519,6 +519,15 @@ export const useAurinStore = create<AurinState>()(
       setCelebrationsEnabled: (enabled) =>
         set({ celebrationsEnabled: enabled, celebration: enabled ? null : null }),
 
+      setSecurity: (patch) => set((state) => ({ security: { ...state.security, ...patch } })),
+
+      disableLock: () =>
+        set({ security: { pinHash: null, salt: null, biometricId: null, autoLockMinutes: 0 } }),
+
+      setReminder: (patch) => set((state) => ({ reminder: { ...state.reminder, ...patch } })),
+
+      markBackup: () => set({ lastBackupAt: new Date().toISOString() }),
+
       loadDemoData: () => set({ ...demoState() }),
 
       clearAll: () => set({ ...emptyState(), hasOnboarded: false }),
