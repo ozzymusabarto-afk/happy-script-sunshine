@@ -7,7 +7,6 @@ import {
   CreditCard as CardIcon,
   HandCoins,
   Quote,
-  ShieldCheck,
   Sparkles,
 } from "lucide-react";
 
@@ -15,7 +14,6 @@ import { FreedomMeter, JourneyTrail, VaultJar } from "@/components/journey-visua
 import { MorningRitual } from "@/components/morning-ritual";
 import { LABELS, TONE_BG, TONE_LABEL, TONE_TEXT, pillarTone } from "@/lib/tone";
 import { monthsOfFreedom } from "@/lib/impact";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import {
@@ -308,7 +306,7 @@ function Dashboard() {
 
       <Card>
         <CardHeader className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
-          <CardTitle className="text-base">Últimas moedas registradas</CardTitle>
+          <CardTitle className="text-base">Seus últimos passos</CardTitle>
           <Link to="/transacoes" className="text-sm font-medium text-primary hover:underline">
             Ver todas
           </Link>
@@ -327,7 +325,7 @@ function Dashboard() {
                   "grid h-9 w-9 shrink-0 place-items-center rounded-lg",
                   t.type === "entrada"
                     ? "bg-success/15 text-success"
-                    : "bg-destructive/15 text-destructive",
+                    : "bg-secondary text-muted-foreground",
                 )}
               >
                 {t.type === "entrada" ? (
@@ -348,7 +346,7 @@ function Dashboard() {
               <span
                 className={cn(
                   "shrink-0 text-sm font-semibold",
-                  t.type === "entrada" ? "text-success" : "text-destructive",
+                  t.type === "entrada" ? "text-success" : "text-foreground",
                 )}
               >
                 {t.type === "entrada" ? "+" : "−"}
