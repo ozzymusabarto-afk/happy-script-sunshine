@@ -26,7 +26,7 @@ const NAV = [
   { to: "/orcamento", label: "Gastos", icon: Coins },
   { to: "/cartoes", label: "Cartões", icon: CreditCard },
   { to: "/dividas", label: "Dívidas", icon: HandCoins },
-  { to: "/multiplicador", label: "Multiplicador", icon: TrendingUp },
+  { to: "/multiplicador", label: "Multiplicador", short: "Multipl.", icon: TrendingUp },
   { to: "/jornada", label: "Jornada", icon: Sparkles },
 ] as const;
 
@@ -143,7 +143,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 )}
               >
                 <item.icon className="h-4 w-4" />
-                <span className="truncate">{item.label}</span>
+                <span className="w-full truncate px-0.5 text-center">
+                  {"short" in item ? item.short : item.label}
+                </span>
               </Link>
             );
           })}
