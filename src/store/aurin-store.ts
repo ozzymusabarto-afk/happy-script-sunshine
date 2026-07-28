@@ -517,14 +517,13 @@ export const useAurinStore = create<AurinState>()(
           ...prev,
           goals: prev.goals?.length ? prev.goals : [emptyTreasury()],
           profile: prev.profile ?? { ...EMPTY_PROFILE },
-          customCategories: prev.customCategories ?? [],
           recurring: prev.recurring ?? [],
           hasOnboarded: prev.hasOnboarded ?? Boolean(prev.transactions?.length),
           plan: prev.plan ?? "free",
           transactions: (prev.transactions ?? []).map((t: Transaction) =>
             t.category === "Dívidas" ? { ...t, category: "Resgate de Paz" } : t,
           ),
-          categories: (prev.categories ?? []).map((c: string) =>
+          customCategories: (prev.customCategories ?? []).map((c: string) =>
             c === "Dívidas" ? "Resgate de Paz" : c,
           ),
           celebration: null,

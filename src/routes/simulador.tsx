@@ -52,7 +52,7 @@ function SimulatorPage() {
     [transactions],
   );
 
-  const dream = goals.find((g) => g.type !== "tesouro") ?? goals[0];
+  const dream = goals.find((g) => g.kind !== "tesouro") ?? goals[0];
   const dreamShare =
     dream && dream.target > 0 ? Math.min(100, (amount / dream.target) * 100) : 0;
 
@@ -194,7 +194,7 @@ function SimulatorPage() {
               <Advice
                 icon={<TrendingUp className="h-4 w-4 text-primary" />}
                 text={
-                  month.saida > month.entrada
+                  month.expense > month.income
                     ? "Este mês suas escolhas passaram das entradas. Nada de culpa: escolha uma categoria e reduza só um pouco na próxima semana."
                     : "Seu mês está equilibrado. Se sobrar algo, mande direto para o cofre antes do fim do mês."
                 }
@@ -203,14 +203,14 @@ function SimulatorPage() {
                 icon={<Sparkles className="h-4 w-4 text-primary" />}
                 text={
                   summary.remaining > 0
-                    ? `Somando ${brl(Math.max(50, month.entrada * 0.05))} por mês ao seu Resgate de Paz, sua liberdade chega bem antes.`
+                    ? `Somando ${brl(Math.max(50, month.income * 0.05))} por mês ao seu Resgate de Paz, sua liberdade chega bem antes.`
                     : "Sem pesos te prendendo, cada real guardado agora é puro futuro."
                 }
               />
               <Advice
                 icon={<Compass className="h-4 w-4 text-primary" />}
-                text={`Guardando ${brl(Math.max(100, month.entrada * 0.1))} por mês, em um ano você compra ${formatDays(
-                  daysOfFreedom(Math.max(100, month.entrada * 0.1) * 12, transactions).days,
+                text={`Guardando ${brl(Math.max(100, month.income * 0.1))} por mês, em um ano você compra ${formatDays(
+                  daysOfFreedom(Math.max(100, month.income * 0.1) * 12, transactions).days,
                 )} de tranquilidade.`}
               />
             </CardContent>
