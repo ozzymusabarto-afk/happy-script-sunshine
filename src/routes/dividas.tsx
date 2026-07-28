@@ -253,6 +253,7 @@ function DebtsPage() {
                   tickLine={false}
                   axisLine={false}
                   fontSize={11}
+                  width={64}
                   stroke="var(--muted-foreground)"
                 />
                 <Tooltip
