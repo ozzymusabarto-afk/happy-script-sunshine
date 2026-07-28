@@ -22,7 +22,7 @@ import { currentMonthKey, monthTotals, useAurinStore } from "@/store/aurin-store
 const KIND_COPY: Record<string, { eyebrow: string; headline: string }> = {
   tesouro: { eyebrow: "Você se pagou primeiro", headline: "Ouro guardado no Tesouro" },
   cofre: { eyebrow: "Um sonho avançou", headline: "Ouro depositado no cofre" },
-  divida: { eyebrow: "Corrente enfraquecida", headline: "Dívida abatida" },
+  divida: { eyebrow: "Corrente enfraquecida", headline: "Paz reconquistada" },
   fatura: { eyebrow: "Fatura dominada", headline: "Você quitou a fatura" },
 };
 
@@ -155,7 +155,7 @@ export function ImpactModal() {
                   label={celebration.cleared ? "Corrente rompida" : "Próximo sonho na fila"}
                   value={
                     celebration.cleared
-                      ? "Dívida quitada"
+                      ? "Resgate concluído"
                       : (nextDream?.name ?? "Crie um cofre novo")
                   }
                   hint={

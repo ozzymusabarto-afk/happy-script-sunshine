@@ -244,7 +244,7 @@ function Dashboard() {
               <HandCoins className="h-4 w-4 text-primary" />
               {LABELS.debts}
             </CardTitle>
-            <Link to="/dividas" className="shrink-0 text-xs text-primary hover:underline">
+            <Link to="/libertacao" className="shrink-0 text-xs text-primary hover:underline">
               Ver rota
             </Link>
           </CardHeader>

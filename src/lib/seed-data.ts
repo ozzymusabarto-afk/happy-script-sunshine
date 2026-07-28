@@ -101,7 +101,7 @@ for (let m = 5; m >= 0; m--) {
     { m, d: 23, title: "Restaurantes e streaming", amount: 610 + m * 15, type: "saida", category: "Lazer", method: "cartao" },
     { m, d: 26, title: "Energia e internet", amount: 380, type: "saida", category: "Moradia", method: "pix" },
     { m, d: 28, title: "Despesas diversas", amount: 210, type: "saida", category: "Outros", method: "dinheiro" },
-    { m, d: 10, title: "Parcela do empréstimo", amount: 640, type: "saida", category: "Dívidas", method: "transferencia" },
+    { m, d: 10, title: "Parcela do empréstimo", amount: 640, type: "saida", category: "Resgate de Paz", method: "transferencia" },
   );
 }
 

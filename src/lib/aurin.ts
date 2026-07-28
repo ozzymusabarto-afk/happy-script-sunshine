@@ -18,7 +18,7 @@ export interface Transaction {
   installmentIndex?: number;
   /** Agrupa parcelas de uma mesma compra. */
   groupId?: string;
-  /** Vincula o lançamento à quitação de uma dívida. */
+  /** Vincula o lançamento a um Resgate de Paz. */
   debtId?: string;
 }
 
@@ -106,7 +106,7 @@ export const DEBT_LABELS: Record<DebtType, string> = {
   emprestimo: "Empréstimo",
   financiamento: "Financiamento",
   chequeespecial: "Cheque especial",
-  pessoal: "Dívida pessoal",
+  pessoal: "Compromisso pessoal",
   outro: "Outro",
 };
 
@@ -136,7 +136,7 @@ export const COST_CATEGORIES = [
 
 export const EXPENSE_CATEGORIES = [
   ...COST_CATEGORIES,
-  "Dívidas",
+  "Resgate de Paz",
   "Reserva",
   "Investimento",
 ] as const;
@@ -165,10 +165,10 @@ export const PILLARS: Pillar[] = [
   },
   {
     id: "reserva",
-    label: "Reservas & Dívidas",
+    label: "Reservas & Resgate de Paz",
     short: "20%",
     percent: 20,
-    description: "Reserva de emergência e quitação acelerada de dívidas.",
+    description: "Reserva de emergência e aceleração da sua liberdade.",
   },
   {
     id: "ouro",
@@ -193,7 +193,7 @@ export const CATEGORY_PILLAR: Record<string, PillarId> = {
   Saúde: "custo",
   Educação: "custo",
   Outros: "custo",
-  Dívidas: "reserva",
+  "Resgate de Paz": "reserva",
   Reserva: "reserva",
   Investimento: "ouro",
 };
@@ -359,7 +359,7 @@ export const BADGES: BadgeDef[] = [
     id: "sem-correntes",
     icon: "⛓️‍💥",
     name: "Sem Correntes",
-    description: "Quitou integralmente uma dívida.",
+    description: "Libertou-se por completo de um compromisso.",
   },
   {
     id: "mestre-fatura",
@@ -426,7 +426,7 @@ export function addMonthsIso(iso: string, months: number) {
 }
 
 export const DEBT_QUOTES = [
-  "Onde há determinação, sempre se encontra um caminho — inclusive para sair das dívidas.",
-  "Pague suas dívidas com determinação crescente; cada credor pago é uma corrente a menos.",
+  "Onde há determinação, sempre se encontra um caminho — inclusive para reconquistar a paz.",
+  "Reconquiste sua paz com determinação crescente; cada acerto é uma corrente a menos.",
   "Melhor pagar pouco e sempre do que prometer muito e nunca cumprir.",
 ];

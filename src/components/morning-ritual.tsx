@@ -74,7 +74,7 @@ export function MorningRitual({
         icon: <HandCoins className="h-4 w-4" />,
         title: "Solte mais uma corrente",
         detail: "Um pagamento hoje antecipa a sua data de liberdade.",
-        to: "/dividas" as const,
+        to: "/libertacao" as const,
         cta: "Ver rota",
       };
     }

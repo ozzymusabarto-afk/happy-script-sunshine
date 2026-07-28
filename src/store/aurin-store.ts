@@ -23,6 +23,7 @@ import {
   type Recurring,
   type Transaction,
 } from "@/lib/aurin";
+import type { PlanId } from "@/lib/plan";
 import {
   seedAssets,
   seedBadges,
@@ -62,6 +63,7 @@ export interface OnboardingPayload {
 
 export interface AurinState {
   hasOnboarded: boolean;
+  plan: PlanId;
   profile: Profile;
   customCategories: string[];
   recurring: Recurring[];
@@ -79,6 +81,7 @@ export interface AurinState {
   celebrationsEnabled: boolean;
   dismissCelebration: () => void;
   setCelebrationsEnabled: (enabled: boolean) => void;
+  setPlan: (plan: PlanId) => void;
   setProfile: (patch: Partial<Profile>) => void;
   completeOnboarding: (payload: OnboardingPayload) => void;
   skipOnboarding: () => void;
@@ -125,6 +128,7 @@ export const emptyTreasury = (): Goal => ({
 /** Estado de quem está começando agora: tudo vazio, pronto para digitar. */
 const emptyState = () => ({
   hasOnboarded: false,
+  plan: "free" as PlanId,
   profile: { ...EMPTY_PROFILE },
   customCategories: [] as string[],
   recurring: [] as Recurring[],
@@ -191,6 +195,8 @@ export const useAurinStore = create<AurinState>()(
   persist(
     (set, get) => ({
       ...initial,
+
+      setPlan: (plan) => set({ plan }),
 
       setProfile: (patch) => set((state) => ({ profile: { ...state.profile, ...patch } })),
 
@@ -426,7 +432,7 @@ export const useAurinStore = create<AurinState>()(
             title: `Pagamento — ${debt.name}`,
             amount: value,
             type: "saida",
-            category: "Dívidas",
+            category: "Resgate de Paz",
             date: new Date().toISOString().slice(0, 10),
             method: "transferencia",
             savedTenPercent: false,
@@ -498,7 +504,7 @@ export const useAurinStore = create<AurinState>()(
     }),
     {
       name: "aurin-store-v3",
-      version: 3,
+      version: 4,
       skipHydration: true,
       partialize: (state) => {
         const { celebration: _c, ...rest } = state;
@@ -511,9 +517,15 @@ export const useAurinStore = create<AurinState>()(
           ...prev,
           goals: prev.goals?.length ? prev.goals : [emptyTreasury()],
           profile: prev.profile ?? { ...EMPTY_PROFILE },
-          customCategories: prev.customCategories ?? [],
           recurring: prev.recurring ?? [],
           hasOnboarded: prev.hasOnboarded ?? Boolean(prev.transactions?.length),
+          plan: prev.plan ?? "free",
+          transactions: (prev.transactions ?? []).map((t: Transaction) =>
+            t.category === "Dívidas" ? { ...t, category: "Resgate de Paz" } : t,
+          ),
+          customCategories: (prev.customCategories ?? []).map((c: string) =>
+            c === "Dívidas" ? "Resgate de Paz" : c,
+          ),
           celebration: null,
         } as AurinState;
       },

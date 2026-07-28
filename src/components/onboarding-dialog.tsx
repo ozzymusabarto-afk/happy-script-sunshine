@@ -17,6 +17,13 @@ const DREAM_SUGGESTIONS = [
   { name: "Liberdade financeira", target: 500000, years: 15 },
 ];
 
+const PEACE_GOALS = [
+  "Dormir tranquilo",
+  "Ficar livre de compromissos",
+  "Realizar meu sonho",
+  "Ter uma reserva forte",
+] as const;
+
 /** Ritual de entrada: quatro perguntas leves para o app nascer com a vida real do usuário. */
 export function OnboardingDialog() {
   const hasOnboarded = useAurinStore((s) => s.hasOnboarded);
@@ -24,16 +31,18 @@ export function OnboardingDialog() {
   const loadDemoData = useAurinStore((s) => s.loadDemoData);
 
   const [step, setStep] = useState(0);
+
   const [name, setName] = useState("");
   const [income, setIncome] = useState(0);
   const [dreamName, setDreamName] = useState("");
   const [dreamTarget, setDreamTarget] = useState(0);
   const [dreamYears, setDreamYears] = useState(5);
   const [startingBalance, setStartingBalance] = useState(0);
+  const [peaceGoal, setPeaceGoal] = useState<(typeof PEACE_GOALS)[number]>(PEACE_GOALS[0]);
 
   if (hasOnboarded) return null;
 
-  const canAdvance = [true, income > 0, dreamName.trim().length > 1 && dreamTarget > 0, true][step];
+  const canAdvance = [dreamName.trim().length > 1 && dreamTarget > 0, income > 0, true][step];
   const monthlyTithe = income * 0.1;
 
   const finish = () =>
@@ -56,35 +65,26 @@ export function OnboardingDialog() {
         <div className="space-y-1">
           <p className="text-xs uppercase tracking-[0.2em] text-primary">Ritual de entrada</p>
           <DialogTitle className="font-display text-2xl">
-            {["Como devemos te chamar?", "Quanto entra por mês?", "Qual é o seu sonho?", "Tudo pronto"][step]}
+            {
+              [
+                "Qual é o seu maior sonho?",
+                "Quanto você precisa por mês para viver bem?",
+                "E qual é a sua maior paz hoje?",
+              ][step]
+            }
           </DialogTitle>
           <DialogDescription>
             {
               [
-                "Nada aqui é cobrança. É a construção do seu futuro, no seu ritmo.",
-                "Pode ser aproximado. Você ajusta quando quiser.",
-                "Um destino claro transforma poupar em algo prazeroso.",
-                "Seu templo está vazio de propósito: tudo o que aparecer será real, digitado por você.",
+                "Um destino claro transforma guardar dinheiro em algo prazeroso.",
+                "Pode ser aproximado. É com isso que calculamos o seu Tempo de Paz.",
+                "Escolha o que mais pesa hoje. Tudo aqui é sem cobrança e sem julgamento.",
               ][step]
             }
           </DialogDescription>
         </div>
 
-        <Progress value={((step + 1) / 4) * 100} className="h-1.5" />
-
-        {step === 0 && (
-          <div className="space-y-2">
-            <Label htmlFor="ob-name">Seu nome ou apelido</Label>
-            <Input
-              id="ob-name"
-              value={name}
-              autoFocus
-              maxLength={40}
-              placeholder="Ex.: Ana"
-              onChange={(e) => setName(e.target.value)}
-            />
-          </div>
-        )}
+        <Progress value={((step + 1) / 3) * 100} className="h-1.5" />
 
         {step === 1 && (
           <div className="space-y-3">
@@ -100,7 +100,7 @@ export function OnboardingDialog() {
           </div>
         )}
 
-        {step === 2 && (
+        {step === 0 && (
           <div className="space-y-3">
             <div className="flex flex-wrap gap-2">
               {DREAM_SUGGESTIONS.map((d) => (
@@ -149,17 +149,46 @@ export function OnboardingDialog() {
           </div>
         )}
 
-        {step === 3 && (
+        {step === 2 && (
           <div className="space-y-3">
-            <Label htmlFor="ob-balance">Já tem algo guardado hoje? (opcional)</Label>
-            <CurrencyInput
-              id="ob-balance"
-              value={startingBalance}
-              onValueChange={setStartingBalance}
-            />
+            <div className="flex flex-wrap gap-2">
+              {PEACE_GOALS.map((g) => (
+                <Button
+                  key={g}
+                  type="button"
+                  size="sm"
+                  variant={peaceGoal === g ? "default" : "outline"}
+                  className={peaceGoal === g ? "bg-gold text-primary-foreground" : ""}
+                  onClick={() => setPeaceGoal(g)}
+                >
+                  {g}
+                </Button>
+              ))}
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="ob-name">Como te chamamos? (opcional)</Label>
+                <Input
+                  id="ob-name"
+                  value={name}
+                  maxLength={40}
+                  placeholder="Ex.: Ana"
+                  onChange={(e) => setName(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="ob-balance">Já tem algo guardado? (opcional)</Label>
+                <CurrencyInput
+                  id="ob-balance"
+                  value={startingBalance}
+                  onValueChange={setStartingBalance}
+                />
+              </div>
+            </div>
+
             <div className="rounded-xl border border-primary/20 bg-primary/[0.06] p-4 text-sm">
               <p className="flex items-center gap-2 font-semibold text-primary">
-                <Sparkles className="h-4 w-4" /> Seu ponto de partida
+                <Sparkles className="h-4 w-4" /> {peaceGoal}: seu ponto de partida
               </p>
               <ul className="mt-2 space-y-1 text-muted-foreground">
                 <li className="flex items-center gap-2">
@@ -187,7 +216,7 @@ export function OnboardingDialog() {
               Ver com dados de exemplo
             </Button>
           )}
-          {step < 3 ? (
+          {step < 2 ? (
             <Button
               disabled={!canAdvance}
               className="bg-gold text-primary-foreground hover:opacity-90"
