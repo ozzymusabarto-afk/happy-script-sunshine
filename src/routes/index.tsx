@@ -18,7 +18,6 @@ import {
   Quote,
   ShieldCheck,
   Sparkles,
-  Wallet,
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -378,5 +377,3 @@ function StatTile({
     </div>
   );
 }
-
-export { Wallet };
