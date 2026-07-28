@@ -17,6 +17,13 @@ const DREAM_SUGGESTIONS = [
   { name: "Liberdade financeira", target: 500000, years: 15 },
 ];
 
+const PEACE_GOALS = [
+  "Dormir tranquilo",
+  "Ficar livre de compromissos",
+  "Realizar meu sonho",
+  "Ter uma reserva forte",
+] as const;
+
 /** Ritual de entrada: quatro perguntas leves para o app nascer com a vida real do usuário. */
 export function OnboardingDialog() {
   const hasOnboarded = useAurinStore((s) => s.hasOnboarded);
@@ -24,12 +31,14 @@ export function OnboardingDialog() {
   const loadDemoData = useAurinStore((s) => s.loadDemoData);
 
   const [step, setStep] = useState(0);
+
   const [name, setName] = useState("");
   const [income, setIncome] = useState(0);
   const [dreamName, setDreamName] = useState("");
   const [dreamTarget, setDreamTarget] = useState(0);
   const [dreamYears, setDreamYears] = useState(5);
   const [startingBalance, setStartingBalance] = useState(0);
+  const [peaceGoal, setPeaceGoal] = useState<(typeof PEACE_GOALS)[number]>(PEACE_GOALS[0]);
 
   if (hasOnboarded) return null;
 
@@ -179,7 +188,7 @@ export function OnboardingDialog() {
 
             <div className="rounded-xl border border-primary/20 bg-primary/[0.06] p-4 text-sm">
               <p className="flex items-center gap-2 font-semibold text-primary">
-                <Sparkles className="h-4 w-4" /> Seu ponto de partida
+                <Sparkles className="h-4 w-4" /> {peaceGoal}: seu ponto de partida
               </p>
               <ul className="mt-2 space-y-1 text-muted-foreground">
                 <li className="flex items-center gap-2">
