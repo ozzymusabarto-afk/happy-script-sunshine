@@ -22,7 +22,7 @@ export function PremiumButton({
 }) {
   const [open, setOpen] = useState(false);
   const premium = useIsPremium();
-  if (premium) return null;
+  if (premium && !open) return null;
   return (
     <>
       <Button
@@ -62,7 +62,13 @@ export function PremiumGate({
   const premium = useIsPremium();
   const [open, setOpen] = useState(false);
 
-  if (premium) return <>{children}</>;
+  if (premium)
+    return (
+      <>
+        {children}
+        <PremiumDialog open={open} onOpenChange={setOpen} highlight={feature} />
+      </>
+    );
 
   return (
     <div className={cn("relative overflow-hidden rounded-2xl", className)}>
