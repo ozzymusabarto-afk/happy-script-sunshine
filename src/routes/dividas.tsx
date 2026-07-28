@@ -236,38 +236,38 @@ function DebtsPage() {
               <AreaChart data={chosen.series} margin={{ top: 8, right: 8, left: -12, bottom: 0 }}>
                 <defs>
                   <linearGradient id="debtFill" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="hsl(var(--destructive))" stopOpacity={0.5} />
-                    <stop offset="100%" stopColor="hsl(var(--destructive))" stopOpacity={0} />
+                    <stop offset="0%" stopColor="var(--destructive)" stopOpacity={0.5} />
+                    <stop offset="100%" stopColor="var(--destructive)" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
                 <XAxis
                   dataKey="month"
                   tickLine={false}
                   axisLine={false}
                   fontSize={11}
-                  stroke="hsl(var(--muted-foreground))"
+                  stroke="var(--muted-foreground)"
                 />
                 <YAxis
                   tickFormatter={(v) => brlCompact(Number(v))}
                   tickLine={false}
                   axisLine={false}
                   fontSize={11}
-                  stroke="hsl(var(--muted-foreground))"
+                  stroke="var(--muted-foreground)"
                 />
                 <Tooltip
                   formatter={(v: number) => brl(Number(v))}
                   labelFormatter={(l) => `Mês ${l}`}
                   contentStyle={{
-                    background: "hsl(var(--card))",
-                    border: "1px solid hsl(var(--border))",
+                    background: "var(--card)",
+                    border: "1px solid var(--border)",
                     borderRadius: 12,
                   }}
                 />
                 <Area
                   type="monotone"
                   dataKey="saldo"
-                  stroke="hsl(var(--destructive))"
+                  stroke="var(--destructive)"
                   fill="url(#debtFill)"
                   strokeWidth={2}
                   name="Saldo devedor"
