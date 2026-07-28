@@ -33,7 +33,7 @@ export function OnboardingDialog() {
 
   if (hasOnboarded) return null;
 
-  const canAdvance = [true, income > 0, dreamName.trim().length > 1 && dreamTarget > 0, true][step];
+  const canAdvance = [dreamName.trim().length > 1 && dreamTarget > 0, income > 0, true][step];
   const monthlyTithe = income * 0.1;
 
   const finish = () =>
@@ -56,35 +56,26 @@ export function OnboardingDialog() {
         <div className="space-y-1">
           <p className="text-xs uppercase tracking-[0.2em] text-primary">Ritual de entrada</p>
           <DialogTitle className="font-display text-2xl">
-            {["Como devemos te chamar?", "Quanto entra por mês?", "Qual é o seu sonho?", "Tudo pronto"][step]}
+            {
+              [
+                "Qual é o seu maior sonho?",
+                "Quanto você precisa por mês para viver bem?",
+                "E qual é a sua maior paz hoje?",
+              ][step]
+            }
           </DialogTitle>
           <DialogDescription>
             {
               [
-                "Nada aqui é cobrança. É a construção do seu futuro, no seu ritmo.",
-                "Pode ser aproximado. Você ajusta quando quiser.",
-                "Um destino claro transforma poupar em algo prazeroso.",
-                "Seu templo está vazio de propósito: tudo o que aparecer será real, digitado por você.",
+                "Um destino claro transforma guardar dinheiro em algo prazeroso.",
+                "Pode ser aproximado. É com isso que calculamos o seu Tempo de Paz.",
+                "Escolha o que mais pesa hoje. Tudo aqui é sem cobrança e sem julgamento.",
               ][step]
             }
           </DialogDescription>
         </div>
 
-        <Progress value={((step + 1) / 4) * 100} className="h-1.5" />
-
-        {step === 0 && (
-          <div className="space-y-2">
-            <Label htmlFor="ob-name">Seu nome ou apelido</Label>
-            <Input
-              id="ob-name"
-              value={name}
-              autoFocus
-              maxLength={40}
-              placeholder="Ex.: Ana"
-              onChange={(e) => setName(e.target.value)}
-            />
-          </div>
-        )}
+        <Progress value={((step + 1) / 3) * 100} className="h-1.5" />
 
         {step === 1 && (
           <div className="space-y-3">
@@ -100,7 +91,7 @@ export function OnboardingDialog() {
           </div>
         )}
 
-        {step === 2 && (
+        {step === 0 && (
           <div className="space-y-3">
             <div className="flex flex-wrap gap-2">
               {DREAM_SUGGESTIONS.map((d) => (
@@ -149,7 +140,7 @@ export function OnboardingDialog() {
           </div>
         )}
 
-        {step === 3 && (
+        {step === 2 && (
           <div className="space-y-3">
             <Label htmlFor="ob-balance">Já tem algo guardado hoje? (opcional)</Label>
             <CurrencyInput
@@ -187,7 +178,7 @@ export function OnboardingDialog() {
               Ver com dados de exemplo
             </Button>
           )}
-          {step < 3 ? (
+          {step < 2 ? (
             <Button
               disabled={!canAdvance}
               className="bg-gold text-primary-foreground hover:opacity-90"
