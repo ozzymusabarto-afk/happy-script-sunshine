@@ -118,3 +118,19 @@ export function formatDays(days: number) {
   }
   return `${Math.max(0, Math.round(days))} dia${Math.round(days) === 1 ? "" : "s"}`;
 }
+
+/**
+ * "Paz de espírito": combina os dias de liberdade comprados por um valor com
+ * o alívio de dívida que ele representa. Escala 0–100, sempre positiva.
+ */
+export function peaceGain(
+  amount: number,
+  transactions: Transaction[],
+  debtRemaining = 0,
+) {
+  if (amount <= 0) return { points: 0, days: 0 };
+  const { days } = daysOfFreedom(amount, transactions);
+  const relief = debtRemaining > 0 ? Math.min(1, amount / debtRemaining) : 0;
+  const points = Math.min(100, Math.round(days * 1.6 + relief * 45 + 4));
+  return { points: Math.max(1, points), days };
+}
