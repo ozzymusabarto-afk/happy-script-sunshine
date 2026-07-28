@@ -13,6 +13,7 @@ import { Route as TransacoesRouteImport } from './routes/transacoes'
 import { Route as OrcamentoRouteImport } from './routes/orcamento'
 import { Route as MultiplicadorRouteImport } from './routes/multiplicador'
 import { Route as JornadaRouteImport } from './routes/jornada'
+import { Route as CartoesRouteImport } from './routes/cartoes'
 import { Route as IndexRouteImport } from './routes/index'
 
 const TransacoesRoute = TransacoesRouteImport.update({
@@ -35,6 +36,11 @@ const JornadaRoute = JornadaRouteImport.update({
   path: '/jornada',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CartoesRoute = CartoesRouteImport.update({
+  id: '/cartoes',
+  path: '/cartoes',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -43,6 +49,7 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/cartoes': typeof CartoesRoute
   '/jornada': typeof JornadaRoute
   '/multiplicador': typeof MultiplicadorRoute
   '/orcamento': typeof OrcamentoRoute
@@ -50,6 +57,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/cartoes': typeof CartoesRoute
   '/jornada': typeof JornadaRoute
   '/multiplicador': typeof MultiplicadorRoute
   '/orcamento': typeof OrcamentoRoute
@@ -58,6 +66,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/cartoes': typeof CartoesRoute
   '/jornada': typeof JornadaRoute
   '/multiplicador': typeof MultiplicadorRoute
   '/orcamento': typeof OrcamentoRoute
@@ -65,12 +74,25 @@ export interface FileRoutesById {
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/jornada' | '/multiplicador' | '/orcamento' | '/transacoes'
+  fullPaths:
+    | '/'
+    | '/cartoes'
+    | '/jornada'
+    | '/multiplicador'
+    | '/orcamento'
+    | '/transacoes'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/jornada' | '/multiplicador' | '/orcamento' | '/transacoes'
+  to:
+    | '/'
+    | '/cartoes'
+    | '/jornada'
+    | '/multiplicador'
+    | '/orcamento'
+    | '/transacoes'
   id:
     | '__root__'
     | '/'
+    | '/cartoes'
     | '/jornada'
     | '/multiplicador'
     | '/orcamento'
@@ -79,6 +101,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CartoesRoute: typeof CartoesRoute
   JornadaRoute: typeof JornadaRoute
   MultiplicadorRoute: typeof MultiplicadorRoute
   OrcamentoRoute: typeof OrcamentoRoute
@@ -115,6 +138,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof JornadaRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/cartoes': {
+      id: '/cartoes'
+      path: '/cartoes'
+      fullPath: '/cartoes'
+      preLoaderRoute: typeof CartoesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -127,6 +157,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CartoesRoute: CartoesRoute,
   JornadaRoute: JornadaRoute,
   MultiplicadorRoute: MultiplicadorRoute,
   OrcamentoRoute: OrcamentoRoute,

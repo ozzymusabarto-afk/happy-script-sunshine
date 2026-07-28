@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { AlertTriangle, CalendarClock, CreditCard as CardIcon, Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -342,7 +342,7 @@ function CardDialog({
   const [color, setColor] = useState(CARD_COLORS[0]);
   const [error, setError] = useState("");
 
-  useMemo(() => {
+  useEffect(() => {
     if (!open) return;
     setName(editing?.name ?? "");
     setBrand(editing?.brand ?? "Visa");
