@@ -70,7 +70,8 @@ export const LABELS = {
 
 /** Estado de um pilar de orçamento, sempre sem julgamento. */
 export function pillarTone(percent: number): ToneLevel {
-  if (percent > 100) return "alem";
+  if (percent > 100.5) return "alem";
+  if (percent >= 99.5) return "ritmo";
   if (percent >= 85) return "atencao";
   return "ritmo";
 }
