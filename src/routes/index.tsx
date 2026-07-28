@@ -12,6 +12,7 @@ import {
 
 import { FreedomMeter, JourneyTrail, VaultJar } from "@/components/journey-visuals";
 import { MorningRitual } from "@/components/morning-ritual";
+import { QuickAdd } from "@/components/quick-add";
 import { LABELS, TONE_BG, TONE_LABEL, TONE_TEXT, pillarTone } from "@/lib/tone";
 import { monthsOfFreedom } from "@/lib/impact";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
