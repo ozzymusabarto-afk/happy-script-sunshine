@@ -61,6 +61,22 @@ export interface OnboardingPayload {
   startingBalance: number;
 }
 
+export interface SecuritySettings {
+  /** Hash PBKDF2 do PIN — o PIN em si nunca é guardado. */
+  pinHash: string | null;
+  salt: string | null;
+  biometricId: string | null;
+  /** 0 = pede sempre ao abrir. */
+  autoLockMinutes: number;
+}
+
+export interface ReminderSettings {
+  enabled: boolean;
+  /** "HH:MM" */
+  time: string;
+  lastShown: string | null;
+}
+
 export interface AurinState {
   hasOnboarded: boolean;
   plan: PlanId;
@@ -79,8 +95,15 @@ export interface AurinState {
   pillarSplit: Record<PillarId, number>;
   celebration: Celebration | null;
   celebrationsEnabled: boolean;
+  security: SecuritySettings;
+  reminder: ReminderSettings;
+  lastBackupAt: string | null;
   dismissCelebration: () => void;
   setCelebrationsEnabled: (enabled: boolean) => void;
+  setSecurity: (patch: Partial<SecuritySettings>) => void;
+  disableLock: () => void;
+  setReminder: (patch: Partial<ReminderSettings>) => void;
+  markBackup: () => void;
   setPlan: (plan: PlanId) => void;
   setProfile: (patch: Partial<Profile>) => void;
   completeOnboarding: (payload: OnboardingPayload) => void;
@@ -144,6 +167,14 @@ const emptyState = () => ({
   pillarSplit: { ...DEFAULT_PILLAR_SPLIT },
   celebration: null as Celebration | null,
   celebrationsEnabled: true,
+  security: {
+    pinHash: null,
+    salt: null,
+    biometricId: null,
+    autoLockMinutes: 0,
+  } as SecuritySettings,
+  reminder: { enabled: false, time: "08:00", lastShown: null } as ReminderSettings,
+  lastBackupAt: null as string | null,
 });
 
 /** Conteúdo de demonstração — só entra quando o usuário pede. */
@@ -488,14 +519,25 @@ export const useAurinStore = create<AurinState>()(
       setCelebrationsEnabled: (enabled) =>
         set({ celebrationsEnabled: enabled, celebration: enabled ? null : null }),
 
+      setSecurity: (patch) => set((state) => ({ security: { ...state.security, ...patch } })),
+
+      disableLock: () =>
+        set({ security: { pinHash: null, salt: null, biometricId: null, autoLockMinutes: 0 } }),
+
+      setReminder: (patch) => set((state) => ({ reminder: { ...state.reminder, ...patch } })),
+
+      markBackup: () => set({ lastBackupAt: new Date().toISOString() }),
+
       loadDemoData: () => set({ ...demoState() }),
 
       clearAll: () => set({ ...emptyState(), hasOnboarded: false }),
 
       importState: (data) =>
-        set(() => ({
+        set((state) => ({
           ...emptyState(),
           ...data,
+          // A proteção deste aparelho não vem do backup.
+          security: state.security,
           celebration: null,
           hasOnboarded: true,
         })),
@@ -504,7 +546,7 @@ export const useAurinStore = create<AurinState>()(
     }),
     {
       name: "aurin-store-v3",
-      version: 4,
+      version: 5,
       skipHydration: true,
       partialize: (state) => {
         const { celebration: _c, ...rest } = state;
@@ -526,6 +568,14 @@ export const useAurinStore = create<AurinState>()(
           customCategories: (prev.customCategories ?? []).map((c: string) =>
             c === "Dívidas" ? "Resgate de Paz" : c,
           ),
+          security: prev.security ?? {
+            pinHash: null,
+            salt: null,
+            biometricId: null,
+            autoLockMinutes: 0,
+          },
+          reminder: prev.reminder ?? { enabled: false, time: "08:00", lastShown: null },
+          lastBackupAt: prev.lastBackupAt ?? null,
           celebration: null,
         } as AurinState;
       },

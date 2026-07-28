@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { ImpactModal } from "@/components/impact-modal";
 import { InstallPrompt } from "@/components/install-prompt";
+import { LockScreen } from "@/components/lock-screen";
 import { PremiumButton, useIsPremium } from "@/components/premium-gate";
 import { OnboardingDialog } from "@/components/onboarding-dialog";
 import { Link, useRouterState } from "@tanstack/react-router";
@@ -25,7 +26,9 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { TransactionDialog } from "@/components/transaction-dialog";
 import { useAurinHydrated } from "@/hooks/use-aurin-hydrated";
-import { brl, levelFor } from "@/lib/aurin";
+import { useAppLock, useMorningReminder } from "@/hooks/use-aurin-guard";
+import { brl, levelFor, TREASURY_GOAL_ID } from "@/lib/aurin";
+import { registerServiceWorker } from "@/lib/register-sw";
 import { cn } from "@/lib/utils";
 import { currentMonthKey, monthTotals, totalWealth, useAurinStore } from "@/store/aurin-store";
 
@@ -50,8 +53,23 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const assets = useAurinStore((s) => s.assets);
   const transactions = useAurinStore((s) => s.transactions);
   const profileName = useAurinStore((s) => s.profile.name);
+  const profile = useAurinStore((s) => s.profile);
   const applyRecurring = useAurinStore((s) => s.applyRecurring);
+  const security = useAurinStore((s) => s.security);
+  const reminder = useAurinStore((s) => s.reminder);
+  const setReminder = useAurinStore((s) => s.setReminder);
   const premium = useIsPremium();
+
+  const { locked, unlock } = useAppLock(
+    hydrated && Boolean(security.pinHash),
+    security.autoLockMinutes,
+    hydrated,
+  );
+
+  // Modo offline: só registra no app publicado, nunca no editor.
+  useEffect(() => {
+    registerServiceWorker();
+  }, []);
 
   // Lançamentos fixos do mês entram sozinhos assim que o app abre.
   useEffect(() => {
@@ -70,6 +88,22 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const wealth = useMemo(() => totalWealth(goals, assets), [goals, assets]);
   const month = useMemo(() => monthTotals(transactions, currentMonthKey()), [transactions]);
 
+  const dreamProgress = useMemo(() => {
+    const dream = goals.find((g) => g.id !== TREASURY_GOAL_ID && g.target > 0) ?? goals[0];
+    if (!dream || dream.target <= 0) return 0;
+    return Math.min(100, (dream.balance / dream.target) * 100);
+  }, [goals]);
+
+  useMorningReminder(
+    hydrated && reminder.enabled && !locked,
+    reminder.time,
+    reminder.lastShown,
+    { name: profile.name, dreamName: profile.dreamName, dreamProgress },
+    (day) => setReminder({ lastShown: day }),
+    (message) => toast(message, { duration: 8000 }),
+  );
+
+  if (locked) return <LockScreen onUnlock={unlock} />;
 
   return (
     <div className="min-h-screen bg-background text-foreground">
