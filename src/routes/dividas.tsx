@@ -34,16 +34,16 @@ import { debtSummary, simulatePayoff, useAurinStore, type Strategy } from "@/sto
 export const Route = createFileRoute("/dividas")({
   head: () => ({
     meta: [
-      { title: "Gestão e Quitação de Dívidas | AURIN" },
+      { title: "Rota de Libertação | AURIN" },
       {
         name: "description",
         content:
-          "Organize suas dívidas, registre pagamentos e compare as estratégias avalanche e bola de neve até a liberdade financeira.",
+          "Acompanhe quanto do seu futuro você já libertou, registre pagamentos e veja sua data de liberdade se aproximar.",
       },
-      { property: "og:title", content: "Gestão e Quitação de Dívidas | AURIN" },
+      { property: "og:title", content: "Rota de Libertação | AURIN" },
       {
         property: "og:description",
-        content: "Simulador de quitação com juros, prazo e evolução do saldo devedor.",
+        content: "Cada pagamento solta uma corrente e antecipa a sua paz.",
       },
     ],
   }),
@@ -85,6 +85,11 @@ function DebtsPage() {
       });
   }, [chosen]);
 
+  const peaceMonths = useMemo(() => {
+    const worst = Math.max(avalanche.months, snowball.months);
+    return Math.max(0, worst - chosen.months);
+  }, [avalanche.months, snowball.months, chosen.months]);
+
   const freedomDate = useMemo(() => {
     if (chosen.months <= 0) return "Você já está livre";
     const d = new Date();
@@ -99,11 +104,11 @@ function DebtsPage() {
       <header className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
         <div className="min-w-0">
           <h1 className="font-display text-2xl font-extrabold sm:text-3xl">
-            Gestão e Quitação de Dívidas
+            Rota de Libertação
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            "Pague suas dívidas com determinação crescente." Cada credor quitado é uma corrente a
-            menos no seu futuro.
+            Você já libertou {summary.progress.toFixed(0)}% do seu futuro. Cada pagamento solta uma
+            corrente e antecipa a sua paz.
           </p>
         </div>
         <Button
@@ -116,25 +121,26 @@ function DebtsPage() {
       </header>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Stat label="Saldo devedor" value={brl(summary.remaining)} tone="destructive" />
-        <Stat label="Já quitado" value={brl(summary.paid)} tone="success" />
-        <Stat label="Juro médio" value={`${summary.weightedRate.toFixed(2)}% a.m.`} />
+        <Stat label="Já libertado" value={brl(summary.paid)} tone="success" />
+        <Stat label="Ainda a soltar" value={brl(summary.remaining)} />
+        <Stat label="Custo médio das correntes" value={`${summary.weightedRate.toFixed(2)}% a.m.`} />
         <Stat
-          label="Meses para a liberdade"
-          value={summary.monthsToFreedom > 0 ? `${summary.monthsToFreedom} meses` : "Livre"}
+          label="Sua liberdade chega em"
+          value={summary.monthsToFreedom > 0 ? `${summary.monthsToFreedom} meses` : "Você já é livre"}
+          tone="success"
         />
       </div>
 
       <Card className="border-primary/30">
         <CardContent className="pt-6">
           <div className="flex items-center justify-between gap-3 text-sm">
-            <span className="text-muted-foreground">Progresso geral de quitação</span>
+            <span className="text-muted-foreground">Quanto do seu futuro já está livre</span>
             <span className="font-semibold text-success">{summary.progress.toFixed(0)}%</span>
           </div>
           <Progress value={Math.min(100, summary.progress)} className="mt-2 h-3" />
           <p className="mt-3 flex items-start gap-2 text-xs text-muted-foreground">
             <Quote className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
-            Destine o pilar de 20% (Reservas & Dívidas) para acelerar esta barra.
+            Cada real do pilar de 20% empurra esta barra — e a sua tranquilidade — para frente.
           </p>
         </CardContent>
       </Card>
@@ -143,13 +149,13 @@ function DebtsPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
             <HandCoins className="h-4 w-4 text-primary" />
-            Suas dívidas
+            Suas correntes
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-5">
           {debts.length === 0 && (
             <p className="py-8 text-center text-sm text-muted-foreground">
-              Nenhuma dívida registrada. Que Arkad mantenha assim.
+              Nenhuma corrente presa a você. Aproveite essa leveza.
             </p>
           )}
           {debts.map((debt) => {
@@ -170,12 +176,16 @@ function DebtsPage() {
                     <p
                       className={cn(
                         "font-display text-lg font-bold",
-                        remaining > 0 ? "text-destructive" : "text-success",
+                        remaining > 0 ? "text-gold" : "text-success",
                       )}
                     >
-                      {remaining > 0 ? brl(remaining) : "Quitada"}
+                      {remaining > 0 ? `${percent.toFixed(0)}% livre` : "Corrente rompida"}
                     </p>
-                    <p className="text-xs text-muted-foreground">de {brl(debt.principal)}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {remaining > 0
+                        ? `${brl(debt.paid)} já libertados · faltam ${brl(remaining)}`
+                        : `${brl(debt.principal)} conquistados`}
+                    </p>
                   </div>
                 </div>
 
@@ -188,7 +198,7 @@ function DebtsPage() {
                     disabled={remaining <= 0}
                     onClick={() => setPayTarget(debt)}
                   >
-                    Registrar pagamento
+                    Soltar mais um pedaço
                   </Button>
                   <Button
                     size="sm"
@@ -196,7 +206,7 @@ function DebtsPage() {
                     aria-label={`Remover ${debt.name}`}
                     onClick={() => {
                       removeDebt(debt.id);
-                      toast.success("Dívida removida");
+                      toast.success("Corrente removida da sua rota");
                     }}
                   >
                     <Trash2 className="h-3.5 w-3.5 text-destructive" />
@@ -210,7 +220,7 @@ function DebtsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Simulador de quitação</CardTitle>
+          <CardTitle className="text-base">Simulador de liberdade</CardTitle>
         </CardHeader>
         <CardContent className="space-y-5">
           <Tabs value={strategy} onValueChange={(v) => setStrategy(v as Strategy)}>
@@ -222,7 +232,7 @@ function DebtsPage() {
 
           <div>
             <div className="flex items-center justify-between gap-3 text-sm">
-              <span className="text-muted-foreground">Valor mensal disponível</span>
+              <span className="text-muted-foreground">Quanto posso dedicar por mês</span>
               <span className="font-semibold text-gold">{brl(budget)}</span>
             </div>
             <Slider
@@ -238,12 +248,18 @@ function DebtsPage() {
 
           <div className="grid gap-4 sm:grid-cols-3">
             <Stat
-              label="Prazo estimado"
-              value={chosen.months > 0 ? `${chosen.months} meses` : "—"}
+              label="Liberdade em"
+              value={chosen.months > 0 ? `${chosen.months} meses` : "Agora"}
+              tone="success"
             />
-            <Stat label="Juros pagos" value={brl(chosen.interest)} tone="destructive" />
             <Stat
-              label="Melhor estratégia"
+              label="Meses de paz antecipados"
+              value={
+                peaceMonths > 0 ? `${peaceMonths} mês${peaceMonths === 1 ? "" : "es"}` : "—"
+              }
+            />
+            <Stat
+              label="Caminho mais leve"
               value={avalanche.interest <= snowball.interest ? "Avalanche" : "Bola de neve"}
               tone="success"
             />
@@ -280,8 +296,9 @@ function DebtsPage() {
           </div>
 
           <p className="text-xs text-muted-foreground">
-            Avalanche ataca a dívida de maior juro (economiza mais dinheiro). Bola de neve elimina a
-            menor primeiro (gera motivação mais rápido).
+            Avalanche cuida primeiro da corrente mais cara (economiza {brl(Math.abs(avalanche.interest - snowball.interest))}).
+            Bola de neve solta a menor primeiro e traz alívio mais cedo. Os dois levam à mesma
+            liberdade — escolha o que te mantém em movimento.
           </p>
         </CardContent>
       </Card>
@@ -293,7 +310,7 @@ function DebtsPage() {
         onConfirm={(amount) => {
           if (payTarget) {
             payDebt(payTarget.id, amount);
-            toast.success("Pagamento registrado");
+            toast.success("Mais um pedaço da sua liberdade conquistado");
           }
           setPayTarget(null);
         }}
