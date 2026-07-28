@@ -93,7 +93,7 @@ export const useAurinStore = create<AurinState>()(
 
       resetToSeed: () => set({ ...initial }),
     }),
-    { name: "aurin-store-v1" },
+    { name: "aurin-store-v1", skipHydration: true },
   ),
 );
 
