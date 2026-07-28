@@ -25,9 +25,9 @@ import { currentMonthKey, monthTotals, totalWealth, useAurinStore } from "@/stor
 const NAV = [
   { to: "/", label: "Templo", icon: LayoutDashboard },
   { to: "/transacoes", label: "Moedas", icon: ScrollText },
-  { to: "/orcamento", label: "Gastos", icon: Coins },
+  { to: "/orcamento", label: "Meu ritmo", short: "Ritmo", icon: Coins },
   { to: "/cartoes", label: "Cartões", icon: CreditCard },
-  { to: "/dividas", label: "Dívidas", icon: HandCoins },
+  { to: "/dividas", label: "Libertação", short: "Liberdade", icon: HandCoins },
   { to: "/multiplicador", label: "Multiplicador", short: "Multipl.", icon: TrendingUp },
   { to: "/jornada", label: "Jornada", icon: Sparkles },
 ] as const;
@@ -87,12 +87,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <p className="mt-1 font-display text-xl font-bold text-gold">{brl(wealth)}</p>
             <div className="mt-3 space-y-1 text-xs text-muted-foreground">
               <p className="flex justify-between gap-2">
-                <span>Entradas do mês</span>
+                <span>Entrou este mês</span>
                 <span className="text-success">{brl(month.income)}</span>
               </p>
               <p className="flex justify-between gap-2">
-                <span>Saídas do mês</span>
-                <span className="text-destructive">{brl(month.expense)}</span>
+                <span>Escolhas do mês</span>
+                <span className="text-foreground">{brl(month.expense)}</span>
               </p>
             </div>
           </div>

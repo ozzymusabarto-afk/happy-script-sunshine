@@ -13,7 +13,9 @@ import {
   formatDays,
   futureValue,
   milestoneCrossed,
+  peaceGain,
 } from "@/lib/impact";
+import { peaceLine } from "@/lib/tone";
 import { cn } from "@/lib/utils";
 import { currentMonthKey, monthTotals, useAurinStore } from "@/store/aurin-store";
 
@@ -30,6 +32,7 @@ export function ImpactModal() {
   const dismiss = useAurinStore((s) => s.dismissCelebration);
   const goals = useAurinStore((s) => s.goals);
   const transactions = useAurinStore((s) => s.transactions);
+  const debts = useAurinStore((s) => s.debts);
   const reduced = usePrefersReducedMotion();
   const [step, setStep] = useState(0);
 
@@ -60,6 +63,12 @@ export function ImpactModal() {
     goal && celebration.before !== undefined && celebration.after !== undefined
       ? milestoneCrossed(celebration.before, celebration.after, goal.target)
       : null;
+
+  const debtRemaining = debts.reduce((sum, d) => sum + Math.max(0, d.principal - d.paid), 0);
+  const peace = peaceGain(amount, transactions, debtRemaining);
+  const encouragement = peaceLine(
+    (celebration.id.charCodeAt(celebration.id.length - 1) % 100) / 100,
+  );
 
   const nextDream = goals
     .filter((g) => g.id !== TREASURY_GOAL_ID && g.balance < g.target)
@@ -156,6 +165,32 @@ export function ImpactModal() {
                   }
                 />
               )}
+            </div>
+
+            <div
+              className={cn(
+                "mt-4 rounded-2xl border border-primary/35 bg-primary/10 p-4 text-left transition-opacity",
+                step >= 1 ? "reveal-step opacity-100" : "opacity-0",
+              )}
+              style={{ animationDelay: "0.24s" }}
+            >
+              <div className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-3">
+                <p className="truncate font-display text-sm font-bold text-primary">
+                  {encouragement}
+                </p>
+                <span className="shrink-0 font-display text-sm font-bold text-gold">
+                  +{peace.points}
+                </span>
+              </div>
+              <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-background/60">
+                <div
+                  className="h-full rounded-full bg-gold transition-all duration-700"
+                  style={{ width: `${peace.points}%` }}
+                />
+              </div>
+              <p className="mt-2 text-xs text-muted-foreground">
+                Índice de paz de espírito conquistado com este gesto.
+              </p>
             </div>
 
             {milestone && (

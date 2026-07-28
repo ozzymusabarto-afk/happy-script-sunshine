@@ -7,13 +7,13 @@ import {
   CreditCard as CardIcon,
   HandCoins,
   Quote,
-  ShieldCheck,
   Sparkles,
 } from "lucide-react";
 
 import { FreedomMeter, JourneyTrail, VaultJar } from "@/components/journey-visuals";
+import { MorningRitual } from "@/components/morning-ritual";
+import { LABELS, TONE_BG, TONE_LABEL, TONE_TEXT, pillarTone } from "@/lib/tone";
 import { monthsOfFreedom } from "@/lib/impact";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import {
@@ -118,78 +118,49 @@ function Dashboard() {
     [transactions, key, pillarSplit, month.tithe],
   );
 
+  const monthlyPace = month.tithe > 0 ? month.tithe : month.income * 0.1;
   const titheTarget = month.income * 0.1;
   const tithePercent = titheTarget > 0 ? Math.min(100, (month.tithe / titheTarget) * 100) : 0;
   const quote = quoteOfTheDay();
 
   return (
     <div className="space-y-6">
-      <section className="relative overflow-hidden rounded-2xl border border-border bg-card p-5 sm:p-7">
-        <div
-          className="pointer-events-none absolute inset-0"
-          style={{ background: "var(--gradient-temple)" }}
+      <MorningRitual
+        goals={goals}
+        wealth={wealth}
+        freedomMonths={freedomMonths}
+        titheDone={tithePercent >= 99.5}
+        titheGap={Math.max(0, titheTarget - month.tithe)}
+        debtRemaining={debts.remaining}
+        monthlyPace={monthlyPace}
+      />
+
+      <div className="grid gap-4 sm:grid-cols-3">
+        <StatTile
+          icon={<ArrowUpRight className="h-4 w-4" />}
+          label="Entrou este mês"
+          value={brl(month.income)}
+          tone="success"
         />
-        <div className="relative grid gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
-          <div className="min-w-0">
-            <p className="text-xs uppercase tracking-[0.2em] text-primary">Tesouro Total</p>
-            <p className="mt-2 font-display text-4xl font-extrabold text-gold sm:text-5xl">
-              {brl(wealth)}
-            </p>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Cofres, investimentos e ativos fixos reunidos sob a proteção de Arkad.
-            </p>
+        <StatTile
+          icon={<ArrowDownRight className="h-4 w-4" />}
+          label="Escolhas do mês"
+          value={brl(month.expense)}
+          tone="neutral"
+        />
+        <StatTile
+          icon={<Coins className="h-4 w-4" />}
+          label="Ouro guardado (10%)"
+          value={brl(month.tithe)}
+          tone="gold"
+          hint={
+            tithePercent >= 99.5
+              ? "Você se pagou primeiro este mês."
+              : `Faltam ${brl(Math.max(0, titheTarget - month.tithe))} para os 10%.`
+          }
+        />
+      </div>
 
-            <div className="mt-6 grid gap-3 sm:grid-cols-2">
-              <StatTile
-                icon={<ArrowUpRight className="h-4 w-4" />}
-                label="Ouro Entrada (mês)"
-                value={brl(month.income)}
-                tone="success"
-              />
-              <StatTile
-                icon={<ArrowDownRight className="h-4 w-4" />}
-                label="Ouro Saída (mês)"
-                value={brl(month.expense)}
-                tone="destructive"
-              />
-            </div>
-          </div>
-
-          <Card className="min-w-0 border-primary/30 bg-background/60">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2 text-base">
-                <Coins className="h-4 w-4 text-primary" />O Dízimo de Arkad
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="font-display text-2xl font-bold">
-                {brl(month.tithe)}{" "}
-                <span className="text-sm font-normal text-muted-foreground">
-                  de {brl(titheTarget)}
-                </span>
-              </p>
-              <Progress value={tithePercent} className="mt-3 h-2" />
-              <p className="mt-3 text-xs text-muted-foreground">
-                {tithePercent >= 99.5
-                  ? "Você se pagou primeiro este mês. O ouro flui para quem o guarda."
-                  : `Faltam ${brl(Math.max(0, titheTarget - month.tithe))} para cumprir a primeira lei.`}
-              </p>
-              <Badge
-                variant="outline"
-                className={cn(
-                  "mt-4",
-                  tithePercent >= 99.5
-                    ? "border-success/40 text-success"
-                    : "border-warning/40 text-warning",
-                )}
-              >
-                <ShieldCheck className="mr-1 h-3 w-3" />
-                {tithePercent >= 99.5 ? "Lei cumprida" : "Em progresso"}
-              </Badge>
-            </CardContent>
-          </Card>
-        </div>
-      </section>
 
       <div className="grid gap-4 lg:grid-cols-3">
         <Card className="lg:col-span-2">
@@ -225,32 +196,39 @@ function Dashboard() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-primary/25">
           <CardHeader className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
             <CardTitle className="flex items-center gap-2 text-base">
               <HandCoins className="h-4 w-4 text-primary" />
-              Dívidas
+              {LABELS.debts}
             </CardTitle>
             <Link to="/dividas" className="shrink-0 text-xs text-primary hover:underline">
-              Gerenciar
+              Ver rota
             </Link>
           </CardHeader>
           <CardContent>
-            <p className="font-display text-2xl font-extrabold text-destructive">
-              {brl(debts.remaining)}
+            <p className="font-display text-2xl font-extrabold text-gold">
+              {debts.progress.toFixed(0)}% livre
             </p>
             <p className="text-xs text-muted-foreground">
-              {debts.progress.toFixed(0)}% quitado ·{" "}
-              {debts.monthsToFreedom > 0 ? `${debts.monthsToFreedom} meses restantes` : "sem dívidas"}
+              {debts.remaining > 0
+                ? `Faltam ${brl(debts.remaining)} para soltar a última corrente.`
+                : "Nenhuma corrente presa a você."}
             </p>
             <Progress value={Math.min(100, debts.progress)} className="mt-3 h-2" />
+            <p className="mt-3 text-xs text-muted-foreground">
+              {debts.monthsToFreedom > 0
+                ? `No ritmo atual, liberdade em ${debts.monthsToFreedom} meses.`
+                : "Você já está livre — siga construindo."}
+            </p>
           </CardContent>
         </Card>
+
       </div>
 
       <Card>
         <CardHeader className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
-          <CardTitle className="text-base">Regra 70/20/10 do mês</CardTitle>
+          <CardTitle className="text-base">Seu ritmo do mês (70/20/10)</CardTitle>
           <Link to="/orcamento" className="shrink-0 text-xs text-primary hover:underline">
             Ajustar
           </Link>
@@ -258,20 +236,21 @@ function Dashboard() {
         <CardContent className="grid gap-4 sm:grid-cols-3">
           {pillars.map((p) => {
             const meta = PILLARS.find((x) => x.id === p.id)!;
+            const tone = pillarTone(p.percent);
             return (
               <div key={p.id} className="min-w-0">
                 <div className="flex items-baseline justify-between gap-2">
                   <span className="truncate text-sm font-medium">{meta.label}</span>
-                  <span
-                    className={cn(
-                      "shrink-0 text-xs font-semibold",
-                      p.percent > 100 ? "text-destructive" : "text-success",
-                    )}
-                  >
-                    {p.percent.toFixed(0)}%
+                  <span className={cn("shrink-0 text-xs font-semibold", TONE_TEXT[tone])}>
+                    {TONE_LABEL[tone]}
                   </span>
                 </div>
-                <Progress value={Math.min(100, p.percent)} className="mt-2 h-2" />
+                <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-secondary">
+                  <div
+                    className={cn("h-full rounded-full transition-all duration-700", TONE_BG[tone])}
+                    style={{ width: `${Math.min(100, p.percent)}%` }}
+                  />
+                </div>
                 <p className="mt-1 text-xs text-muted-foreground">
                   {brl(p.used)} de {brl(p.target)}
                 </p>
@@ -327,7 +306,7 @@ function Dashboard() {
 
       <Card>
         <CardHeader className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
-          <CardTitle className="text-base">Últimas moedas registradas</CardTitle>
+          <CardTitle className="text-base">Seus últimos passos</CardTitle>
           <Link to="/transacoes" className="text-sm font-medium text-primary hover:underline">
             Ver todas
           </Link>
@@ -346,7 +325,7 @@ function Dashboard() {
                   "grid h-9 w-9 shrink-0 place-items-center rounded-lg",
                   t.type === "entrada"
                     ? "bg-success/15 text-success"
-                    : "bg-destructive/15 text-destructive",
+                    : "bg-secondary text-muted-foreground",
                 )}
               >
                 {t.type === "entrada" ? (
@@ -367,7 +346,7 @@ function Dashboard() {
               <span
                 className={cn(
                   "shrink-0 text-sm font-semibold",
-                  t.type === "entrada" ? "text-success" : "text-destructive",
+                  t.type === "entrada" ? "text-success" : "text-foreground",
                 )}
               >
                 {t.type === "entrada" ? "+" : "−"}
@@ -386,25 +365,41 @@ function StatTile({
   label,
   value,
   tone,
+  hint,
 }: {
   icon: React.ReactNode;
   label: string;
   value: string;
-  tone: "success" | "destructive";
+  tone: "success" | "destructive" | "neutral" | "gold";
+  hint?: string;
 }) {
   return (
-    <div className="flex items-center gap-3 rounded-xl border border-border bg-background/60 p-4">
+    <div className="flex items-start gap-3 rounded-2xl border border-border bg-card p-4 transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/30">
       <span
         className={cn(
-          "grid h-10 w-10 shrink-0 place-items-center rounded-lg",
-          tone === "success" ? "bg-success/15 text-success" : "bg-destructive/15 text-destructive",
+          "grid h-10 w-10 shrink-0 place-items-center rounded-xl",
+          tone === "success"
+            ? "bg-success/15 text-success"
+            : tone === "gold"
+              ? "bg-primary/15 text-primary"
+              : tone === "neutral"
+                ? "bg-secondary text-muted-foreground"
+                : "bg-destructive/15 text-destructive",
         )}
       >
         {icon}
       </span>
       <div className="min-w-0">
         <p className="truncate text-xs text-muted-foreground">{label}</p>
-        <p className="truncate font-display text-lg font-bold">{value}</p>
+        <p
+          className={cn(
+            "truncate font-display text-lg font-bold",
+            tone === "gold" && "text-gold",
+          )}
+        >
+          {value}
+        </p>
+        {hint && <p className="mt-0.5 text-xs text-muted-foreground">{hint}</p>}
       </div>
     </div>
   );
