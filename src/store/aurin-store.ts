@@ -568,6 +568,14 @@ export const useAurinStore = create<AurinState>()(
           customCategories: (prev.customCategories ?? []).map((c: string) =>
             c === "Dívidas" ? "Resgate de Paz" : c,
           ),
+          security: prev.security ?? {
+            pinHash: null,
+            salt: null,
+            biometricId: null,
+            autoLockMinutes: 0,
+          },
+          reminder: prev.reminder ?? { enabled: false, time: "08:00", lastShown: null },
+          lastBackupAt: prev.lastBackupAt ?? null,
           celebration: null,
         } as AurinState;
       },
