@@ -482,29 +482,45 @@ export const useAurinStore = create<AurinState>()(
       setCelebrationsEnabled: (enabled) =>
         set({ celebrationsEnabled: enabled, celebration: enabled ? null : null }),
 
-      resetToSeed: () => set({ ...initial }),
+      loadDemoData: () => set({ ...demoState() }),
+
+      clearAll: () => set({ ...emptyState(), hasOnboarded: false }),
+
+      importState: (data) =>
+        set(() => ({
+          ...emptyState(),
+          ...data,
+          celebration: null,
+          hasOnboarded: true,
+        })),
+
+      resetToSeed: () => set({ ...demoState() }),
     }),
     {
-      name: "aurin-store-v2",
-      version: 2,
+      name: "aurin-store-v3",
+      version: 3,
       skipHydration: true,
       partialize: (state) => {
         const { celebration: _c, ...rest } = state;
         return rest as AurinState;
       },
-      migrate: (persisted) => ({
-        ...initial,
-        ...(persisted as Partial<AurinState>),
-        cards: (persisted as Partial<AurinState>)?.cards ?? seedCards,
-        debts: (persisted as Partial<AurinState>)?.debts ?? seedDebts,
-        paidInvoices: (persisted as Partial<AurinState>)?.paidInvoices ?? [],
-        pillarSplit: (persisted as Partial<AurinState>)?.pillarSplit ?? { ...DEFAULT_PILLAR_SPLIT },
-        celebration: null,
-        celebrationsEnabled: (persisted as Partial<AurinState>)?.celebrationsEnabled ?? true,
-      }) as AurinState,
+      migrate: (persisted) => {
+        const prev = (persisted ?? {}) as Partial<AurinState>;
+        return {
+          ...emptyState(),
+          ...prev,
+          goals: prev.goals?.length ? prev.goals : [emptyTreasury()],
+          profile: prev.profile ?? { ...EMPTY_PROFILE },
+          customCategories: prev.customCategories ?? [],
+          recurring: prev.recurring ?? [],
+          hasOnboarded: prev.hasOnboarded ?? Boolean(prev.transactions?.length),
+          celebration: null,
+        } as AurinState;
+      },
     },
   ),
 );
+
 
 /* ---------------------------------- seletores --------------------------------- */
 
