@@ -421,6 +421,9 @@ function Settings() {
           </CardContent>
         </Card>
 
+        <SecurityCard />
+        <ReminderCard />
+
         {/* Backup */}
         <Card className="reveal-step lg:col-span-2">
           <CardHeader>
