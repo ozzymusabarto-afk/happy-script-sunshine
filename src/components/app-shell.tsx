@@ -206,6 +206,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </nav>
 
       <TransactionDialog open={open} onOpenChange={setOpen} />
+      {hydrated && <OnboardingDialog />}
     </div>
   );
 }
