@@ -167,6 +167,14 @@ const emptyState = () => ({
   pillarSplit: { ...DEFAULT_PILLAR_SPLIT },
   celebration: null as Celebration | null,
   celebrationsEnabled: true,
+  security: {
+    pinHash: null,
+    salt: null,
+    biometricId: null,
+    autoLockMinutes: 0,
+  } as SecuritySettings,
+  reminder: { enabled: false, time: "08:00", lastShown: null } as ReminderSettings,
+  lastBackupAt: null as string | null,
 });
 
 /** Conteúdo de demonstração — só entra quando o usuário pede. */
