@@ -1,10 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { ImpactModal } from "@/components/impact-modal";
+import { InstallPrompt } from "@/components/install-prompt";
+import { PremiumButton, useIsPremium } from "@/components/premium-gate";
 import { OnboardingDialog } from "@/components/onboarding-dialog";
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
   Coins,
+  Compass,
+  Crown,
   CreditCard,
   HandCoins,
   Landmark,
@@ -30,7 +34,8 @@ const NAV = [
   { to: "/transacoes", label: "Moedas", icon: ScrollText },
   { to: "/orcamento", label: "Meu ritmo", short: "Ritmo", icon: Coins },
   { to: "/cartoes", label: "Cartões", icon: CreditCard },
-  { to: "/libertacao", label: "Libertação", short: "Liberdade", icon: HandCoins },
+  { to: "/libertacao", label: "Resgate de Paz", short: "Paz", icon: HandCoins },
+  { to: "/simulador", label: "Simulador", short: "Simular", icon: Compass },
   { to: "/multiplicador", label: "Multiplicador", short: "Multipl.", icon: TrendingUp },
   { to: "/jornada", label: "Jornada", icon: Sparkles },
 ] as const;
@@ -46,6 +51,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const transactions = useAurinStore((s) => s.transactions);
   const profileName = useAurinStore((s) => s.profile.name);
   const applyRecurring = useAurinStore((s) => s.applyRecurring);
+  const premium = useIsPremium();
 
   // Lançamentos fixos do mês entram sozinhos assim que o app abre.
   useEffect(() => {
@@ -114,7 +120,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </nav>
 
 
-          <div className="mt-auto rounded-xl border border-border bg-card p-4">
+          <div className="mt-auto space-y-3">
+            {premium ? (
+              <p className="flex items-center gap-2 rounded-xl border border-primary/30 bg-primary/10 px-3 py-2 text-xs font-semibold text-primary">
+                <Crown className="h-3.5 w-3.5" /> Premium ativo
+              </p>
+            ) : (
+              <PremiumButton className="w-full justify-center" />
+            )}
+            <div className="rounded-xl border border-border bg-card p-4">
             <p className="text-xs uppercase tracking-wide text-muted-foreground">Tesouro total</p>
             <p className="mt-1 font-display text-xl font-bold text-gold">{brl(wealth)}</p>
             <div className="mt-3 space-y-1 text-xs text-muted-foreground">
@@ -126,6 +140,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <span>Escolhas do mês</span>
                 <span className="text-foreground">{brl(month.expense)}</span>
               </p>
+            </div>
             </div>
           </div>
         </aside>
@@ -152,6 +167,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </div>
 
               <div className="flex shrink-0 items-center gap-2">
+                {!premium && <PremiumButton className="hidden sm:inline-flex lg:hidden" />}
                 <Button
                   asChild
                   variant="ghost"
@@ -183,7 +199,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       {/* Bottom nav mobile */}
       <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-sidebar/95 backdrop-blur lg:hidden">
-        <div className="grid grid-cols-7">
+        <div className="grid grid-cols-8">
           {NAV.map((item) => {
             const active = item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
             return (
@@ -205,6 +221,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       </nav>
 
+      <InstallPrompt />
       <TransactionDialog open={open} onOpenChange={setOpen} />
       {hydrated && <OnboardingDialog />}
     </div>
