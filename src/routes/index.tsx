@@ -227,7 +227,7 @@ function Dashboard() {
 
       <Card>
         <CardHeader className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
-          <CardTitle className="text-base">Regra 70/20/10 do mês</CardTitle>
+          <CardTitle className="text-base">Seu ritmo do mês (70/20/10)</CardTitle>
           <Link to="/orcamento" className="shrink-0 text-xs text-primary hover:underline">
             Ajustar
           </Link>
@@ -235,23 +235,28 @@ function Dashboard() {
         <CardContent className="grid gap-4 sm:grid-cols-3">
           {pillars.map((p) => {
             const meta = PILLARS.find((x) => x.id === p.id)!;
+            const tone = pillarTone(p.percent);
             return (
               <div key={p.id} className="min-w-0">
                 <div className="flex items-baseline justify-between gap-2">
                   <span className="truncate text-sm font-medium">{meta.label}</span>
-                  <span
-                    className={cn(
-                      "shrink-0 text-xs font-semibold",
-                      p.percent > 100 ? "text-destructive" : "text-success",
-                    )}
-                  >
-                    {p.percent.toFixed(0)}%
+                  <span className={cn("shrink-0 text-xs font-semibold", TONE_TEXT[tone])}>
+                    {TONE_LABEL[tone]}
                   </span>
                 </div>
-                <Progress value={Math.min(100, p.percent)} className="mt-2 h-2" />
+                <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-secondary">
+                  <div
+                    className={cn("h-full rounded-full transition-all duration-700", TONE_BG[tone])}
+                    style={{ width: `${Math.min(100, p.percent)}%` }}
+                  />
+                </div>
                 <p className="mt-1 text-xs text-muted-foreground">
                   {brl(p.used)} de {brl(p.target)}
                 </p>
+              </div>
+            );
+          })}
+
               </div>
             );
           })}
