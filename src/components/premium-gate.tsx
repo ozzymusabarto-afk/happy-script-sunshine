@@ -62,35 +62,34 @@ export function PremiumGate({
   const premium = useIsPremium();
   const [open, setOpen] = useState(false);
 
-  if (premium)
-    return (
-      <>
-        {children}
-        <PremiumDialog open={open} onOpenChange={setOpen} highlight={feature} />
-      </>
-    );
-
   return (
     <div className={cn("relative overflow-hidden rounded-2xl", className)}>
-      <div aria-hidden className="pointer-events-none select-none blur-[6px] saturate-50">
+      <div
+        aria-hidden={!premium}
+        className={cn(
+          !premium && "pointer-events-none select-none blur-[6px] saturate-50",
+        )}
+      >
         {children}
       </div>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="absolute inset-0 grid place-items-center bg-background/70 p-4 text-center backdrop-blur-[2px] transition-colors hover:bg-background/60"
-      >
-        <span className="max-w-sm space-y-2">
-          <span className="mx-auto grid h-11 w-11 place-items-center rounded-full bg-gold text-primary-foreground">
-            <Crown className="h-5 w-5" />
+      {!premium && (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="absolute inset-0 grid place-items-center bg-background/70 p-4 text-center backdrop-blur-[2px] transition-colors hover:bg-background/60"
+        >
+          <span className="max-w-sm space-y-2">
+            <span className="mx-auto grid h-11 w-11 place-items-center rounded-full bg-gold text-primary-foreground">
+              <Crown className="h-5 w-5" />
+            </span>
+            <span className="block font-display text-lg font-bold">{title}</span>
+            <span className="block text-sm text-muted-foreground">{description}</span>
+            <span className="mt-1 inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary">
+              <Crown className="h-3.5 w-3.5" /> Desbloquear com o Premium
+            </span>
           </span>
-          <span className="block font-display text-lg font-bold">{title}</span>
-          <span className="block text-sm text-muted-foreground">{description}</span>
-          <span className="mt-1 inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary">
-            <Crown className="h-3.5 w-3.5" /> Desbloquear com o Premium
-          </span>
-        </span>
-      </button>
+        </button>
+      )}
       <PremiumDialog open={open} onOpenChange={setOpen} highlight={feature} />
     </div>
   );
