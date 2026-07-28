@@ -124,72 +124,42 @@ function Dashboard() {
 
   return (
     <div className="space-y-6">
-      <section className="relative overflow-hidden rounded-2xl border border-border bg-card p-5 sm:p-7">
-        <div
-          className="pointer-events-none absolute inset-0"
-          style={{ background: "var(--gradient-temple)" }}
+      <MorningRitual
+        goals={goals}
+        wealth={wealth}
+        freedomMonths={freedomMonths}
+        titheDone={tithePercent >= 99.5}
+        titheGap={Math.max(0, titheTarget - month.tithe)}
+        debtRemaining={debts.remaining}
+        monthlyPace={monthlyPace}
+      />
+
+      <div className="grid gap-4 sm:grid-cols-3">
+        <StatTile
+          icon={<ArrowUpRight className="h-4 w-4" />}
+          label="Entrou este mês"
+          value={brl(month.income)}
+          tone="success"
         />
-        <div className="relative grid gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
-          <div className="min-w-0">
-            <p className="text-xs uppercase tracking-[0.2em] text-primary">Tesouro Total</p>
-            <p className="mt-2 font-display text-4xl font-extrabold text-gold sm:text-5xl">
-              {brl(wealth)}
-            </p>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Cofres, investimentos e ativos fixos reunidos sob a proteção de Arkad.
-            </p>
+        <StatTile
+          icon={<ArrowDownRight className="h-4 w-4" />}
+          label="Escolhas do mês"
+          value={brl(month.expense)}
+          tone="neutral"
+        />
+        <StatTile
+          icon={<Coins className="h-4 w-4" />}
+          label="Ouro guardado (10%)"
+          value={brl(month.tithe)}
+          tone="gold"
+          hint={
+            tithePercent >= 99.5
+              ? "Você se pagou primeiro este mês."
+              : `Faltam ${brl(Math.max(0, titheTarget - month.tithe))} para os 10%.`
+          }
+        />
+      </div>
 
-            <div className="mt-6 grid gap-3 sm:grid-cols-2">
-              <StatTile
-                icon={<ArrowUpRight className="h-4 w-4" />}
-                label="Ouro Entrada (mês)"
-                value={brl(month.income)}
-                tone="success"
-              />
-              <StatTile
-                icon={<ArrowDownRight className="h-4 w-4" />}
-                label="Ouro Saída (mês)"
-                value={brl(month.expense)}
-                tone="destructive"
-              />
-            </div>
-          </div>
-
-          <Card className="min-w-0 border-primary/30 bg-background/60">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2 text-base">
-                <Coins className="h-4 w-4 text-primary" />O Dízimo de Arkad
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="font-display text-2xl font-bold">
-                {brl(month.tithe)}{" "}
-                <span className="text-sm font-normal text-muted-foreground">
-                  de {brl(titheTarget)}
-                </span>
-              </p>
-              <Progress value={tithePercent} className="mt-3 h-2" />
-              <p className="mt-3 text-xs text-muted-foreground">
-                {tithePercent >= 99.5
-                  ? "Você se pagou primeiro este mês. O ouro flui para quem o guarda."
-                  : `Faltam ${brl(Math.max(0, titheTarget - month.tithe))} para cumprir a primeira lei.`}
-              </p>
-              <Badge
-                variant="outline"
-                className={cn(
-                  "mt-4",
-                  tithePercent >= 99.5
-                    ? "border-success/40 text-success"
-                    : "border-warning/40 text-warning",
-                )}
-              >
-                <ShieldCheck className="mr-1 h-3 w-3" />
-                {tithePercent >= 99.5 ? "Lei cumprida" : "Em progresso"}
-              </Badge>
-            </CardContent>
-          </Card>
-        </div>
-      </section>
 
       <div className="grid gap-4 lg:grid-cols-3">
         <Card className="lg:col-span-2">
