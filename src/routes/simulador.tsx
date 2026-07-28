@@ -99,6 +99,7 @@ function SimulatorPage() {
         feature="Simulador de Decisões"
         title="Veja o futuro antes de decidir"
         description="Descubra quantos dias de paz cada compra custa e o que ela valeria guardada."
+        className="max-h-[560px]"
       >
         <div className="space-y-6">
           <Card>
