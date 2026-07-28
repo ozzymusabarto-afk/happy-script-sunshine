@@ -1,12 +1,20 @@
 import { useMemo } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { AlertTriangle, CheckCircle2, RotateCcw, Scale } from "lucide-react";
+import { CheckCircle2, RotateCcw, Scale, Sparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Slider } from "@/components/ui/slider";
 import { PILLARS, brl, type PillarId } from "@/lib/aurin";
+import {
+  TONE_BG,
+  TONE_LABEL,
+  TONE_TEXT,
+  monthMood,
+  pillarMessage,
+  pillarTone,
+} from "@/lib/tone";
 import { cn } from "@/lib/utils";
 import {
   budgetRows,
@@ -35,23 +43,9 @@ export const Route = createFileRoute("/orcamento")({
   component: BudgetPage,
 });
 
-function toneFor(percent: number) {
-  if (percent > 100) return "destructive" as const;
-  if (percent >= 80) return "warning" as const;
-  return "success" as const;
-}
-
-const toneText = {
-  destructive: "text-destructive",
-  warning: "text-warning",
-  success: "text-success",
-} as const;
-
-const toneBg = {
-  destructive: "bg-destructive",
-  warning: "bg-warning",
-  success: "bg-success",
-} as const;
+const toneFor = pillarTone;
+const toneText = TONE_TEXT;
+const toneBg = TONE_BG;
 
 function BudgetPage() {
   const transactions = useAurinStore((s) => s.transactions);
@@ -81,11 +75,11 @@ function BudgetPage() {
     <div className="space-y-6">
       <header>
         <h1 className="font-display text-2xl font-extrabold sm:text-3xl">
-          Orçamento — A Regra 70/20/10
+          Seu ritmo do mês — 70/20/10
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          "Não confunda desejos necessários com despesas necessárias." Divida cada moeda que entra
-          entre os três pilares babilônicos.
+          Aqui não há cobrança: só clareza. Cada moeda que entra tem um lugar combinado, e sempre
+          dá para reencontrar o ritmo.
         </p>
       </header>
 
@@ -103,8 +97,8 @@ function BudgetPage() {
                       {pillarSplit[pillar.id as PillarId]}% da renda
                     </p>
                   </div>
-                  <span className={cn("shrink-0 text-sm font-bold", toneText[tone])}>
-                    {data.percent.toFixed(0)}%
+                  <span className={cn("shrink-0 text-xs font-semibold", toneText[tone])}>
+                    {TONE_LABEL[tone]}
                   </span>
                 </div>
 
@@ -112,10 +106,7 @@ function BudgetPage() {
                   {brl(data.target)}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Usado: {brl(data.used)} ·{" "}
-                  {data.remaining >= 0
-                    ? `sobram ${brl(data.remaining)}`
-                    : `excedeu ${brl(-data.remaining)}`}
+                  {brl(data.used)} usados · {data.percent.toFixed(0)}% do combinado
                 </p>
 
                 <div className="mt-3 h-2.5 w-full overflow-hidden rounded-full bg-secondary">
@@ -125,7 +116,10 @@ function BudgetPage() {
                   />
                 </div>
 
-                <p className="mt-3 text-xs text-muted-foreground">{pillar.description}</p>
+                <p className="mt-3 text-xs text-muted-foreground">
+                  {pillarMessage(tone, pillar.label, data.remaining, brl)}
+                </p>
+                <p className="mt-1.5 text-xs text-muted-foreground/80">{pillar.description}</p>
 
                 <div className="mt-4 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
                   <Slider
@@ -150,13 +144,14 @@ function BudgetPage() {
         <CardContent className="grid gap-5 pt-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
           <div className="min-w-0">
             <p className="text-xs uppercase tracking-wide text-muted-foreground">
-              Renda do mês distribuída
+              O que entrou este mês
             </p>
             <p className="mt-1 font-display text-3xl font-extrabold text-gold">
               {brl(month.income)}
             </p>
             <p className="mt-2 text-sm text-muted-foreground">
-              Gasto total: {brl(month.expense)} · Ouro guardado: {brl(month.tithe)}
+              Suas escolhas somaram {brl(month.expense)} e seu ouro cresceu {brl(month.tithe)} este
+              mês.
             </p>
             {!isDefault && (
               <Button variant="outline" size="sm" className="mt-4" onClick={resetPillarSplit}>
@@ -183,13 +178,11 @@ function BudgetPage() {
             })}
             <p className="flex items-start gap-2 pt-1 text-xs text-muted-foreground">
               {pillars.some((p) => p.percent > 100) ? (
-                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
+                <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
               ) : (
                 <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-success" />
               )}
-              {pillars.some((p) => p.percent > 100)
-                ? "Um pilar estourou. Reequilibre antes que o ouro do futuro seja consumido."
-                : "Seus três pilares estão equilibrados. Continue assim."}
+              {monthMood(pillars.some((p) => p.percent > 100), month.tithe > 0)}
             </p>
           </div>
         </CardContent>
@@ -199,7 +192,7 @@ function BudgetPage() {
         <CardHeader className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
           <CardTitle className="flex items-center gap-2 text-base">
             <Scale className="h-4 w-4 text-primary" />
-            Custo de vida por categoria
+            Onde a vida acontece
           </CardTitle>
           <span
             className={cn(
@@ -250,9 +243,9 @@ function BudgetPage() {
       </Card>
 
       <p className="text-xs text-muted-foreground">
-        Gastos com dívidas entram no pilar Reservas & Dívidas — acompanhe a quitação na{" "}
+        O pilar Reservas & Dívidas é o que acelera a sua libertação — acompanhe na{" "}
         <Link to="/dividas" className="text-primary underline-offset-4 hover:underline">
-          aba Dívidas
+          Rota de Libertação
         </Link>
         .
       </p>
