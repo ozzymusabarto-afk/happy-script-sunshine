@@ -63,7 +63,7 @@ export function PremiumGate({
   const [open, setOpen] = useState(false);
 
   return (
-    <div className={cn("relative overflow-hidden rounded-2xl", className)}>
+    <div className={cn("relative rounded-2xl", !premium && "overflow-hidden", !premium && className)}>
       <div
         aria-hidden={!premium}
         className={cn(
