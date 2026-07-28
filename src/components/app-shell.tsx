@@ -113,7 +113,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 </div>
               </div>
 
-              <Button onClick={() => setOpen(true)} className="shrink-0 bg-gold text-primary-foreground shadow-gold hover:opacity-90">
+              <Button aria-label="Nova Transação" onClick={() => setOpen(true)} className="shrink-0 bg-gold text-primary-foreground shadow-gold hover:opacity-90">
                 <Plus className="h-4 w-4" />
                 <span className="hidden sm:inline">Nova Transação</span>
               </Button>
