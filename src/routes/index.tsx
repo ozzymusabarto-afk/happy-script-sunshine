@@ -195,27 +195,34 @@ function Dashboard() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-primary/25">
           <CardHeader className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
             <CardTitle className="flex items-center gap-2 text-base">
               <HandCoins className="h-4 w-4 text-primary" />
-              Dívidas
+              {LABELS.debts}
             </CardTitle>
             <Link to="/dividas" className="shrink-0 text-xs text-primary hover:underline">
-              Gerenciar
+              Ver rota
             </Link>
           </CardHeader>
           <CardContent>
-            <p className="font-display text-2xl font-extrabold text-destructive">
-              {brl(debts.remaining)}
+            <p className="font-display text-2xl font-extrabold text-gold">
+              {debts.progress.toFixed(0)}% livre
             </p>
             <p className="text-xs text-muted-foreground">
-              {debts.progress.toFixed(0)}% quitado ·{" "}
-              {debts.monthsToFreedom > 0 ? `${debts.monthsToFreedom} meses restantes` : "sem dívidas"}
+              {debts.remaining > 0
+                ? `Faltam ${brl(debts.remaining)} para soltar a última corrente.`
+                : "Nenhuma corrente presa a você."}
             </p>
             <Progress value={Math.min(100, debts.progress)} className="mt-3 h-2" />
+            <p className="mt-3 text-xs text-muted-foreground">
+              {debts.monthsToFreedom > 0
+                ? `No ritmo atual, liberdade em ${debts.monthsToFreedom} meses.`
+                : "Você já está livre — siga construindo."}
+            </p>
           </CardContent>
         </Card>
+
       </div>
 
       <Card>
