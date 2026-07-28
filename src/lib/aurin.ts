@@ -322,3 +322,65 @@ export const BADGES: BadgeDef[] = [
     description: "Registrou um ativo fixo ou fonte de renda passiva.",
   },
 ];
+
+/* ----------------------------- ciclos de fatura ---------------------------- */
+
+const pad2 = (n: number) => String(n).padStart(2, "0");
+
+export const clampDay = (year: number, month0: number, day: number) =>
+  Math.min(day, new Date(year, month0 + 1, 0).getDate());
+
+/**
+ * Define em qual fatura uma compra cai: se a data for depois do fechamento,
+ * ela entra na fatura do mês seguinte.
+ */
+export function invoiceCycleFor(card: Pick<CreditCard, "closingDay" | "dueDay">, isoDate: string) {
+  const [y, m, d] = isoDate.split("-").map(Number);
+  let month0 = m - 1;
+  let year = y;
+  if (d > card.closingDay) month0 += 1;
+  if (month0 > 11) {
+    month0 -= 12;
+    year += 1;
+  }
+  const key = `${year}-${pad2(month0 + 1)}`;
+  const due = `${year}-${pad2(month0 + 1)}-${pad2(clampDay(year, month0, card.dueDay))}`;
+  return { key, due, year, month0 };
+}
+
+export function currentInvoiceKey(card: Pick<CreditCard, "closingDay" | "dueDay">, base = new Date()) {
+  const iso = `${base.getFullYear()}-${pad2(base.getMonth() + 1)}-${pad2(base.getDate())}`;
+  return invoiceCycleFor(card, iso).key;
+}
+
+export function nextInvoiceKey(key: string) {
+  const [y, m] = key.split("-").map(Number);
+  const d = new Date(y, m, 1);
+  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}`;
+}
+
+export function dueDateFor(card: Pick<CreditCard, "dueDay">, key: string) {
+  const [y, m] = key.split("-").map(Number);
+  return `${y}-${pad2(m)}-${pad2(clampDay(y, m - 1, card.dueDay))}`;
+}
+
+export function daysUntil(iso: string) {
+  const target = new Date(`${iso}T12:00:00`).getTime();
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12).getTime();
+  return Math.round((target - today) / 86400000);
+}
+
+/** Adiciona meses a uma data ISO preservando o dia quando possível. */
+export function addMonthsIso(iso: string, months: number) {
+  const [y, m, d] = iso.split("-").map(Number);
+  const date = new Date(y, m - 1 + months, 1);
+  const day = clampDay(date.getFullYear(), date.getMonth(), d);
+  return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(day)}`;
+}
+
+export const DEBT_QUOTES = [
+  "Onde há determinação, sempre se encontra um caminho — inclusive para sair das dívidas.",
+  "Pague suas dívidas com determinação crescente; cada credor pago é uma corrente a menos.",
+  "Melhor pagar pouco e sempre do que prometer muito e nunca cumprir.",
+];
