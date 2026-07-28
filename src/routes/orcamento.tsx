@@ -31,7 +31,7 @@ export const Route = createFileRoute("/orcamento")({
       {
         name: "description",
         content:
-          "Divida sua renda em 70% custo de vida, 20% reservas e dívidas e 10% ouro, com alertas por pilar e categoria.",
+          "Divida sua vida em 70% do dia a dia, 20% de reservas e Resgate de Paz e 10% de Moedas do Futuro.",
       },
       { property: "og:title", content: "Orçamento 70/20/10 | AURIN" },
       {

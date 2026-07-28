@@ -521,6 +521,12 @@ export const useAurinStore = create<AurinState>()(
           recurring: prev.recurring ?? [],
           hasOnboarded: prev.hasOnboarded ?? Boolean(prev.transactions?.length),
           plan: prev.plan ?? "free",
+          transactions: (prev.transactions ?? []).map((t: Transaction) =>
+            t.category === "Dívidas" ? { ...t, category: "Resgate de Paz" } : t,
+          ),
+          categories: (prev.categories ?? []).map((c: string) =>
+            c === "Dívidas" ? "Resgate de Paz" : c,
+          ),
           celebration: null,
         } as AurinState;
       },
