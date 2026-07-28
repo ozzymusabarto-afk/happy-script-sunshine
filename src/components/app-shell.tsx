@@ -140,7 +140,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 </span>
                 <div className="min-w-0">
                   <p className="truncate font-display text-sm font-bold sm:text-base">
-                    {level.title}
+                    {profileName ? `${profileName} · ${level.title}` : level.title}
                   </p>
                   <div className="mt-1 flex items-center gap-2">
                     <Progress value={level.progress} className="h-1.5 w-28 sm:w-44" />
@@ -151,12 +151,30 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 </div>
               </div>
 
-              <Button aria-label="Nova Transação" onClick={() => setOpen(true)} className="shrink-0 bg-gold text-primary-foreground shadow-gold hover:opacity-90">
-                <Plus className="h-4 w-4" />
-                <span className="hidden sm:inline">Nova Transação</span>
-              </Button>
+              <div className="flex shrink-0 items-center gap-2">
+                <Button
+                  asChild
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Meus dados"
+                  className="lg:hidden"
+                >
+                  <Link to="/ajustes">
+                    <Settings className="h-4 w-4" />
+                  </Link>
+                </Button>
+                <Button
+                  aria-label="Nova Transação"
+                  onClick={() => setOpen(true)}
+                  className="bg-gold text-primary-foreground shadow-gold hover:opacity-90"
+                >
+                  <Plus className="h-4 w-4" />
+                  <span className="hidden sm:inline">Nova Transação</span>
+                </Button>
+              </div>
             </div>
           </header>
+
 
           <main className="min-w-0 flex-1 px-4 pb-24 pt-5 sm:px-6 lg:pb-10">{children}</main>
           <ImpactModal />
