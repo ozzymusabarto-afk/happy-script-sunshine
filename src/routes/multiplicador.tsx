@@ -68,6 +68,10 @@ function MultiplierPage() {
   const assets = useAurinStore((s) => s.assets);
   const transactions = useAurinStore((s) => s.transactions);
   const addGoal = useAurinStore((s) => s.addGoal);
+  const premium = useIsPremium();
+  const [salesOpen, setSalesOpen] = useState(false);
+  const dreamCount = goals.filter((g) => g.kind !== "tesouro").length;
+  const lockedDreams = !premium && dreamCount >= FREE_LIMITS.dreams;
   const removeGoal = useAurinStore((s) => s.removeGoal);
   const depositToGoal = useAurinStore((s) => s.depositToGoal);
   const updateGoal = useAurinStore((s) => s.updateGoal);
@@ -127,10 +131,11 @@ function MultiplierPage() {
           <h2 className="font-display text-lg font-bold">Cofres do Tesouro</h2>
           <Button
             size="sm"
-            onClick={() => setGoalOpen(true)}
+            onClick={() => (lockedDreams ? setSalesOpen(true) : setGoalOpen(true))}
             className="shrink-0 bg-gold text-primary-foreground hover:opacity-90"
           >
-            <Plus className="h-4 w-4" /> Novo cofre
+            {lockedDreams ? <Crown className="h-4 w-4" /> : <Plus className="h-4 w-4" />} Novo
+            cofre
           </Button>
         </div>
 
@@ -243,6 +248,11 @@ function MultiplierPage() {
       </section>
 
       <GoalDialog open={goalOpen} onOpenChange={setGoalOpen} onSubmit={addGoal} />
+      <PremiumDialog
+        open={salesOpen}
+        onOpenChange={setSalesOpen}
+        highlight="Cofres de sonho ilimitados"
+      />
       <EditGoalDialog
         goalId={editGoalId}
         onClose={() => setEditGoalId(null)}

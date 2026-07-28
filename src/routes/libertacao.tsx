@@ -1,7 +1,10 @@
 import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { ChainProgress } from "@/components/journey-visuals";
-import { HandCoins, Plus, Quote, Trash2 } from "lucide-react";
+import { Crown, HandCoins, Plus, Quote, Trash2 } from "lucide-react";
+import { PremiumDialog } from "@/components/premium-dialog";
+import { useIsPremium } from "@/components/premium-gate";
+import { FREE_LIMITS } from "@/lib/plan";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -55,6 +58,10 @@ function DebtsPage() {
   const debts = useAurinStore((s) => s.debts);
   const payDebt = useAurinStore((s) => s.payDebt);
   const removeDebt = useAurinStore((s) => s.removeDebt);
+  const premium = useIsPremium();
+  const [salesOpen, setSalesOpen] = useState(false);
+  const activeRescues = debts.filter((d) => d.principal - d.paid > 0).length;
+  const lockedRescues = !premium && activeRescues >= FREE_LIMITS.rescues;
 
   const [open, setOpen] = useState(false);
   const [payTarget, setPayTarget] = useState<Debt | null>(null);
@@ -113,9 +120,9 @@ function DebtsPage() {
         </div>
         <Button
           className="shrink-0 bg-gold text-primary-foreground hover:opacity-90"
-          onClick={() => setOpen(true)}
+          onClick={() => (lockedRescues ? setSalesOpen(true) : setOpen(true))}
         >
-          <Plus className="h-4 w-4" />
+          {lockedRescues ? <Crown className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
           <span className="hidden sm:inline">Novo resgate</span>
         </Button>
       </header>
