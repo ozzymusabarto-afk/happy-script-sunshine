@@ -325,8 +325,19 @@ export const useAurinStore = create<AurinState>()(
 
       addGoal: (goal) => set((state) => ({ goals: [...state.goals, { ...goal, id: uid() }], xp: state.xp + 25 })),
 
+      updateGoal: (id, patch) =>
+        set((state) => ({ goals: state.goals.map((g) => (g.id === id ? { ...g, ...patch } : g)) })),
+
+      withdrawFromGoal: (id, amount) =>
+        set((state) => ({
+          goals: state.goals.map((g) =>
+            g.id === id ? { ...g, balance: Math.max(0, g.balance - amount) } : g,
+          ),
+        })),
+
       removeGoal: (id) =>
         set((state) => ({ goals: state.goals.filter((g) => g.id !== id || g.id === TREASURY_GOAL_ID) })),
+
 
       depositToGoal: (id, amount) =>
         set((state) => {
