@@ -1,17 +1,6 @@
 import { useMemo } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
-  Area,
-  AreaChart,
-  Cell,
-  Pie,
-  PieChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
-import {
   ArrowDownRight,
   ArrowUpRight,
   Coins,
@@ -22,12 +11,13 @@ import {
   Sparkles,
 } from "lucide-react";
 
+import { FreedomMeter, JourneyTrail, VaultJar } from "@/components/journey-visuals";
+import { monthsOfFreedom } from "@/lib/impact";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import {
   brl,
-  brlCompact,
   formatDate,
   monthLabel,
   quoteOfTheDay,
@@ -35,7 +25,6 @@ import {
 } from "@/lib/aurin";
 import {
   cardSummary,
-  categoryBreakdown,
   currentMonthKey,
   debtSummary,
   flowSeries,
@@ -66,16 +55,6 @@ export const Route = createFileRoute("/")({
   component: Dashboard,
 });
 
-const PIE_COLORS = [
-  "var(--chart-1)",
-  "var(--chart-2)",
-  "var(--chart-3)",
-  "var(--chart-4)",
-  "var(--chart-5)",
-  "var(--primary-glow)",
-  "var(--muted-foreground)",
-];
-
 function Dashboard() {
   const transactions = useAurinStore((s) => s.transactions);
   const goals = useAurinStore((s) => s.goals);
@@ -92,7 +71,25 @@ function Dashboard() {
     () => flowSeries(transactions).map((d) => ({ ...d, mes: monthLabel(d.key) })),
     [transactions],
   );
-  const pie = useMemo(() => categoryBreakdown(transactions, key), [transactions, key]);
+  const trail = useMemo(
+    () =>
+      flow.map((d) => ({
+        key: d.key,
+        label: d.mes,
+        saved: d.tesouro,
+        balance: d.entrada - d.saida,
+      })),
+    [flow],
+  );
+  const freedomMonths = useMemo(() => monthsOfFreedom(wealth, transactions), [wealth, transactions]);
+  const vaults = useMemo(
+    () =>
+      [...goals]
+        .sort((a, b) => b.balance / (b.target || 1) - a.balance / (a.target || 1))
+        .slice(0, 3)
+        .map((g) => ({ id: g.id, name: g.name, balance: g.balance, target: g.target })),
+    [goals],
+  );
   const recent = useMemo(
     () => [...transactions].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 8),
     [transactions],
@@ -302,118 +299,30 @@ function Dashboard() {
       </Card>
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
-        <Card className="min-w-0">
+        <Card className="min-w-0 self-start">
           <CardHeader>
-            <CardTitle className="text-base">Fluxo do Tesouro</CardTitle>
+            <CardTitle className="text-base">Trilha da Jornada</CardTitle>
           </CardHeader>
-          <CardContent className="h-72">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={flow} margin={{ left: 4, right: 8, top: 8 }}>
-                <defs>
-                  <linearGradient id="gIn" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="var(--success)" stopOpacity={0.55} />
-                    <stop offset="100%" stopColor="var(--success)" stopOpacity={0} />
-                  </linearGradient>
-                  <linearGradient id="gOut" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="var(--destructive)" stopOpacity={0.45} />
-                    <stop offset="100%" stopColor="var(--destructive)" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <XAxis
-                  dataKey="mes"
-                  stroke="var(--muted-foreground)"
-                  tickLine={false}
-                  axisLine={false}
-                  fontSize={12}
-                />
-                <YAxis
-                  stroke="var(--muted-foreground)"
-                  tickLine={false}
-                  axisLine={false}
-                  fontSize={12}
-                  width={60}
-                  tickFormatter={(v: number) => brlCompact(v)}
-                />
-                <Tooltip
-                  formatter={(v: number) => brl(v)}
-                  contentStyle={{
-                    background: "var(--popover)",
-                    border: "1px solid var(--border)",
-                    borderRadius: 12,
-                    color: "var(--popover-foreground)",
-                  }}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="entrada"
-                  stroke="var(--success)"
-                  fill="url(#gIn)"
-                  strokeWidth={2}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="saida"
-                  stroke="var(--destructive)"
-                  fill="url(#gOut)"
-                  strokeWidth={2}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
+          <CardContent>
+            <JourneyTrail stops={trail} />
           </CardContent>
         </Card>
 
-        <Card className="min-w-0">
-          <CardHeader>
-            <CardTitle className="text-base">Divisão das Moedas</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="h-52">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={pie}
-                    dataKey="value"
-                    nameKey="category"
-                    innerRadius={55}
-                    outerRadius={85}
-                    paddingAngle={3}
-                    stroke="none"
-                  >
-                    {pie.map((entry, i) => (
-                      <Cell key={entry.category} fill={PIE_COLORS[i % PIE_COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    formatter={(v: number) => brl(v)}
-                    contentStyle={{
-                      background: "var(--popover)",
-                      border: "1px solid var(--border)",
-                      borderRadius: 12,
-                      color: "var(--popover-foreground)",
-                    }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-            <ul className="mt-4 space-y-2">
-              {pie.slice(0, 5).map((entry, i) => (
-                <li key={entry.category} className="flex items-center gap-2 text-sm">
-                  <span
-                    className="h-2.5 w-2.5 shrink-0 rounded-full"
-                    style={{ background: PIE_COLORS[i % PIE_COLORS.length] }}
-                  />
-                  <span className="min-w-0 flex-1 truncate text-muted-foreground">
-                    {entry.category}
-                  </span>
-                  <span className="shrink-0 font-medium">{brl(entry.value)}</span>
-                </li>
-              ))}
-              {pie.length === 0 && (
-                <li className="text-sm text-muted-foreground">Nenhuma saída registrada no mês.</li>
-              )}
-            </ul>
-          </CardContent>
-        </Card>
+        <div className="min-w-0 space-y-4">
+          <FreedomMeter months={freedomMonths} wealth={wealth} />
+          <div className="grid gap-3">
+            {vaults.map((item, i) => (
+              <VaultJar key={item.id} item={item} delay={i * 0.08} />
+            ))}
+            {vaults.length === 0 && (
+              <Card>
+                <CardContent className="pt-6 text-sm text-muted-foreground">
+                  Crie um cofre no Multiplicador para ver seus sonhos enchendo de ouro.
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </div>
       </div>
 
       <Card>

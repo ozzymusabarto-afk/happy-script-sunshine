@@ -172,3 +172,94 @@
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-panel);
 }
+
+/* ------------------------- jornada: recompensa visual ------------------------ */
+
+@keyframes aurin-fill {
+  from {
+    height: var(--fill-from, 0%);
+  }
+  to {
+    height: var(--fill-to, 0%);
+  }
+}
+
+@keyframes aurin-shimmer {
+  0% {
+    opacity: 0.35;
+    transform: translateY(2px);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-2px);
+  }
+  100% {
+    opacity: 0.35;
+    transform: translateY(2px);
+  }
+}
+
+@keyframes aurin-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes aurin-spark {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0.6);
+  }
+  25% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-70px) scale(1.1);
+  }
+}
+
+@keyframes aurin-pulse-gold {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--primary) 45%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 12px color-mix(in oklab, var(--primary) 0%, transparent);
+  }
+}
+
+@utility vault-fill {
+  animation: aurin-fill 1.1s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@utility gold-shimmer {
+  animation: aurin-shimmer 2.4s ease-in-out infinite;
+}
+
+@utility reveal-step {
+  animation: aurin-reveal 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@utility gold-spark {
+  animation: aurin-spark 1.6s ease-out infinite;
+}
+
+@utility pulse-gold {
+  animation: aurin-pulse-gold 1.4s ease-out 2;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vault-fill,
+  .gold-shimmer,
+  .reveal-step,
+  .gold-spark,
+  .pulse-gold {
+    animation: none !important;
+  }
+}

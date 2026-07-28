@@ -1,4 +1,6 @@
 import { useMemo, useState } from "react";
+
+import { ImpactModal } from "@/components/impact-modal";
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
   Coins,
@@ -125,6 +127,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </header>
 
           <main className="min-w-0 flex-1 px-4 pb-24 pt-5 sm:px-6 lg:pb-10">{children}</main>
+          <ImpactModal />
         </div>
       </div>
 

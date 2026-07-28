@@ -1,13 +1,5 @@
 import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import {
-  Area,
-  AreaChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
 import { Building2, Plus, ShieldCheck, Sparkles, Target, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -276,6 +268,22 @@ function CompoundSimulator() {
 
   const last = data[data.length - 1];
 
+  const checkpoints = useMemo(() => {
+    const marks = [1, 2, 3, 4]
+      .map((n) => Math.max(1, Math.round((years * n) / 4)))
+      .filter((v, i, arr) => arr.indexOf(v) === i);
+    const max = last.total || 1;
+    return marks.map((ano) => {
+      const row = data[Math.min(ano, data.length - 1)];
+      return {
+        ano,
+        total: row.total,
+        fill: Math.max(8, (row.total / max) * 100),
+        freedom: row.total / (monthly > 0 ? monthly * 4 : 3000),
+      };
+    });
+  }, [data, years, last.total, monthly]);
+
   return (
     <Card>
       <CardHeader>
@@ -335,58 +343,46 @@ function CompoundSimulator() {
           </div>
         </div>
 
-        <div className="h-72 min-w-0">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={data} margin={{ left: 12, right: 8, top: 8 }}>
-              <defs>
-                <linearGradient id="gTotal" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--primary)" stopOpacity={0.6} />
-                  <stop offset="100%" stopColor="var(--primary)" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <XAxis
-                dataKey="ano"
-                stroke="var(--muted-foreground)"
-                tickLine={false}
-                axisLine={false}
-                fontSize={12}
-                tickFormatter={(v: number) => `${v}a`}
-              />
-              <YAxis
-                stroke="var(--muted-foreground)"
-                tickLine={false}
-                axisLine={false}
-                fontSize={12}
-                width={72}
-                tickFormatter={(v: number) => brlCompact(v)}
-              />
-              <Tooltip
-                formatter={(v: number) => brl(v)}
-                labelFormatter={(l) => `Ano ${l}`}
-                contentStyle={{
-                  background: "var(--popover)",
-                  border: "1px solid var(--border)",
-                  borderRadius: 12,
-                  color: "var(--popover-foreground)",
-                }}
-              />
-              <Area
-                type="monotone"
-                dataKey="total"
-                stroke="var(--primary)"
-                fill="url(#gTotal)"
-                strokeWidth={2}
-              />
-              <Area
-                type="monotone"
-                dataKey="aportes"
-                stroke="var(--accent)"
-                fill="transparent"
-                strokeWidth={2}
-                strokeDasharray="4 4"
-              />
-            </AreaChart>
-          </ResponsiveContainer>
+        <div className="min-w-0">
+          <p className="text-xs uppercase tracking-wide text-muted-foreground">
+            Seus vasos de ouro ao longo do tempo
+          </p>
+          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {checkpoints.map((c, i) => (
+              <div
+                key={c.ano}
+                className="reveal-step rounded-xl border border-border bg-secondary/40 p-3 text-center"
+                style={{ animationDelay: `${i * 0.08}s` }}
+              >
+                <p className="text-xs font-semibold text-muted-foreground">Ano {c.ano}</p>
+                <div className="relative mx-auto mt-2 h-24 w-14 overflow-hidden rounded-b-[1.6rem] rounded-t-lg border-2 border-border">
+                  <span
+                    className="vault-fill absolute inset-x-0 bottom-0 bg-gold"
+                    style={
+                      {
+                        height: `${c.fill}%`,
+                        "--fill-from": "0%",
+                        "--fill-to": `${c.fill}%`,
+                        animationDelay: `${i * 0.08}s`,
+                      } as React.CSSProperties
+                    }
+                  />
+                </div>
+                <p className="mt-2 font-display text-sm font-bold text-gold">
+                  {brlCompact(c.total)}
+                </p>
+                <p className="text-[11px] text-muted-foreground">
+                  {c.freedom.toFixed(0)} meses livres
+                </p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-4 rounded-xl border border-accent/30 bg-accent/10 p-3 text-sm">
+            <span className="font-semibold text-accent">Juros trabalhando por você:</span>{" "}
+            {last.aportes > 0
+              ? `cada R$ 1 aportado virou R$ ${(last.total / last.aportes).toFixed(2)}.`
+              : "aumente seus aportes para ver o efeito."}
+          </div>
         </div>
       </CardContent>
     </Card>
