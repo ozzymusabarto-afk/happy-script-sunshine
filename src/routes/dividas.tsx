@@ -1,14 +1,6 @@
 import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+import { ChainProgress } from "@/components/journey-visuals";
 import { HandCoins, Plus, Quote, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -73,6 +65,32 @@ function DebtsPage() {
   const avalanche = useMemo(() => simulatePayoff(debts, budget, "avalanche"), [debts, budget]);
   const snowball = useMemo(() => simulatePayoff(debts, budget, "snowball"), [debts, budget]);
   const chosen = strategy === "avalanche" ? avalanche : snowball;
+
+  const milestones = useMemo(() => {
+    const series = chosen.series ?? [];
+    if (series.length === 0) return [];
+    const start = series[0]?.saldo ?? 0;
+    const picks = [0, 0.25, 0.5, 0.75, 1].map((f) =>
+      Math.min(series.length - 1, Math.round(f * (series.length - 1))),
+    );
+    return picks
+      .filter((v, i, arr) => arr.indexOf(v) === i)
+      .map((i) => {
+        const row = series[i];
+        return {
+          month: row.month,
+          saldo: row.saldo,
+          freed: start > 0 ? ((start - row.saldo) / start) * 100 : 100,
+        };
+      });
+  }, [chosen]);
+
+  const freedomDate = useMemo(() => {
+    if (chosen.months <= 0) return "Você já está livre";
+    const d = new Date();
+    d.setMonth(d.getMonth() + chosen.months);
+    return `Livre em ${d.toLocaleDateString("pt-BR", { month: "long", year: "numeric" })}`;
+  }, [chosen.months]);
 
   if (!hydrated) return null;
 
@@ -231,50 +249,34 @@ function DebtsPage() {
             />
           </div>
 
-          <div className="h-64 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={chosen.series} margin={{ top: 8, right: 8, left: -12, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="debtFill" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="var(--destructive)" stopOpacity={0.5} />
-                    <stop offset="100%" stopColor="var(--destructive)" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                <XAxis
-                  dataKey="month"
-                  tickLine={false}
-                  axisLine={false}
-                  fontSize={11}
-                  stroke="var(--muted-foreground)"
-                />
-                <YAxis
-                  tickFormatter={(v) => brlCompact(Number(v))}
-                  tickLine={false}
-                  axisLine={false}
-                  fontSize={11}
-                  width={64}
-                  stroke="var(--muted-foreground)"
-                />
-                <Tooltip
-                  formatter={(v: number) => brl(Number(v))}
-                  labelFormatter={(l) => `Mês ${l}`}
-                  contentStyle={{
-                    background: "var(--card)",
-                    border: "1px solid var(--border)",
-                    borderRadius: 12,
-                  }}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="saldo"
-                  stroke="var(--destructive)"
-                  fill="url(#debtFill)"
-                  strokeWidth={2}
-                  name="Saldo devedor"
-                />
-              </AreaChart>
-            </ResponsiveContainer>
+          <div className="rounded-xl border border-border bg-secondary/40 p-4">
+            <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
+              <p className="text-sm font-semibold">Correntes se rompendo</p>
+              <span className="font-display text-sm font-bold text-gold">
+                {freedomDate}
+              </span>
+            </div>
+            <div className="mt-4 space-y-4">
+              {milestones.map((m, i) => (
+                <div
+                  key={m.month}
+                  className="reveal-step"
+                  style={{ animationDelay: `${i * 0.08}s` }}
+                >
+                  <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 text-xs text-muted-foreground">
+                    <span>
+                      {m.month === 0 ? "Hoje" : `Mês ${m.month}`}
+                      {m.month > 0 && m.saldo <= 0 ? " — livre!" : ""}
+                    </span>
+                    <span className="font-semibold text-foreground">{brlCompact(m.saldo)}</span>
+                  </div>
+                  <ChainProgress percent={m.freed} className="mt-1.5" />
+                </div>
+              ))}
+            </div>
+            <p className="mt-4 text-sm text-muted-foreground">
+              Cada elo dourado é um pedaço da sua liberdade reconquistada.
+            </p>
           </div>
 
           <p className="text-xs text-muted-foreground">

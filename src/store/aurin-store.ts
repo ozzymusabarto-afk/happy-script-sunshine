@@ -33,6 +33,20 @@ const uid = () => `${Date.now().toString(36)}-${Math.random().toString(36).slice
 
 export type NewTransaction = Omit<Transaction, "id"> & { installments?: number };
 
+export type CelebrationKind = "tesouro" | "cofre" | "divida" | "fatura";
+
+export interface Celebration {
+  id: string;
+  kind: CelebrationKind;
+  amount: number;
+  title: string;
+  goalId?: string;
+  before?: number;
+  after?: number;
+  xpGained: number;
+  cleared?: boolean;
+}
+
 export interface AurinState {
   transactions: Transaction[];
   goals: Goal[];
@@ -44,6 +58,10 @@ export interface AurinState {
   badges: string[];
   budgetSplit: Record<string, number>;
   pillarSplit: Record<PillarId, number>;
+  celebration: Celebration | null;
+  celebrationsEnabled: boolean;
+  dismissCelebration: () => void;
+  setCelebrationsEnabled: (enabled: boolean) => void;
   addTransaction: (tx: NewTransaction) => void;
   updateTransaction: (id: string, tx: Partial<Transaction>) => void;
   removeTransaction: (id: string) => void;
@@ -77,6 +95,8 @@ const initial = {
   badges: seedBadges,
   budgetSplit: { ...BUDGET_SPLIT },
   pillarSplit: { ...DEFAULT_PILLAR_SPLIT },
+  celebration: null as Celebration | null,
+  celebrationsEnabled: true,
 };
 
 function expandInstallments(tx: NewTransaction, cards: CreditCard[]): Transaction[] {
@@ -111,15 +131,30 @@ export const useAurinStore = create<AurinState>()(
           const created = expandInstallments(tx, state.cards);
           let goals = state.goals;
           const first = created[0];
+          let celebration = state.celebration;
           if (first.type === "entrada" && first.savedTenPercent) {
             const share = first.amount * 0.1;
+            const treasury = state.goals.find((g) => g.id === TREASURY_GOAL_ID);
             goals = state.goals.map((g) =>
               g.id === TREASURY_GOAL_ID ? { ...g, balance: g.balance + share } : g,
             );
+            if (state.celebrationsEnabled) {
+              celebration = {
+                id: uid(),
+                kind: "tesouro",
+                amount: share,
+                title: first.title,
+                goalId: TREASURY_GOAL_ID,
+                before: treasury?.balance ?? 0,
+                after: (treasury?.balance ?? 0) + share,
+                xpGained: 50,
+              };
+            }
           }
           return {
             transactions: [...created, ...state.transactions],
             goals,
+            celebration,
             xp: state.xp + 10 + (first.savedTenPercent ? 40 : 0),
           };
         }),
@@ -138,10 +173,26 @@ export const useAurinStore = create<AurinState>()(
         set((state) => ({ goals: state.goals.filter((g) => g.id !== id || g.id === TREASURY_GOAL_ID) })),
 
       depositToGoal: (id, amount) =>
-        set((state) => ({
-          goals: state.goals.map((g) => (g.id === id ? { ...g, balance: g.balance + amount } : g)),
-          xp: state.xp + 50,
-        })),
+        set((state) => {
+          const goal = state.goals.find((g) => g.id === id);
+          return {
+            goals: state.goals.map((g) => (g.id === id ? { ...g, balance: g.balance + amount } : g)),
+            xp: state.xp + 50,
+            celebration:
+              state.celebrationsEnabled && goal
+                ? {
+                    id: uid(),
+                    kind: goal.id === TREASURY_GOAL_ID ? "tesouro" : "cofre",
+                    amount,
+                    title: goal.name,
+                    goalId: goal.id,
+                    before: goal.balance,
+                    after: goal.balance + amount,
+                    xpGained: 50,
+                  }
+                : state.celebration,
+          };
+        }),
 
       addAsset: (asset) => set((state) => ({ assets: [...state.assets, { ...asset, id: uid() }], xp: state.xp + 30 })),
 
@@ -165,7 +216,20 @@ export const useAurinStore = create<AurinState>()(
         set((state) => {
           const marker = `${cardId}:${key}`;
           if (state.paidInvoices.includes(marker)) return state;
-          return { paidInvoices: [...state.paidInvoices, marker], xp: state.xp + 30 };
+          const card = state.cards.find((c) => c.id === cardId);
+          return {
+            paidInvoices: [...state.paidInvoices, marker],
+            xp: state.xp + 30,
+            celebration: state.celebrationsEnabled
+              ? {
+                  id: uid(),
+                  kind: "fatura" as const,
+                  amount: 0,
+                  title: card?.name ?? "Fatura",
+                  xpGained: 30,
+                }
+              : state.celebration,
+          };
         }),
 
       addDebt: (debt) =>
@@ -209,6 +273,18 @@ export const useAurinStore = create<AurinState>()(
               ? [...state.badges, "sem-correntes"]
               : state.badges,
             xp: state.xp + 40 + (cleared ? 120 : 0),
+            celebration: state.celebrationsEnabled
+              ? {
+                  id: uid(),
+                  kind: "divida" as const,
+                  amount: value,
+                  title: debt.name,
+                  before: debt.paid,
+                  after: debt.paid + value,
+                  xpGained: 40 + (cleared ? 120 : 0),
+                  cleared,
+                }
+              : state.celebration,
           };
         }),
 
@@ -234,12 +310,21 @@ export const useAurinStore = create<AurinState>()(
 
       resetPillarSplit: () => set({ pillarSplit: { ...DEFAULT_PILLAR_SPLIT } }),
 
+      dismissCelebration: () => set({ celebration: null }),
+
+      setCelebrationsEnabled: (enabled) =>
+        set({ celebrationsEnabled: enabled, celebration: enabled ? null : null }),
+
       resetToSeed: () => set({ ...initial }),
     }),
     {
       name: "aurin-store-v2",
       version: 2,
       skipHydration: true,
+      partialize: (state) => {
+        const { celebration: _c, ...rest } = state;
+        return rest as AurinState;
+      },
       migrate: (persisted) => ({
         ...initial,
         ...(persisted as Partial<AurinState>),
@@ -247,7 +332,9 @@ export const useAurinStore = create<AurinState>()(
         debts: (persisted as Partial<AurinState>)?.debts ?? seedDebts,
         paidInvoices: (persisted as Partial<AurinState>)?.paidInvoices ?? [],
         pillarSplit: (persisted as Partial<AurinState>)?.pillarSplit ?? { ...DEFAULT_PILLAR_SPLIT },
-      }),
+        celebration: null,
+        celebrationsEnabled: (persisted as Partial<AurinState>)?.celebrationsEnabled ?? true,
+      }) as AurinState,
     },
   ),
 );
