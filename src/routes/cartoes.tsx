@@ -129,10 +129,14 @@ function CardsPage() {
             const days = due ? daysUntil(due) : null;
             const warn = s.usage >= 70;
             return (
-              <button
+              <div
                 key={s.card.id}
-                type="button"
+                role="button"
+                tabIndex={0}
                 onClick={() => setSelected(s.card.id)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") setSelected(s.card.id);
+                }}
                 className={cn(
                   "rounded-2xl border p-0 text-left transition-all",
                   active?.card.id === s.card.id
@@ -215,7 +219,7 @@ function CardsPage() {
                     </Button>
                   </div>
                 </div>
-              </button>
+              </div>
             );
           })}
         </div>
