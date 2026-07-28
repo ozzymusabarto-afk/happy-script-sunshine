@@ -256,10 +256,6 @@ function Dashboard() {
               </div>
             );
           })}
-
-              </div>
-            );
-          })}
         </CardContent>
       </Card>
 
