@@ -12,6 +12,8 @@ import {
 } from "lucide-react";
 
 import { FreedomMeter, JourneyTrail, VaultJar } from "@/components/journey-visuals";
+import { MorningRitual } from "@/components/morning-ritual";
+import { LABELS, TONE_BG, TONE_LABEL, TONE_TEXT, pillarTone } from "@/lib/tone";
 import { monthsOfFreedom } from "@/lib/impact";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -118,6 +120,7 @@ function Dashboard() {
     [transactions, key, pillarSplit, month.tithe],
   );
 
+  const monthlyPace = month.tithe > 0 ? month.tithe : month.income * 0.1;
   const titheTarget = month.income * 0.1;
   const tithePercent = titheTarget > 0 ? Math.min(100, (month.tithe / titheTarget) * 100) : 0;
   const quote = quoteOfTheDay();
@@ -364,25 +367,41 @@ function StatTile({
   label,
   value,
   tone,
+  hint,
 }: {
   icon: React.ReactNode;
   label: string;
   value: string;
-  tone: "success" | "destructive";
+  tone: "success" | "destructive" | "neutral" | "gold";
+  hint?: string;
 }) {
   return (
-    <div className="flex items-center gap-3 rounded-xl border border-border bg-background/60 p-4">
+    <div className="flex items-start gap-3 rounded-2xl border border-border bg-card p-4 transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/30">
       <span
         className={cn(
-          "grid h-10 w-10 shrink-0 place-items-center rounded-lg",
-          tone === "success" ? "bg-success/15 text-success" : "bg-destructive/15 text-destructive",
+          "grid h-10 w-10 shrink-0 place-items-center rounded-xl",
+          tone === "success"
+            ? "bg-success/15 text-success"
+            : tone === "gold"
+              ? "bg-primary/15 text-primary"
+              : tone === "neutral"
+                ? "bg-secondary text-muted-foreground"
+                : "bg-destructive/15 text-destructive",
         )}
       >
         {icon}
       </span>
       <div className="min-w-0">
         <p className="truncate text-xs text-muted-foreground">{label}</p>
-        <p className="truncate font-display text-lg font-bold">{value}</p>
+        <p
+          className={cn(
+            "truncate font-display text-lg font-bold",
+            tone === "gold" && "text-gold",
+          )}
+        >
+          {value}
+        </p>
+        {hint && <p className="mt-0.5 text-xs text-muted-foreground">{hint}</p>}
       </div>
     </div>
   );
