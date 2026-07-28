@@ -10,6 +10,16 @@ export interface Transaction {
   date: string; // ISO yyyy-mm-dd
   method: PaymentMethod;
   savedTenPercent: boolean;
+  /** Cartão de crédito usado (quando method === "cartao"). */
+  cardId?: string;
+  /** Total de parcelas do grupo. */
+  installments?: number;
+  /** Índice desta parcela (1-based). */
+  installmentIndex?: number;
+  /** Agrupa parcelas de uma mesma compra. */
+  groupId?: string;
+  /** Vincula o lançamento à quitação de uma dívida. */
+  debtId?: string;
 }
 
 export type GoalKind = "reserva" | "moradia" | "investimento" | "aposentadoria" | "outro";
@@ -29,7 +39,58 @@ export interface FixedAsset {
   monthlyIncome: number;
 }
 
-export const EXPENSE_CATEGORIES = [
+/* --------------------------------- cartões --------------------------------- */
+
+export type CardBrand = "Visa" | "Mastercard" | "Elo" | "Amex" | "Outro";
+
+export interface CreditCard {
+  id: string;
+  name: string;
+  brand: CardBrand;
+  limit: number;
+  closingDay: number;
+  dueDay: number;
+  color: string;
+}
+
+export const CARD_BRANDS: CardBrand[] = ["Visa", "Mastercard", "Elo", "Amex", "Outro"];
+
+export const CARD_COLORS = [
+  "from-[#c9a227] to-[#6b4f0a]",
+  "from-[#1f6feb] to-[#0b2e63]",
+  "from-[#12b5a5] to-[#0a4a45]",
+  "from-[#8b5cf6] to-[#3b1d78]",
+  "from-[#e2574c] to-[#6b1d17]",
+];
+
+/* --------------------------------- dívidas --------------------------------- */
+
+export type DebtType = "rotativo" | "emprestimo" | "financiamento" | "chequeespecial" | "pessoal" | "outro";
+
+export const DEBT_LABELS: Record<DebtType, string> = {
+  rotativo: "Rotativo do cartão",
+  emprestimo: "Empréstimo",
+  financiamento: "Financiamento",
+  chequeespecial: "Cheque especial",
+  pessoal: "Dívida pessoal",
+  outro: "Outro",
+};
+
+export interface Debt {
+  id: string;
+  name: string;
+  type: DebtType;
+  principal: number;
+  paid: number;
+  interestRate: number; // % ao mês
+  installments: number;
+  dueDay: number;
+  createdAt: string;
+}
+
+/* ------------------------------- categorias -------------------------------- */
+
+export const COST_CATEGORIES = [
   "Moradia",
   "Alimentação",
   "Transporte",
@@ -39,9 +100,71 @@ export const EXPENSE_CATEGORIES = [
   "Outros",
 ] as const;
 
+export const EXPENSE_CATEGORIES = [
+  ...COST_CATEGORIES,
+  "Dívidas",
+  "Reserva",
+  "Investimento",
+] as const;
+
 export const INCOME_CATEGORIES = ["Salário", "Freelance", "Renda Passiva", "Outros"] as const;
 
-/** Percentual do teto de 90% da renda destinado a cada categoria. */
+/* ------------------------------ regra 70/20/10 ----------------------------- */
+
+export type PillarId = "custo" | "reserva" | "ouro";
+
+export interface Pillar {
+  id: PillarId;
+  label: string;
+  short: string;
+  percent: number;
+  description: string;
+}
+
+export const PILLARS: Pillar[] = [
+  {
+    id: "custo",
+    label: "Custo de Vida",
+    short: "70%",
+    percent: 70,
+    description: "Moradia, alimentação, transporte e tudo que mantém sua vida funcionando.",
+  },
+  {
+    id: "reserva",
+    label: "Reservas & Dívidas",
+    short: "20%",
+    percent: 20,
+    description: "Reserva de emergência e quitação acelerada de dívidas.",
+  },
+  {
+    id: "ouro",
+    label: "Ouro / Investimentos",
+    short: "10%",
+    percent: 10,
+    description: "O dízimo de Arkad: a parte que trabalha por você para sempre.",
+  },
+];
+
+export const DEFAULT_PILLAR_SPLIT: Record<PillarId, number> = {
+  custo: 70,
+  reserva: 20,
+  ouro: 10,
+};
+
+export const CATEGORY_PILLAR: Record<string, PillarId> = {
+  Moradia: "custo",
+  Alimentação: "custo",
+  Transporte: "custo",
+  Lazer: "custo",
+  Saúde: "custo",
+  Educação: "custo",
+  Outros: "custo",
+  Dívidas: "reserva",
+  Reserva: "reserva",
+  Investimento: "ouro",
+};
+
+/** Percentual do pilar Custo de Vida (70%) destinado a cada categoria. */
 export const BUDGET_SPLIT: Record<string, number> = {
   Moradia: 30,
   Alimentação: 20,
@@ -51,6 +174,7 @@ export const BUDGET_SPLIT: Record<string, number> = {
   Educação: 10,
   Outros: 8,
 };
+
 
 export const PAYMENT_LABELS: Record<PaymentMethod, string> = {
   pix: "Pix",
@@ -197,4 +321,78 @@ export const BADGES: BadgeDef[] = [
     name: "Arquiteto do Futuro",
     description: "Registrou um ativo fixo ou fonte de renda passiva.",
   },
+  {
+    id: "sem-correntes",
+    icon: "⛓️‍💥",
+    name: "Sem Correntes",
+    description: "Quitou integralmente uma dívida.",
+  },
+  {
+    id: "mestre-fatura",
+    icon: "💳",
+    name: "Mestre da Fatura",
+    description: "Nenhum cartão acima de 70% do limite utilizado.",
+  },
+];
+
+/* ----------------------------- ciclos de fatura ---------------------------- */
+
+const pad2 = (n: number) => String(n).padStart(2, "0");
+
+export const clampDay = (year: number, month0: number, day: number) =>
+  Math.min(day, new Date(year, month0 + 1, 0).getDate());
+
+/**
+ * Define em qual fatura uma compra cai: se a data for depois do fechamento,
+ * ela entra na fatura do mês seguinte.
+ */
+export function invoiceCycleFor(card: Pick<CreditCard, "closingDay" | "dueDay">, isoDate: string) {
+  const [y, m, d] = isoDate.split("-").map(Number);
+  let month0 = m - 1;
+  let year = y;
+  if (d > card.closingDay) month0 += 1;
+  if (month0 > 11) {
+    month0 -= 12;
+    year += 1;
+  }
+  const key = `${year}-${pad2(month0 + 1)}`;
+  const due = `${year}-${pad2(month0 + 1)}-${pad2(clampDay(year, month0, card.dueDay))}`;
+  return { key, due, year, month0 };
+}
+
+export function currentInvoiceKey(card: Pick<CreditCard, "closingDay" | "dueDay">, base = new Date()) {
+  const iso = `${base.getFullYear()}-${pad2(base.getMonth() + 1)}-${pad2(base.getDate())}`;
+  return invoiceCycleFor(card, iso).key;
+}
+
+export function nextInvoiceKey(key: string) {
+  const [y, m] = key.split("-").map(Number);
+  const d = new Date(y, m, 1);
+  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}`;
+}
+
+export function dueDateFor(card: Pick<CreditCard, "dueDay">, key: string) {
+  const [y, m] = key.split("-").map(Number);
+  return `${y}-${pad2(m)}-${pad2(clampDay(y, m - 1, card.dueDay))}`;
+}
+
+export function daysUntil(iso: string) {
+  const target = new Date(`${iso}T12:00:00`).getTime();
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12).getTime();
+  return Math.round((target - today) / 86400000);
+}
+
+/** Adiciona meses a uma data ISO preservando o dia quando possível. */
+export function addMonthsIso(iso: string, months: number) {
+  const [y, m, d] = iso.split("-").map(Number);
+  const date = new Date(y, m - 1 + months, 1);
+  const day = clampDay(date.getFullYear(), date.getMonth(), d);
+  return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(day)}`;
+}
+
+export const DEBT_QUOTES = [
+  "Onde há determinação, sempre se encontra um caminho — inclusive para sair das dívidas.",
+  "Pague suas dívidas com determinação crescente; cada credor pago é uma corrente a menos.",
+  "Melhor pagar pouco e sempre do que prometer muito e nunca cumprir.",
 ];

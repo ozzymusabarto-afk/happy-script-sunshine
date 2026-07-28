@@ -2,6 +2,8 @@ import { useMemo, useState } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
   Coins,
+  CreditCard,
+  HandCoins,
   Landmark,
   LayoutDashboard,
   Plus,
@@ -22,7 +24,9 @@ const NAV = [
   { to: "/", label: "Templo", icon: LayoutDashboard },
   { to: "/transacoes", label: "Moedas", icon: ScrollText },
   { to: "/orcamento", label: "Gastos", icon: Coins },
-  { to: "/multiplicador", label: "Multiplicador", icon: TrendingUp },
+  { to: "/cartoes", label: "Cartões", icon: CreditCard },
+  { to: "/dividas", label: "Dívidas", icon: HandCoins },
+  { to: "/multiplicador", label: "Multiplicador", short: "Multipl.", icon: TrendingUp },
   { to: "/jornada", label: "Jornada", icon: Sparkles },
 ] as const;
 
@@ -126,7 +130,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       {/* Bottom nav mobile */}
       <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-sidebar/95 backdrop-blur lg:hidden">
-        <div className="grid grid-cols-5">
+        <div className="grid grid-cols-7">
           {NAV.map((item) => {
             const active = item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
             return (
@@ -139,7 +143,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 )}
               >
                 <item.icon className="h-4 w-4" />
-                <span className="truncate">{item.label}</span>
+                <span className="w-full truncate px-0.5 text-center">
+                  {"short" in item ? item.short : item.label}
+                </span>
               </Link>
             );
           })}

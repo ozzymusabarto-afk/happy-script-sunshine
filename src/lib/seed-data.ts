@@ -1,4 +1,4 @@
-import type { FixedAsset, Goal, Transaction } from "./aurin";
+import type { CreditCard, Debt, FixedAsset, Goal, Transaction } from "./aurin";
 import { TREASURY_GOAL_ID } from "./aurin";
 
 const pad = (n: number) => String(n).padStart(2, "0");
@@ -11,8 +11,39 @@ function iso(monthsAgo: number, day: number) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(safeDay)}`;
 }
 
+function isoFuture(monthsAhead: number, day: number) {
+  const base = new Date();
+  const d = new Date(base.getFullYear(), base.getMonth() + monthsAhead, 1);
+  const maxDay = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(Math.min(day, maxDay))}`;
+}
+
 let counter = 0;
 const id = (prefix: string) => `${prefix}-${++counter}`;
+
+export const CARD_OURO_ID = "card-ouro";
+export const CARD_PRATA_ID = "card-prata";
+
+export const seedCards: CreditCard[] = [
+  {
+    id: CARD_OURO_ID,
+    name: "Cartão Ouro",
+    brand: "Visa",
+    limit: 12000,
+    closingDay: 20,
+    dueDay: 28,
+    color: "from-[#c9a227] to-[#6b4f0a]",
+  },
+  {
+    id: CARD_PRATA_ID,
+    name: "Cartão Prata",
+    brand: "Mastercard",
+    limit: 4000,
+    closingDay: 5,
+    dueDay: 12,
+    color: "from-[#1f6feb] to-[#0b2e63]",
+  },
+];
 
 interface Seed {
   m: number;
@@ -70,10 +101,11 @@ for (let m = 5; m >= 0; m--) {
     { m, d: 23, title: "Restaurantes e streaming", amount: 610 + m * 15, type: "saida", category: "Lazer", method: "cartao" },
     { m, d: 26, title: "Energia e internet", amount: 380, type: "saida", category: "Moradia", method: "pix" },
     { m, d: 28, title: "Despesas diversas", amount: 210, type: "saida", category: "Outros", method: "dinheiro" },
+    { m, d: 10, title: "Parcela do empréstimo", amount: 640, type: "saida", category: "Dívidas", method: "transferencia" },
   );
 }
 
-export const seedTransactions: Transaction[] = seeds.map((s) => ({
+const baseTransactions: Transaction[] = seeds.map((s) => ({
   id: id("tx"),
   title: s.title,
   amount: s.amount,
@@ -82,7 +114,71 @@ export const seedTransactions: Transaction[] = seeds.map((s) => ({
   date: iso(s.m, s.d),
   method: s.method,
   savedTenPercent: Boolean(s.tithe),
+  cardId: s.method === "cartao" ? (s.amount > 500 ? CARD_OURO_ID : CARD_PRATA_ID) : undefined,
 }));
+
+/* Compras parceladas em aberto */
+function installmentSeries(
+  title: string,
+  total: number,
+  count: number,
+  startMonthsAgo: number,
+  day: number,
+  category: string,
+  cardId: string,
+): Transaction[] {
+  const groupId = id("grp");
+  const share = Math.round((total / count) * 100) / 100;
+  return Array.from({ length: count }, (_, i) => {
+    const offset = startMonthsAgo - i;
+    const date = offset >= 0 ? iso(offset, day) : isoFuture(-offset, day);
+    return {
+      id: id("tx"),
+      title: `${title} (${i + 1}/${count})`,
+      amount: share,
+      type: "saida" as const,
+      category,
+      date,
+      method: "cartao" as const,
+      savedTenPercent: false,
+      cardId,
+      groupId,
+      installments: count,
+      installmentIndex: i + 1,
+    };
+  });
+}
+
+export const seedTransactions: Transaction[] = [
+  ...baseTransactions,
+  ...installmentSeries("Notebook novo", 6000, 10, 2, 14, "Outros", CARD_OURO_ID),
+  ...installmentSeries("Passagens aéreas", 2400, 6, 1, 8, "Lazer", CARD_PRATA_ID),
+].sort((a, b) => (a.date < b.date ? 1 : -1));
+
+export const seedDebts: Debt[] = [
+  {
+    id: id("debt"),
+    name: "Empréstimo pessoal",
+    type: "emprestimo",
+    principal: 18000,
+    paid: 7680,
+    interestRate: 2.1,
+    installments: 24,
+    dueDay: 10,
+    createdAt: iso(12, 10),
+  },
+  {
+    id: id("debt"),
+    name: "Rotativo Cartão Prata",
+    type: "rotativo",
+    principal: 3200,
+    paid: 900,
+    interestRate: 12.5,
+    installments: 8,
+    dueDay: 12,
+    createdAt: iso(3, 12),
+  },
+];
 
 export const seedGoals: Goal[] = [
   { id: TREASURY_GOAL_ID, name: "Tesouro Pessoal (Dízimo de Arkad)", target: 20000, balance: 6420, kind: "investimento" },

@@ -15,6 +15,8 @@ import {
   ArrowDownRight,
   ArrowUpRight,
   Coins,
+  CreditCard as CardIcon,
+  HandCoins,
   Quote,
   ShieldCheck,
   Sparkles,
@@ -32,13 +34,17 @@ import {
   PAYMENT_LABELS,
 } from "@/lib/aurin";
 import {
+  cardSummary,
   categoryBreakdown,
   currentMonthKey,
+  debtSummary,
   flowSeries,
   monthTotals,
+  pillarUsage,
   totalWealth,
   useAurinStore,
 } from "@/store/aurin-store";
+import { PILLARS, daysUntil } from "@/lib/aurin";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
@@ -74,6 +80,10 @@ function Dashboard() {
   const transactions = useAurinStore((s) => s.transactions);
   const goals = useAurinStore((s) => s.goals);
   const assets = useAurinStore((s) => s.assets);
+  const cards = useAurinStore((s) => s.cards);
+  const debtList = useAurinStore((s) => s.debts);
+  const paidInvoices = useAurinStore((s) => s.paidInvoices);
+  const pillarSplit = useAurinStore((s) => s.pillarSplit);
 
   const key = currentMonthKey();
   const month = useMemo(() => monthTotals(transactions, key), [transactions, key]);
@@ -86,6 +96,29 @@ function Dashboard() {
   const recent = useMemo(
     () => [...transactions].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 8),
     [transactions],
+  );
+
+  const cardStats = useMemo(
+    () =>
+      cards.map((c) => {
+        const summary = cardSummary(c, transactions, paidInvoices);
+        const due = summary.current?.due ?? summary.next?.due;
+        return {
+          id: c.id,
+          name: c.name,
+          limit: c.limit,
+          committed: summary.committed,
+          available: summary.available,
+          usage: summary.usage,
+          dueIn: due ? daysUntil(due) : null,
+        };
+      }),
+    [cards, transactions, paidInvoices],
+  );
+  const debts = useMemo(() => debtSummary(debtList), [debtList]);
+  const pillars = useMemo(
+    () => pillarUsage(transactions, key, pillarSplit, month.tithe),
+    [transactions, key, pillarSplit, month.tithe],
   );
 
   const titheTarget = month.income * 0.1;
@@ -160,6 +193,96 @@ function Dashboard() {
           </Card>
         </div>
       </section>
+
+      <div className="grid gap-4 lg:grid-cols-3">
+        <Card className="lg:col-span-2">
+          <CardHeader className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <CardIcon className="h-4 w-4 text-primary" />
+              Cartões e faturas
+            </CardTitle>
+            <Link to="/cartoes" className="shrink-0 text-xs text-primary hover:underline">
+              Ver todos
+            </Link>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {cardStats.length === 0 && (
+              <p className="py-4 text-sm text-muted-foreground">Nenhum cartão cadastrado.</p>
+            )}
+            {cardStats.map((c) => (
+              <div key={c.id} className="min-w-0">
+                <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 text-sm">
+                  <span className="truncate font-medium">{c.name}</span>
+                  <span className="shrink-0 text-muted-foreground">
+                    <span className="font-semibold text-gold">{brl(c.committed)}</span> /{" "}
+                    {brl(c.limit)}
+                  </span>
+                </div>
+                <Progress value={Math.min(100, c.usage)} className="mt-1.5 h-2" />
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Disponível {brl(c.available)}
+                  {c.dueIn !== null && ` · vence em ${c.dueIn} dia${c.dueIn === 1 ? "" : "s"}`}
+                </p>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <HandCoins className="h-4 w-4 text-primary" />
+              Dívidas
+            </CardTitle>
+            <Link to="/dividas" className="shrink-0 text-xs text-primary hover:underline">
+              Gerenciar
+            </Link>
+          </CardHeader>
+          <CardContent>
+            <p className="font-display text-2xl font-extrabold text-destructive">
+              {brl(debts.remaining)}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {debts.progress.toFixed(0)}% quitado ·{" "}
+              {debts.monthsToFreedom > 0 ? `${debts.monthsToFreedom} meses restantes` : "sem dívidas"}
+            </p>
+            <Progress value={Math.min(100, debts.progress)} className="mt-3 h-2" />
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card>
+        <CardHeader className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
+          <CardTitle className="text-base">Regra 70/20/10 do mês</CardTitle>
+          <Link to="/orcamento" className="shrink-0 text-xs text-primary hover:underline">
+            Ajustar
+          </Link>
+        </CardHeader>
+        <CardContent className="grid gap-4 sm:grid-cols-3">
+          {pillars.map((p) => {
+            const meta = PILLARS.find((x) => x.id === p.id)!;
+            return (
+              <div key={p.id} className="min-w-0">
+                <div className="flex items-baseline justify-between gap-2">
+                  <span className="truncate text-sm font-medium">{meta.label}</span>
+                  <span
+                    className={cn(
+                      "shrink-0 text-xs font-semibold",
+                      p.percent > 100 ? "text-destructive" : "text-success",
+                    )}
+                  >
+                    {p.percent.toFixed(0)}%
+                  </span>
+                </div>
+                <Progress value={Math.min(100, p.percent)} className="mt-2 h-2" />
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {brl(p.used)} de {brl(p.target)}
+                </p>
+              </div>
+            );
+          })}
+        </CardContent>
+      </Card>
 
       <Card className="border-primary/25">
         <CardContent className="flex items-start gap-4 pt-6">

@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { z } from "zod";
 import { toast } from "sonner";
 
@@ -27,11 +28,13 @@ import {
   INCOME_CATEGORIES,
   PAYMENT_LABELS,
   brl,
+  formatDate,
+  invoiceCycleFor,
   type PaymentMethod,
   type Transaction,
   type TxType,
 } from "@/lib/aurin";
-import { useAurinStore } from "@/store/aurin-store";
+import { cardSummary, useAurinStore } from "@/store/aurin-store";
 
 const schema = z.object({
   title: z.string().trim().min(2, "Informe um título").max(80, "Máximo de 80 caracteres"),
@@ -44,6 +47,8 @@ const schema = z.object({
   method: z.enum(["pix", "cartao", "dinheiro", "transferencia"]),
   type: z.enum(["entrada", "saida"]),
   savedTenPercent: z.boolean(),
+  cardId: z.string().optional(),
+  installments: z.number().int().min(1).max(24),
 });
 
 const today = () => new Date().toISOString().slice(0, 10);
@@ -55,6 +60,9 @@ interface Props {
 }
 
 export function TransactionDialog({ open, onOpenChange, editing }: Props) {
+  const cards = useAurinStore((s) => s.cards);
+  const transactions = useAurinStore((s) => s.transactions);
+  const paidInvoices = useAurinStore((s) => s.paidInvoices);
   const addTransaction = useAurinStore((s) => s.addTransaction);
   const updateTransaction = useAurinStore((s) => s.updateTransaction);
 
@@ -65,6 +73,8 @@ export function TransactionDialog({ open, onOpenChange, editing }: Props) {
   const [date, setDate] = useState(today());
   const [method, setMethod] = useState<PaymentMethod>("pix");
   const [tithe, setTithe] = useState(true);
+  const [cardId, setCardId] = useState<string>("");
+  const [installments, setInstallments] = useState("1");
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
@@ -77,6 +87,8 @@ export function TransactionDialog({ open, onOpenChange, editing }: Props) {
       setDate(editing.date);
       setMethod(editing.method);
       setTithe(editing.savedTenPercent);
+      setCardId(editing.cardId ?? "");
+      setInstallments(String(editing.installments ?? 1));
     } else {
       setType("saida");
       setTitle("");
@@ -85,12 +97,28 @@ export function TransactionDialog({ open, onOpenChange, editing }: Props) {
       setDate(today());
       setMethod("pix");
       setTithe(true);
+      setCardId(cards[0]?.id ?? "");
+      setInstallments("1");
     }
     setErrors({});
   }, [open, editing]);
 
   const categories = type === "entrada" ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
   const numericAmount = Number(amount.replace(",", "."));
+  const isCard = method === "cartao" && type === "saida";
+  const installmentCount = Math.max(1, Math.min(24, Number(installments) || 1));
+  const selectedCard = cards.find((c) => c.id === cardId) ?? null;
+
+  const cardInfo = useMemo(() => {
+    if (!selectedCard) return null;
+    const summary = cardSummary(selectedCard, transactions, paidInvoices);
+    const cycle = invoiceCycleFor(selectedCard, date);
+    return {
+      available: summary.available,
+      due: cycle.due,
+      exceeds: numericAmount > summary.available,
+    };
+  }, [selectedCard, transactions, paidInvoices, date, numericAmount]);
 
   function handleTypeChange(next: string) {
     const value = next as TxType;
@@ -107,7 +135,14 @@ export function TransactionDialog({ open, onOpenChange, editing }: Props) {
       method,
       type,
       savedTenPercent: type === "entrada" ? tithe : false,
+      cardId: isCard ? cardId : undefined,
+      installments: isCard ? installmentCount : 1,
     });
+
+    if (isCard && !cardId) {
+      setErrors({ cardId: "Escolha um cartão" });
+      return;
+    }
 
     if (!parsed.success) {
       const next: Record<string, string> = {};
@@ -124,7 +159,9 @@ export function TransactionDialog({ open, onOpenChange, editing }: Props) {
       toast.success(
         parsed.data.savedTenPercent
           ? `Registrado! ${brl(parsed.data.amount * 0.1)} foram ao Tesouro Pessoal.`
-          : "Transação registrada",
+          : installmentCount > 1
+            ? `Compra dividida em ${installmentCount}x de ${brl(parsed.data.amount / installmentCount)}.`
+            : "Transação registrada",
       );
     }
     onOpenChange(false);
@@ -218,6 +255,81 @@ export function TransactionDialog({ open, onOpenChange, editing }: Props) {
               </Select>
             </div>
           </div>
+
+          {isCard && (
+            <div className="rounded-xl border border-border bg-secondary/40 p-4">
+              {cards.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  Nenhum cartão cadastrado.{" "}
+                  <Link
+                    to="/cartoes"
+                    onClick={() => onOpenChange(false)}
+                    className="text-primary underline-offset-4 hover:underline"
+                  >
+                    Cadastrar cartão
+                  </Link>
+                </p>
+              ) : (
+                <>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="grid gap-2">
+                      <Label>Cartão de crédito</Label>
+                      <Select value={cardId} onValueChange={setCardId}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Escolha o cartão" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {cards.map((c) => (
+                            <SelectItem key={c.id} value={c.id}>
+                              {c.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {errors.cardId && <p className="text-xs text-destructive">{errors.cardId}</p>}
+                    </div>
+                    <div className="grid gap-2">
+                      <Label>Parcelas</Label>
+                      <Select value={installments} onValueChange={setInstallments}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Array.from({ length: 24 }, (_, i) => i + 1).map((n) => (
+                            <SelectItem key={n} value={String(n)}>
+                              {n}x
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  {cardInfo && (
+                    <div className="mt-3 space-y-1 text-xs text-muted-foreground">
+                      {numericAmount > 0 && installmentCount > 1 && (
+                        <p>
+                          {installmentCount}x de{" "}
+                          <span className="font-semibold text-gold">
+                            {brl(numericAmount / installmentCount)}
+                          </span>
+                        </p>
+                      )}
+                      <p>
+                        Entra na fatura que vence em {formatDate(cardInfo.due)} · disponível{" "}
+                        {brl(cardInfo.available)}
+                      </p>
+                      {cardInfo.exceeds && (
+                        <p className="text-warning">
+                          Atenção: o valor ultrapassa o limite disponível deste cartão.
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          )}
 
           {type === "entrada" && (
             <div className="flex items-start justify-between gap-4 rounded-xl border border-primary/30 bg-primary/10 p-4">
