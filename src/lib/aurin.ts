@@ -10,6 +10,16 @@ export interface Transaction {
   date: string; // ISO yyyy-mm-dd
   method: PaymentMethod;
   savedTenPercent: boolean;
+  /** Cartão de crédito usado (quando method === "cartao"). */
+  cardId?: string;
+  /** Total de parcelas do grupo. */
+  installments?: number;
+  /** Índice desta parcela (1-based). */
+  installmentIndex?: number;
+  /** Agrupa parcelas de uma mesma compra. */
+  groupId?: string;
+  /** Vincula o lançamento à quitação de uma dívida. */
+  debtId?: string;
 }
 
 export type GoalKind = "reserva" | "moradia" | "investimento" | "aposentadoria" | "outro";
@@ -29,7 +39,58 @@ export interface FixedAsset {
   monthlyIncome: number;
 }
 
-export const EXPENSE_CATEGORIES = [
+/* --------------------------------- cartões --------------------------------- */
+
+export type CardBrand = "Visa" | "Mastercard" | "Elo" | "Amex" | "Outro";
+
+export interface CreditCard {
+  id: string;
+  name: string;
+  brand: CardBrand;
+  limit: number;
+  closingDay: number;
+  dueDay: number;
+  color: string;
+}
+
+export const CARD_BRANDS: CardBrand[] = ["Visa", "Mastercard", "Elo", "Amex", "Outro"];
+
+export const CARD_COLORS = [
+  "from-[#c9a227] to-[#6b4f0a]",
+  "from-[#1f6feb] to-[#0b2e63]",
+  "from-[#12b5a5] to-[#0a4a45]",
+  "from-[#8b5cf6] to-[#3b1d78]",
+  "from-[#e2574c] to-[#6b1d17]",
+];
+
+/* --------------------------------- dívidas --------------------------------- */
+
+export type DebtType = "rotativo" | "emprestimo" | "financiamento" | "chequeespecial" | "pessoal" | "outro";
+
+export const DEBT_LABELS: Record<DebtType, string> = {
+  rotativo: "Rotativo do cartão",
+  emprestimo: "Empréstimo",
+  financiamento: "Financiamento",
+  chequeespecial: "Cheque especial",
+  pessoal: "Dívida pessoal",
+  outro: "Outro",
+};
+
+export interface Debt {
+  id: string;
+  name: string;
+  type: DebtType;
+  principal: number;
+  paid: number;
+  interestRate: number; // % ao mês
+  installments: number;
+  dueDay: number;
+  createdAt: string;
+}
+
+/* ------------------------------- categorias -------------------------------- */
+
+export const COST_CATEGORIES = [
   "Moradia",
   "Alimentação",
   "Transporte",
@@ -39,9 +100,71 @@ export const EXPENSE_CATEGORIES = [
   "Outros",
 ] as const;
 
+export const EXPENSE_CATEGORIES = [
+  ...COST_CATEGORIES,
+  "Dívidas",
+  "Reserva",
+  "Investimento",
+] as const;
+
 export const INCOME_CATEGORIES = ["Salário", "Freelance", "Renda Passiva", "Outros"] as const;
 
-/** Percentual do teto de 90% da renda destinado a cada categoria. */
+/* ------------------------------ regra 70/20/10 ----------------------------- */
+
+export type PillarId = "custo" | "reserva" | "ouro";
+
+export interface Pillar {
+  id: PillarId;
+  label: string;
+  short: string;
+  percent: number;
+  description: string;
+}
+
+export const PILLARS: Pillar[] = [
+  {
+    id: "custo",
+    label: "Custo de Vida",
+    short: "70%",
+    percent: 70,
+    description: "Moradia, alimentação, transporte e tudo que mantém sua vida funcionando.",
+  },
+  {
+    id: "reserva",
+    label: "Reservas & Dívidas",
+    short: "20%",
+    percent: 20,
+    description: "Reserva de emergência e quitação acelerada de dívidas.",
+  },
+  {
+    id: "ouro",
+    label: "Ouro / Investimentos",
+    short: "10%",
+    percent: 10,
+    description: "O dízimo de Arkad: a parte que trabalha por você para sempre.",
+  },
+];
+
+export const DEFAULT_PILLAR_SPLIT: Record<PillarId, number> = {
+  custo: 70,
+  reserva: 20,
+  ouro: 10,
+};
+
+export const CATEGORY_PILLAR: Record<string, PillarId> = {
+  Moradia: "custo",
+  Alimentação: "custo",
+  Transporte: "custo",
+  Lazer: "custo",
+  Saúde: "custo",
+  Educação: "custo",
+  Outros: "custo",
+  Dívidas: "reserva",
+  Reserva: "reserva",
+  Investimento: "ouro",
+};
+
+/** Percentual do pilar Custo de Vida (70%) destinado a cada categoria. */
 export const BUDGET_SPLIT: Record<string, number> = {
   Moradia: 30,
   Alimentação: 20,
@@ -51,6 +174,7 @@ export const BUDGET_SPLIT: Record<string, number> = {
   Educação: 10,
   Outros: 8,
 };
+
 
 export const PAYMENT_LABELS: Record<PaymentMethod, string> = {
   pix: "Pix",
