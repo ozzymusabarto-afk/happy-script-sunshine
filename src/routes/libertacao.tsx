@@ -129,8 +129,11 @@ function DebtsPage() {
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Stat label="Já libertado" value={brl(summary.paid)} tone="success" />
-        <Stat label="Ainda a soltar" value={brl(summary.remaining)} />
-        <Stat label="Peso médio por mês" value={`${summary.weightedRate.toFixed(2)}% a.m.`} />
+        <Stat label="Quanto falta para a paz" value={brl(summary.remaining)} />
+        <Stat
+          label="Peso de esperar mais um mês"
+          value={brl((summary.remaining * summary.weightedRate) / 100)}
+        />
         <Stat
           label="Sua liberdade chega em"
           value={summary.monthsToFreedom > 0 ? `${summary.monthsToFreedom} meses` : "Você já é livre"}
