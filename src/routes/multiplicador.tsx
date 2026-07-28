@@ -1,6 +1,6 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { Building2, Plus, ShieldCheck, Sparkles, Target, Trash2 } from "lucide-react";
+import { Building2, Pencil, Plus, ShieldCheck, Sparkles, Target, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 
