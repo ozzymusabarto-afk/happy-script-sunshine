@@ -4,25 +4,47 @@ import { persist } from "zustand/middleware";
 import {
   BADGES,
   BUDGET_SPLIT,
-  EXPENSE_CATEGORIES,
+  CATEGORY_PILLAR,
+  COST_CATEGORIES,
+  DEFAULT_PILLAR_SPLIT,
   TREASURY_GOAL_ID,
+  addMonthsIso,
+  currentInvoiceKey,
+  invoiceCycleFor,
   monthKey,
+  type CreditCard,
+  type Debt,
   type FixedAsset,
   type Goal,
+  type PillarId,
   type Transaction,
 } from "@/lib/aurin";
-import { seedAssets, seedBadges, seedGoals, seedTransactions, seedXp } from "@/lib/seed-data";
+import {
+  seedAssets,
+  seedBadges,
+  seedCards,
+  seedDebts,
+  seedGoals,
+  seedTransactions,
+  seedXp,
+} from "@/lib/seed-data";
 
 const uid = () => `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+
+export type NewTransaction = Omit<Transaction, "id"> & { installments?: number };
 
 export interface AurinState {
   transactions: Transaction[];
   goals: Goal[];
   assets: FixedAsset[];
+  cards: CreditCard[];
+  debts: Debt[];
+  paidInvoices: string[];
   xp: number;
   badges: string[];
   budgetSplit: Record<string, number>;
-  addTransaction: (tx: Omit<Transaction, "id">) => void;
+  pillarSplit: Record<PillarId, number>;
+  addTransaction: (tx: NewTransaction) => void;
   updateTransaction: (id: string, tx: Partial<Transaction>) => void;
   removeTransaction: (id: string) => void;
   addGoal: (goal: Omit<Goal, "id">) => void;
@@ -30,7 +52,17 @@ export interface AurinState {
   depositToGoal: (id: string, amount: number) => void;
   addAsset: (asset: Omit<FixedAsset, "id">) => void;
   removeAsset: (id: string) => void;
+  addCard: (card: Omit<CreditCard, "id">) => void;
+  updateCard: (id: string, patch: Partial<CreditCard>) => void;
+  removeCard: (id: string) => void;
+  payInvoice: (cardId: string, key: string) => void;
+  addDebt: (debt: Omit<Debt, "id" | "paid" | "createdAt"> & { paid?: number }) => void;
+  updateDebt: (id: string, patch: Partial<Debt>) => void;
+  payDebt: (id: string, amount: number) => void;
+  removeDebt: (id: string) => void;
   setBudgetSplit: (category: string, percent: number) => void;
+  setPillarSplit: (pillar: PillarId, percent: number) => void;
+  resetPillarSplit: () => void;
   resetToSeed: () => void;
 }
 
@@ -38,10 +70,36 @@ const initial = {
   transactions: seedTransactions,
   goals: seedGoals,
   assets: seedAssets,
+  cards: seedCards,
+  debts: seedDebts,
+  paidInvoices: [] as string[],
   xp: seedXp,
   badges: seedBadges,
   budgetSplit: { ...BUDGET_SPLIT },
+  pillarSplit: { ...DEFAULT_PILLAR_SPLIT },
 };
+
+function expandInstallments(tx: NewTransaction, cards: CreditCard[]): Transaction[] {
+  const count = Math.max(1, Math.floor(tx.installments ?? 1));
+  const card = cards.find((c) => c.id === tx.cardId);
+  if (count <= 1 || tx.method !== "cartao" || !card) {
+    const { installments: _drop, ...rest } = tx;
+    return [{ ...rest, id: uid() }];
+  }
+  const groupId = uid();
+  const share = Math.round((tx.amount / count) * 100) / 100;
+  return Array.from({ length: count }, (_, i) => ({
+    ...tx,
+    id: uid(),
+    title: `${tx.title} (${i + 1}/${count})`,
+    amount: i === count - 1 ? Math.round((tx.amount - share * (count - 1)) * 100) / 100 : share,
+    date: addMonthsIso(tx.date, i),
+    groupId,
+    installments: count,
+    installmentIndex: i + 1,
+    savedTenPercent: false,
+  }));
+}
 
 export const useAurinStore = create<AurinState>()(
   persist(
@@ -50,18 +108,19 @@ export const useAurinStore = create<AurinState>()(
 
       addTransaction: (tx) =>
         set((state) => {
-          const transaction: Transaction = { ...tx, id: uid() };
+          const created = expandInstallments(tx, state.cards);
           let goals = state.goals;
-          if (transaction.type === "entrada" && transaction.savedTenPercent) {
-            const share = transaction.amount * 0.1;
+          const first = created[0];
+          if (first.type === "entrada" && first.savedTenPercent) {
+            const share = first.amount * 0.1;
             goals = state.goals.map((g) =>
               g.id === TREASURY_GOAL_ID ? { ...g, balance: g.balance + share } : g,
             );
           }
           return {
-            transactions: [transaction, ...state.transactions],
+            transactions: [...created, ...state.transactions],
             goals,
-            xp: state.xp + 10 + (transaction.savedTenPercent ? 40 : 0),
+            xp: state.xp + 10 + (first.savedTenPercent ? 40 : 0),
           };
         }),
 
@@ -88,12 +147,108 @@ export const useAurinStore = create<AurinState>()(
 
       removeAsset: (id) => set((state) => ({ assets: state.assets.filter((a) => a.id !== id) })),
 
+      addCard: (card) =>
+        set((state) => ({ cards: [...state.cards, { ...card, id: uid() }], xp: state.xp + 20 })),
+
+      updateCard: (id, patch) =>
+        set((state) => ({ cards: state.cards.map((c) => (c.id === id ? { ...c, ...patch } : c)) })),
+
+      removeCard: (id) =>
+        set((state) => ({
+          cards: state.cards.filter((c) => c.id !== id),
+          transactions: state.transactions.map((t) =>
+            t.cardId === id ? { ...t, cardId: undefined } : t,
+          ),
+        })),
+
+      payInvoice: (cardId, key) =>
+        set((state) => {
+          const marker = `${cardId}:${key}`;
+          if (state.paidInvoices.includes(marker)) return state;
+          return { paidInvoices: [...state.paidInvoices, marker], xp: state.xp + 30 };
+        }),
+
+      addDebt: (debt) =>
+        set((state) => ({
+          debts: [
+            ...state.debts,
+            {
+              ...debt,
+              paid: debt.paid ?? 0,
+              id: uid(),
+              createdAt: new Date().toISOString().slice(0, 10),
+            },
+          ],
+          xp: state.xp + 15,
+        })),
+
+      updateDebt: (id, patch) =>
+        set((state) => ({ debts: state.debts.map((d) => (d.id === id ? { ...d, ...patch } : d)) })),
+
+      payDebt: (id, amount) =>
+        set((state) => {
+          const debt = state.debts.find((d) => d.id === id);
+          if (!debt || amount <= 0) return state;
+          const value = Math.min(amount, Math.max(0, debt.principal - debt.paid));
+          const tx: Transaction = {
+            id: uid(),
+            title: `Pagamento — ${debt.name}`,
+            amount: value,
+            type: "saida",
+            category: "Dívidas",
+            date: new Date().toISOString().slice(0, 10),
+            method: "transferencia",
+            savedTenPercent: false,
+            debtId: debt.id,
+          };
+          const cleared = debt.paid + value >= debt.principal - 0.01;
+          return {
+            debts: state.debts.map((d) => (d.id === id ? { ...d, paid: d.paid + value } : d)),
+            transactions: [tx, ...state.transactions],
+            badges: cleared && !state.badges.includes("sem-correntes")
+              ? [...state.badges, "sem-correntes"]
+              : state.badges,
+            xp: state.xp + 40 + (cleared ? 120 : 0),
+          };
+        }),
+
+      removeDebt: (id) => set((state) => ({ debts: state.debts.filter((d) => d.id !== id) })),
+
       setBudgetSplit: (category, percent) =>
         set((state) => ({ budgetSplit: { ...state.budgetSplit, [category]: percent } })),
 
+      setPillarSplit: (pillar, percent) =>
+        set((state) => {
+          const others = (Object.keys(state.pillarSplit) as PillarId[]).filter((p) => p !== pillar);
+          const rest = 100 - percent;
+          const currentRest = others.reduce((sum, p) => sum + state.pillarSplit[p], 0) || 1;
+          const next = { ...state.pillarSplit, [pillar]: percent } as Record<PillarId, number>;
+          others.forEach((p, i) => {
+            next[p] =
+              i === others.length - 1
+                ? Math.max(0, rest - others.slice(0, -1).reduce((s, o) => s + next[o], 0))
+                : Math.round((state.pillarSplit[p] / currentRest) * rest);
+          });
+          return { pillarSplit: next };
+        }),
+
+      resetPillarSplit: () => set({ pillarSplit: { ...DEFAULT_PILLAR_SPLIT } }),
+
       resetToSeed: () => set({ ...initial }),
     }),
-    { name: "aurin-store-v1", skipHydration: true },
+    {
+      name: "aurin-store-v2",
+      version: 2,
+      skipHydration: true,
+      migrate: (persisted) => ({
+        ...initial,
+        ...(persisted as Partial<AurinState>),
+        cards: (persisted as Partial<AurinState>)?.cards ?? seedCards,
+        debts: (persisted as Partial<AurinState>)?.debts ?? seedDebts,
+        paidInvoices: (persisted as Partial<AurinState>)?.paidInvoices ?? [],
+        pillarSplit: (persisted as Partial<AurinState>)?.pillarSplit ?? { ...DEFAULT_PILLAR_SPLIT },
+      }),
+    },
   ),
 );
 
@@ -151,16 +306,171 @@ export function budgetRows(
   transactions: Transaction[],
   key: string,
   split: Record<string, number>,
+  costCeiling: number,
 ) {
-  const { income } = monthTotals(transactions, key);
-  const ceiling = income * 0.9;
   const spentByCategory = new Map(categoryBreakdown(transactions, key).map((c) => [c.category, c.value]));
-  return EXPENSE_CATEGORIES.map((category) => {
-    const limit = (ceiling * (split[category] ?? 0)) / 100;
+  return COST_CATEGORIES.map((category) => {
+    const limit = (costCeiling * (split[category] ?? 0)) / 100;
     const spent = spentByCategory.get(category) ?? 0;
     const percent = limit > 0 ? (spent / limit) * 100 : 0;
     return { category, limit, spent, percent };
   });
+}
+
+/* ------------------------------- 70/20/10 ---------------------------------- */
+
+export function pillarUsage(
+  transactions: Transaction[],
+  key: string,
+  split: Record<PillarId, number>,
+  titheAllocated: number,
+) {
+  const { income } = monthTotals(transactions, key);
+  const used: Record<PillarId, number> = { custo: 0, reserva: 0, ouro: titheAllocated };
+  for (const t of transactions) {
+    if (t.type !== "saida" || monthKey(t.date) !== key) continue;
+    const pillar = CATEGORY_PILLAR[t.category] ?? "custo";
+    used[pillar] += t.amount;
+  }
+  return (Object.keys(split) as PillarId[]).map((id) => {
+    const target = (income * split[id]) / 100;
+    const value = used[id];
+    return {
+      id,
+      target,
+      used: value,
+      percent: target > 0 ? (value / target) * 100 : 0,
+      remaining: target - value,
+    };
+  });
+}
+
+/* --------------------------------- cartões --------------------------------- */
+
+export interface InvoiceItem {
+  key: string;
+  due: string;
+  total: number;
+  items: Transaction[];
+  paid: boolean;
+}
+
+export function cardInvoices(
+  card: CreditCard,
+  transactions: Transaction[],
+  paidInvoices: string[],
+): InvoiceItem[] {
+  const map = new Map<string, { due: string; items: Transaction[] }>();
+  for (const t of transactions) {
+    if (t.cardId !== card.id || t.type !== "saida") continue;
+    const cycle = invoiceCycleFor(card, t.date);
+    const bucket = map.get(cycle.key) ?? { due: cycle.due, items: [] };
+    bucket.items.push(t);
+    map.set(cycle.key, bucket);
+  }
+  return [...map.entries()]
+    .map(([key, v]) => ({
+      key,
+      due: v.due,
+      items: v.items.sort((a, b) => (a.date < b.date ? 1 : -1)),
+      total: v.items.reduce((s, t) => s + t.amount, 0),
+      paid: paidInvoices.includes(`${card.id}:${key}`),
+    }))
+    .sort((a, b) => (a.key < b.key ? -1 : 1));
+}
+
+export function cardSummary(
+  card: CreditCard,
+  transactions: Transaction[],
+  paidInvoices: string[],
+) {
+  const invoices = cardInvoices(card, transactions, paidInvoices);
+  const nowKey = currentInvoiceKey(card);
+  const open = invoices.filter((i) => !i.paid && i.key >= nowKey);
+  const committed = open.reduce((s, i) => s + i.total, 0);
+  const current = invoices.find((i) => i.key === nowKey);
+  const next = invoices.find((i) => i.key > nowKey);
+  const available = Math.max(0, card.limit - committed);
+  return {
+    invoices,
+    open,
+    current,
+    next,
+    committed,
+    available,
+    usage: card.limit > 0 ? (committed / card.limit) * 100 : 0,
+  };
+}
+
+export function totalCardCommitment(
+  cards: CreditCard[],
+  transactions: Transaction[],
+  paidInvoices: string[],
+) {
+  return cards.reduce((sum, c) => sum + cardSummary(c, transactions, paidInvoices).committed, 0);
+}
+
+/* --------------------------------- dívidas --------------------------------- */
+
+export function debtSummary(debts: Debt[]) {
+  const total = debts.reduce((s, d) => s + d.principal, 0);
+  const paid = debts.reduce((s, d) => s + d.paid, 0);
+  const remaining = Math.max(0, total - paid);
+  const weightedRate =
+    remaining > 0
+      ? debts.reduce((s, d) => s + d.interestRate * Math.max(0, d.principal - d.paid), 0) / remaining
+      : 0;
+  const monthly = debts.reduce(
+    (s, d) => s + (d.installments > 0 ? d.principal / d.installments : 0),
+    0,
+  );
+  return {
+    total,
+    paid,
+    remaining,
+    weightedRate,
+    monthly,
+    progress: total > 0 ? (paid / total) * 100 : 100,
+    monthsToFreedom: monthly > 0 ? Math.ceil(remaining / monthly) : 0,
+  };
+}
+
+export type Strategy = "avalanche" | "snowball";
+
+/** Simula a quitação das dívidas com um valor mensal disponível. */
+export function simulatePayoff(debts: Debt[], monthlyBudget: number, strategy: Strategy) {
+  let items = debts
+    .map((d) => ({ id: d.id, name: d.name, balance: Math.max(0, d.principal - d.paid), rate: d.interestRate / 100 }))
+    .filter((d) => d.balance > 0);
+  if (!items.length || monthlyBudget <= 0) return { months: 0, interest: 0, series: [] as { month: number; saldo: number }[] };
+
+  const series: { month: number; saldo: number }[] = [
+    { month: 0, saldo: items.reduce((s, i) => s + i.balance, 0) },
+  ];
+  let interest = 0;
+  let month = 0;
+
+  while (items.length && month < 360) {
+    month++;
+    items = items.map((i) => {
+      const added = i.balance * i.rate;
+      interest += added;
+      return { ...i, balance: i.balance + added };
+    });
+    items.sort((a, b) => (strategy === "avalanche" ? b.rate - a.rate : a.balance - b.balance));
+    let left = monthlyBudget;
+    for (const item of items) {
+      if (left <= 0) break;
+      const pay = Math.min(left, item.balance);
+      item.balance -= pay;
+      left -= pay;
+    }
+    items = items.filter((i) => i.balance > 0.01);
+    series.push({ month, saldo: Math.round(items.reduce((s, i) => s + i.balance, 0)) });
+    if (left === monthlyBudget) break; // orçamento insuficiente
+  }
+
+  return { months: month, interest, series };
 }
 
 export function loggingStreak(transactions: Transaction[]) {
@@ -181,6 +491,9 @@ export function earnedBadges(state: {
   goals: Goal[];
   assets: FixedAsset[];
   badges: string[];
+  cards?: CreditCard[];
+  debts?: Debt[];
+  paidInvoices?: string[];
 }) {
   const key = currentMonthKey();
   const { income, expense, tithe } = monthTotals(state.transactions, key);
@@ -194,6 +507,15 @@ export function earnedBadges(state: {
   if (loggingStreak(state.transactions) >= 7) unlocked.add("consistencia");
   if (income > 0 && tithe >= income * 0.1 - 0.01) unlocked.add("senhor-dizimo");
   if (state.assets.length > 0) unlocked.add("arquiteto-futuro");
+  if ((state.debts ?? []).some((d) => d.paid >= d.principal - 0.01)) unlocked.add("sem-correntes");
+  const cards = state.cards ?? [];
+  if (
+    cards.length > 0 &&
+    cards.every(
+      (c) => cardSummary(c, state.transactions, state.paidInvoices ?? []).usage <= 70,
+    )
+  )
+    unlocked.add("mestre-fatura");
 
   return BADGES.map((badge) => ({ ...badge, unlocked: unlocked.has(badge.id) }));
 }
