@@ -46,7 +46,7 @@ export function JourneyTrail({ stops }: { stops: TrailStop[] }) {
             return (
               <div
                 key={stop.key}
-                className="reveal-step relative flex w-16 flex-col items-center sm:w-20"
+                className="reveal-step relative flex w-12 flex-col items-center sm:w-16"
                 style={{ animationDelay: `${i * 0.07}s` }}
               >
                 <span

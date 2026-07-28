@@ -299,7 +299,7 @@ function Dashboard() {
       </Card>
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
-        <Card className="min-w-0">
+        <Card className="min-w-0 self-start">
           <CardHeader>
             <CardTitle className="text-base">Trilha da Jornada</CardTitle>
           </CardHeader>
