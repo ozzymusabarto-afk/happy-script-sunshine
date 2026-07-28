@@ -255,7 +255,9 @@ function DebtsPage() {
             <Stat
               label="Meses de paz antecipados"
               value={
-                peaceMonths > 0 ? `${peaceMonths} mês${peaceMonths === 1 ? "" : "es"}` : "—"
+                peaceMonths > 0
+                  ? `${peaceMonths} mês${peaceMonths === 1 ? "" : "es"}`
+                  : "Mesmo ritmo"
               }
             />
             <Stat
@@ -296,9 +298,9 @@ function DebtsPage() {
           </div>
 
           <p className="text-xs text-muted-foreground">
-            Avalanche cuida primeiro da corrente mais cara (economiza {brl(Math.abs(avalanche.interest - snowball.interest))}).
-            Bola de neve solta a menor primeiro e traz alívio mais cedo. Os dois levam à mesma
-            liberdade — escolha o que te mantém em movimento.
+            Avalanche cuida primeiro da corrente mais cara. Bola de neve solta a menor primeiro e
+            traz alívio mais cedo. Os dois levam à mesma liberdade — escolha o que te mantém em
+            movimento.
           </p>
         </CardContent>
       </Card>
