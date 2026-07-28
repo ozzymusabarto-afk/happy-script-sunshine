@@ -60,13 +60,35 @@ export function dailyLine(date = new Date()) {
 
 /** Rótulos acolhedores usados no lugar dos termos frios. */
 export const LABELS = {
-  debts: "Rota de Libertação",
-  debtsShort: "Libertação",
+  debts: "Resgate de Paz",
+  debtsShort: "Paz",
   balance: "O que já é seu",
   expense: "Escolhas do mês",
   income: "Entrou este mês",
   budget: "Seu ritmo do mês",
 } as const;
+
+/**
+ * Vocabulário oficial do AURIN. Nenhuma tela deve usar as palavras antigas
+ * ("dívida", "débito", "juros", "quitação"): tudo vira jornada e conquista.
+ */
+export const WORDS = {
+  rescue: "Resgate de Paz",
+  rescuePlural: "Resgates de Paz",
+  plan: "Plano de Libertação",
+  unlocks: "Desbloqueios do Futuro",
+  step: "Passo de libertação",
+  weight: "Peso que segura você",
+  remaining: "Quanto falta para a paz",
+  freed: "Já libertado",
+  liberate: "Libertar",
+  victory: "Batalha vencida",
+  victories: "Batalhas vencidas",
+  peaceTime: "Tempo de Paz",
+  futureCoins: "Moedas do Futuro",
+  achievements: "Conquistas",
+} as const;
+
 
 /** Estado de um pilar de orçamento, sempre sem julgamento. */
 export function pillarTone(percent: number): ToneLevel {
