@@ -1,6 +1,7 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { ImpactModal } from "@/components/impact-modal";
+import { OnboardingDialog } from "@/components/onboarding-dialog";
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
   Coins,
@@ -10,9 +11,11 @@ import {
   LayoutDashboard,
   Plus,
   ScrollText,
+  Settings,
   Sparkles,
   TrendingUp,
 } from "lucide-react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -34,17 +37,33 @@ const NAV = [
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
-  useAurinHydrated();
+  const hydrated = useAurinHydrated();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   const xp = useAurinStore((s) => s.xp);
   const goals = useAurinStore((s) => s.goals);
   const assets = useAurinStore((s) => s.assets);
   const transactions = useAurinStore((s) => s.transactions);
+  const profileName = useAurinStore((s) => s.profile.name);
+  const applyRecurring = useAurinStore((s) => s.applyRecurring);
+
+  // Lançamentos fixos do mês entram sozinhos assim que o app abre.
+  useEffect(() => {
+    if (!hydrated) return;
+    const created = applyRecurring();
+    if (created > 0) {
+      toast.success(
+        created === 1
+          ? "1 lançamento fixo deste mês foi registrado para você."
+          : `${created} lançamentos fixos deste mês foram registrados para você.`,
+      );
+    }
+  }, [hydrated, applyRecurring]);
 
   const level = useMemo(() => levelFor(xp), [xp]);
   const wealth = useMemo(() => totalWealth(goals, assets), [goals, assets]);
   const month = useMemo(() => monthTotals(transactions, currentMonthKey()), [transactions]);
+
 
   return (
     <div className="min-h-screen bg-background text-foreground">
