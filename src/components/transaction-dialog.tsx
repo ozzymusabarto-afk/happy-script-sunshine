@@ -4,6 +4,7 @@ import { z } from "zod";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { CurrencyInput } from "@/components/currency-input";
 import {
   Dialog,
   DialogContent,
@@ -61,6 +62,7 @@ interface Props {
 
 export function TransactionDialog({ open, onOpenChange, editing }: Props) {
   const cards = useAurinStore((s) => s.cards);
+  const customCategories = useAurinStore((s) => s.customCategories);
   const transactions = useAurinStore((s) => s.transactions);
   const paidInvoices = useAurinStore((s) => s.paidInvoices);
   const addTransaction = useAurinStore((s) => s.addTransaction);
@@ -68,7 +70,7 @@ export function TransactionDialog({ open, onOpenChange, editing }: Props) {
 
   const [type, setType] = useState<TxType>("saida");
   const [title, setTitle] = useState("");
-  const [amount, setAmount] = useState("");
+  const [amount, setAmount] = useState(0);
   const [category, setCategory] = useState<string>(EXPENSE_CATEGORIES[0]);
   const [date, setDate] = useState(today());
   const [method, setMethod] = useState<PaymentMethod>("pix");
@@ -82,7 +84,7 @@ export function TransactionDialog({ open, onOpenChange, editing }: Props) {
     if (editing) {
       setType(editing.type);
       setTitle(editing.title);
-      setAmount(String(editing.amount));
+      setAmount(editing.amount);
       setCategory(editing.category);
       setDate(editing.date);
       setMethod(editing.method);
@@ -92,7 +94,7 @@ export function TransactionDialog({ open, onOpenChange, editing }: Props) {
     } else {
       setType("saida");
       setTitle("");
-      setAmount("");
+      setAmount(0);
       setCategory(EXPENSE_CATEGORIES[0]);
       setDate(today());
       setMethod("pix");
@@ -103,8 +105,11 @@ export function TransactionDialog({ open, onOpenChange, editing }: Props) {
     setErrors({});
   }, [open, editing]);
 
-  const categories = type === "entrada" ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
-  const numericAmount = Number(amount.replace(",", "."));
+  const categories =
+    type === "entrada"
+      ? [...INCOME_CATEGORIES]
+      : [...EXPENSE_CATEGORIES, ...customCategories];
+  const numericAmount = amount;
   const isCard = method === "cartao" && type === "saida";
   const installmentCount = Math.max(1, Math.min(24, Number(installments) || 1));
   const selectedCard = cards.find((c) => c.id === cardId) ?? null;
@@ -201,14 +206,8 @@ export function TransactionDialog({ open, onOpenChange, editing }: Props) {
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="grid gap-2">
-              <Label htmlFor="tx-amount">Valor (R$)</Label>
-              <Input
-                id="tx-amount"
-                inputMode="decimal"
-                value={amount}
-                placeholder="0,00"
-                onChange={(e) => setAmount(e.target.value)}
-              />
+              <Label htmlFor="tx-amount">Valor</Label>
+              <CurrencyInput id="tx-amount" value={amount} onValueChange={setAmount} autoFocus />
               {errors.amount && <p className="text-xs text-destructive">{errors.amount}</p>}
             </div>
             <div className="grid gap-2">
@@ -219,6 +218,26 @@ export function TransactionDialog({ open, onOpenChange, editing }: Props) {
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
               />
+              <div className="flex gap-2">
+                {[
+                  { label: "Hoje", offset: 0 },
+                  { label: "Ontem", offset: -1 },
+                  { label: "Anteontem", offset: -2 },
+                ].map((opt) => (
+                  <button
+                    key={opt.label}
+                    type="button"
+                    className="rounded-md border border-border px-2 py-0.5 text-[11px] text-muted-foreground transition-colors hover:border-primary/50 hover:text-primary"
+                    onClick={() => {
+                      const d = new Date();
+                      d.setDate(d.getDate() + opt.offset);
+                      setDate(d.toISOString().slice(0, 10));
+                    }}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
               {errors.date && <p className="text-xs text-destructive">{errors.date}</p>}
             </div>
           </div>
