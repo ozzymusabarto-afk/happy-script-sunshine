@@ -117,7 +117,7 @@ function BudgetPage() {
                 </div>
 
                 <p className="mt-3 text-xs text-muted-foreground">
-                  {pillarMessage(tone, pillar.label, data.remaining, brl)}
+                  {pillarMessage(tone, pillar.label, data.remaining, brl, pillar.id === "ouro")}
                 </p>
                 <p className="mt-1.5 text-xs text-muted-foreground/80">{pillar.description}</p>
 

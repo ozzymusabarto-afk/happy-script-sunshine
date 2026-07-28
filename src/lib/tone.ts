@@ -100,7 +100,12 @@ export function pillarMessage(
   label: string,
   gap: number,
   money: (v: number) => string,
+  isGold = false,
 ) {
+  if (isGold) {
+    if (gap <= 0) return "Seu ouro do mês está completo. Essa é a parte que trabalha por você.";
+    return `Faltam ${money(gap)} para completar o ouro deste mês — o pedaço que constrói o seu futuro.`;
+  }
   if (tone === "ritmo") {
     return `${label} está no ritmo. Sobram ${money(Math.max(0, gap))} de folga tranquila.`;
   }
