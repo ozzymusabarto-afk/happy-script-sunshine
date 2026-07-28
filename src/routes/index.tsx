@@ -80,6 +80,10 @@ function Dashboard() {
   const transactions = useAurinStore((s) => s.transactions);
   const goals = useAurinStore((s) => s.goals);
   const assets = useAurinStore((s) => s.assets);
+  const cards = useAurinStore((s) => s.cards);
+  const debtList = useAurinStore((s) => s.debts);
+  const paidInvoices = useAurinStore((s) => s.paidInvoices);
+  const pillarSplit = useAurinStore((s) => s.pillarSplit);
 
   const key = currentMonthKey();
   const month = useMemo(() => monthTotals(transactions, key), [transactions, key]);
@@ -92,6 +96,29 @@ function Dashboard() {
   const recent = useMemo(
     () => [...transactions].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 8),
     [transactions],
+  );
+
+  const cardStats = useMemo(
+    () =>
+      cards.map((c) => {
+        const summary = cardSummary(c, transactions, paidInvoices);
+        const due = summary.current?.due ?? summary.next?.due;
+        return {
+          id: c.id,
+          name: c.name,
+          limit: c.limit,
+          committed: summary.committed,
+          available: summary.available,
+          usage: summary.usage,
+          dueIn: due ? daysUntil(due) : null,
+        };
+      }),
+    [cards, transactions, paidInvoices],
+  );
+  const debts = useMemo(() => debtSummary(debtList), [debtList]);
+  const pillars = useMemo(
+    () => pillarUsage(transactions, key, pillarSplit, month.tithe),
+    [transactions, key, pillarSplit, month.tithe],
   );
 
   const titheTarget = month.income * 0.1;
