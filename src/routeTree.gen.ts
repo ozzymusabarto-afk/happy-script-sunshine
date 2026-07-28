@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TransacoesRouteImport } from './routes/transacoes'
+import { Route as SimuladorRouteImport } from './routes/simulador'
 import { Route as OrcamentoRouteImport } from './routes/orcamento'
 import { Route as MultiplicadorRouteImport } from './routes/multiplicador'
 import { Route as LibertacaoRouteImport } from './routes/libertacao'
@@ -21,6 +22,11 @@ import { Route as IndexRouteImport } from './routes/index'
 const TransacoesRoute = TransacoesRouteImport.update({
   id: '/transacoes',
   path: '/transacoes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SimuladorRoute = SimuladorRouteImport.update({
+  id: '/simulador',
+  path: '/simulador',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OrcamentoRoute = OrcamentoRouteImport.update({
@@ -67,6 +73,7 @@ export interface FileRoutesByFullPath {
   '/libertacao': typeof LibertacaoRoute
   '/multiplicador': typeof MultiplicadorRoute
   '/orcamento': typeof OrcamentoRoute
+  '/simulador': typeof SimuladorRoute
   '/transacoes': typeof TransacoesRoute
 }
 export interface FileRoutesByTo {
@@ -77,6 +84,7 @@ export interface FileRoutesByTo {
   '/libertacao': typeof LibertacaoRoute
   '/multiplicador': typeof MultiplicadorRoute
   '/orcamento': typeof OrcamentoRoute
+  '/simulador': typeof SimuladorRoute
   '/transacoes': typeof TransacoesRoute
 }
 export interface FileRoutesById {
@@ -88,6 +96,7 @@ export interface FileRoutesById {
   '/libertacao': typeof LibertacaoRoute
   '/multiplicador': typeof MultiplicadorRoute
   '/orcamento': typeof OrcamentoRoute
+  '/simulador': typeof SimuladorRoute
   '/transacoes': typeof TransacoesRoute
 }
 export interface FileRouteTypes {
@@ -100,6 +109,7 @@ export interface FileRouteTypes {
     | '/libertacao'
     | '/multiplicador'
     | '/orcamento'
+    | '/simulador'
     | '/transacoes'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -110,6 +120,7 @@ export interface FileRouteTypes {
     | '/libertacao'
     | '/multiplicador'
     | '/orcamento'
+    | '/simulador'
     | '/transacoes'
   id:
     | '__root__'
@@ -120,6 +131,7 @@ export interface FileRouteTypes {
     | '/libertacao'
     | '/multiplicador'
     | '/orcamento'
+    | '/simulador'
     | '/transacoes'
   fileRoutesById: FileRoutesById
 }
@@ -131,6 +143,7 @@ export interface RootRouteChildren {
   LibertacaoRoute: typeof LibertacaoRoute
   MultiplicadorRoute: typeof MultiplicadorRoute
   OrcamentoRoute: typeof OrcamentoRoute
+  SimuladorRoute: typeof SimuladorRoute
   TransacoesRoute: typeof TransacoesRoute
 }
 
@@ -141,6 +154,13 @@ declare module '@tanstack/react-router' {
       path: '/transacoes'
       fullPath: '/transacoes'
       preLoaderRoute: typeof TransacoesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/simulador': {
+      id: '/simulador'
+      path: '/simulador'
+      fullPath: '/simulador'
+      preLoaderRoute: typeof SimuladorRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/orcamento': {
@@ -203,6 +223,7 @@ const rootRouteChildren: RootRouteChildren = {
   LibertacaoRoute: LibertacaoRoute,
   MultiplicadorRoute: MultiplicadorRoute,
   OrcamentoRoute: OrcamentoRoute,
+  SimuladorRoute: SimuladorRoute,
   TransacoesRoute: TransacoesRoute,
 }
 export const routeTree = rootRouteImport
