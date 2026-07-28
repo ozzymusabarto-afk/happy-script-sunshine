@@ -337,7 +337,7 @@ function CompoundSimulator() {
 
         <div className="h-72 min-w-0">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={data} margin={{ left: 4, right: 8, top: 8 }}>
+            <AreaChart data={data} margin={{ left: 12, right: 8, top: 8 }}>
               <defs>
                 <linearGradient id="gTotal" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="var(--primary)" stopOpacity={0.6} />
@@ -357,7 +357,7 @@ function CompoundSimulator() {
                 tickLine={false}
                 axisLine={false}
                 fontSize={12}
-                width={60}
+                width={72}
                 tickFormatter={(v: number) => brlCompact(v)}
               />
               <Tooltip
