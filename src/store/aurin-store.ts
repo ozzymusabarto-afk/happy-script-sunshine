@@ -7,8 +7,10 @@ import {
   CATEGORY_PILLAR,
   COST_CATEGORIES,
   DEFAULT_PILLAR_SPLIT,
+  EMPTY_PROFILE,
   TREASURY_GOAL_ID,
   addMonthsIso,
+  clampDay,
   currentInvoiceKey,
   invoiceCycleFor,
   monthKey,
@@ -17,6 +19,8 @@ import {
   type FixedAsset,
   type Goal,
   type PillarId,
+  type Profile,
+  type Recurring,
   type Transaction,
 } from "@/lib/aurin";
 import {
@@ -47,7 +51,20 @@ export interface Celebration {
   cleared?: boolean;
 }
 
+export interface OnboardingPayload {
+  name: string;
+  monthlyIncome: number;
+  dreamName: string;
+  dreamTarget: number;
+  dreamYears: number;
+  startingBalance: number;
+}
+
 export interface AurinState {
+  hasOnboarded: boolean;
+  profile: Profile;
+  customCategories: string[];
+  recurring: Recurring[];
   transactions: Transaction[];
   goals: Goal[];
   assets: FixedAsset[];
@@ -62,12 +79,22 @@ export interface AurinState {
   celebrationsEnabled: boolean;
   dismissCelebration: () => void;
   setCelebrationsEnabled: (enabled: boolean) => void;
+  setProfile: (patch: Partial<Profile>) => void;
+  completeOnboarding: (payload: OnboardingPayload) => void;
+  skipOnboarding: () => void;
+  addCustomCategory: (name: string) => void;
+  removeCustomCategory: (name: string) => void;
+  addRecurring: (item: Omit<Recurring, "id" | "lastApplied">) => void;
+  removeRecurring: (id: string) => void;
+  applyRecurring: () => number;
   addTransaction: (tx: NewTransaction) => void;
   updateTransaction: (id: string, tx: Partial<Transaction>) => void;
   removeTransaction: (id: string) => void;
   addGoal: (goal: Omit<Goal, "id">) => void;
+  updateGoal: (id: string, patch: Partial<Goal>) => void;
   removeGoal: (id: string) => void;
   depositToGoal: (id: string, amount: number) => void;
+  withdrawFromGoal: (id: string, amount: number) => void;
   addAsset: (asset: Omit<FixedAsset, "id">) => void;
   removeAsset: (id: string) => void;
   addCard: (card: Omit<CreditCard, "id">) => void;
@@ -81,23 +108,62 @@ export interface AurinState {
   setBudgetSplit: (category: string, percent: number) => void;
   setPillarSplit: (pillar: PillarId, percent: number) => void;
   resetPillarSplit: () => void;
+  loadDemoData: () => void;
+  clearAll: () => void;
+  importState: (data: Partial<AurinState>) => void;
   resetToSeed: () => void;
 }
 
-const initial = {
+export const emptyTreasury = (): Goal => ({
+  id: TREASURY_GOAL_ID,
+  name: "Tesouro Pessoal (Dízimo de Arkad)",
+  target: 0,
+  balance: 0,
+  kind: "investimento",
+});
+
+/** Estado de quem está começando agora: tudo vazio, pronto para digitar. */
+const emptyState = () => ({
+  hasOnboarded: false,
+  profile: { ...EMPTY_PROFILE },
+  customCategories: [] as string[],
+  recurring: [] as Recurring[],
+  transactions: [] as Transaction[],
+  goals: [emptyTreasury()],
+  assets: [] as FixedAsset[],
+  cards: [] as CreditCard[],
+  debts: [] as Debt[],
+  paidInvoices: [] as string[],
+  xp: 0,
+  badges: [] as string[],
+  budgetSplit: { ...BUDGET_SPLIT },
+  pillarSplit: { ...DEFAULT_PILLAR_SPLIT },
+  celebration: null as Celebration | null,
+  celebrationsEnabled: true,
+});
+
+/** Conteúdo de demonstração — só entra quando o usuário pede. */
+const demoState = () => ({
+  ...emptyState(),
+  hasOnboarded: true,
+  profile: {
+    name: "Explorador",
+    monthlyIncome: 8200,
+    dreamName: "Liberdade Financeira",
+    dreamTarget: 500000,
+    dreamYears: 15,
+  },
   transactions: seedTransactions,
   goals: seedGoals,
   assets: seedAssets,
   cards: seedCards,
   debts: seedDebts,
-  paidInvoices: [] as string[],
   xp: seedXp,
   badges: seedBadges,
-  budgetSplit: { ...BUDGET_SPLIT },
-  pillarSplit: { ...DEFAULT_PILLAR_SPLIT },
-  celebration: null as Celebration | null,
-  celebrationsEnabled: true,
-};
+});
+
+const initial = emptyState();
+
 
 function expandInstallments(tx: NewTransaction, cards: CreditCard[]): Transaction[] {
   const count = Math.max(1, Math.floor(tx.installments ?? 1));
@@ -123,8 +189,98 @@ function expandInstallments(tx: NewTransaction, cards: CreditCard[]): Transactio
 
 export const useAurinStore = create<AurinState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       ...initial,
+
+      setProfile: (patch) => set((state) => ({ profile: { ...state.profile, ...patch } })),
+
+      completeOnboarding: (payload) =>
+        set((state) => {
+          const goals = state.goals.map((g) =>
+            g.id === TREASURY_GOAL_ID
+              ? {
+                  ...g,
+                  balance: payload.startingBalance,
+                  target: payload.dreamTarget > 0 ? payload.dreamTarget : g.target,
+                }
+              : g,
+          );
+          if (payload.dreamName.trim() && payload.dreamTarget > 0) {
+            goals.push({
+              id: uid(),
+              name: payload.dreamName.trim(),
+              target: payload.dreamTarget,
+              balance: 0,
+              kind: "outro",
+            });
+          }
+          return {
+            hasOnboarded: true,
+            profile: {
+              name: payload.name.trim(),
+              monthlyIncome: payload.monthlyIncome,
+              dreamName: payload.dreamName.trim(),
+              dreamTarget: payload.dreamTarget,
+              dreamYears: payload.dreamYears,
+            },
+            goals,
+            xp: state.xp + 50,
+          };
+        }),
+
+      skipOnboarding: () => set({ hasOnboarded: true }),
+
+      addCustomCategory: (name) =>
+        set((state) => {
+          const clean = name.trim().slice(0, 30);
+          if (!clean || state.customCategories.includes(clean)) return state;
+          return { customCategories: [...state.customCategories, clean] };
+        }),
+
+      removeCustomCategory: (name) =>
+        set((state) => ({ customCategories: state.customCategories.filter((c) => c !== name) })),
+
+      addRecurring: (item) =>
+        set((state) => ({ recurring: [...state.recurring, { ...item, id: uid() }] })),
+
+      removeRecurring: (id) =>
+        set((state) => ({ recurring: state.recurring.filter((r) => r.id !== id) })),
+
+      applyRecurring: () => {
+        const state = get();
+        const key = new Date().toISOString().slice(0, 7);
+        const [y, m] = key.split("-").map(Number);
+        const pending = state.recurring.filter((r) => r.lastApplied !== key);
+        if (!pending.length) return 0;
+        const created: Transaction[] = pending.map((r) => ({
+          id: uid(),
+          title: r.title,
+          amount: r.amount,
+          type: r.type,
+          category: r.category,
+          date: `${key}-${String(clampDay(y, m - 1, r.day)).padStart(2, "0")}`,
+          method: r.method,
+          savedTenPercent: r.type === "entrada" ? r.savedTenPercent : false,
+          cardId: r.cardId,
+        }));
+        const titheTotal = created
+          .filter((t) => t.type === "entrada" && t.savedTenPercent)
+          .reduce((s, t) => s + t.amount * 0.1, 0);
+        set({
+          transactions: [...created, ...state.transactions],
+          recurring: state.recurring.map((r) =>
+            r.lastApplied === key ? r : { ...r, lastApplied: key },
+          ),
+          goals: titheTotal
+            ? state.goals.map((g) =>
+                g.id === TREASURY_GOAL_ID ? { ...g, balance: g.balance + titheTotal } : g,
+              )
+            : state.goals,
+          xp: state.xp + created.length * 10,
+        });
+        return created.length;
+      },
+
 
       addTransaction: (tx) =>
         set((state) => {
@@ -169,8 +325,19 @@ export const useAurinStore = create<AurinState>()(
 
       addGoal: (goal) => set((state) => ({ goals: [...state.goals, { ...goal, id: uid() }], xp: state.xp + 25 })),
 
+      updateGoal: (id, patch) =>
+        set((state) => ({ goals: state.goals.map((g) => (g.id === id ? { ...g, ...patch } : g)) })),
+
+      withdrawFromGoal: (id, amount) =>
+        set((state) => ({
+          goals: state.goals.map((g) =>
+            g.id === id ? { ...g, balance: Math.max(0, g.balance - amount) } : g,
+          ),
+        })),
+
       removeGoal: (id) =>
         set((state) => ({ goals: state.goals.filter((g) => g.id !== id || g.id === TREASURY_GOAL_ID) })),
+
 
       depositToGoal: (id, amount) =>
         set((state) => {
@@ -315,29 +482,45 @@ export const useAurinStore = create<AurinState>()(
       setCelebrationsEnabled: (enabled) =>
         set({ celebrationsEnabled: enabled, celebration: enabled ? null : null }),
 
-      resetToSeed: () => set({ ...initial }),
+      loadDemoData: () => set({ ...demoState() }),
+
+      clearAll: () => set({ ...emptyState(), hasOnboarded: false }),
+
+      importState: (data) =>
+        set(() => ({
+          ...emptyState(),
+          ...data,
+          celebration: null,
+          hasOnboarded: true,
+        })),
+
+      resetToSeed: () => set({ ...demoState() }),
     }),
     {
-      name: "aurin-store-v2",
-      version: 2,
+      name: "aurin-store-v3",
+      version: 3,
       skipHydration: true,
       partialize: (state) => {
         const { celebration: _c, ...rest } = state;
         return rest as AurinState;
       },
-      migrate: (persisted) => ({
-        ...initial,
-        ...(persisted as Partial<AurinState>),
-        cards: (persisted as Partial<AurinState>)?.cards ?? seedCards,
-        debts: (persisted as Partial<AurinState>)?.debts ?? seedDebts,
-        paidInvoices: (persisted as Partial<AurinState>)?.paidInvoices ?? [],
-        pillarSplit: (persisted as Partial<AurinState>)?.pillarSplit ?? { ...DEFAULT_PILLAR_SPLIT },
-        celebration: null,
-        celebrationsEnabled: (persisted as Partial<AurinState>)?.celebrationsEnabled ?? true,
-      }) as AurinState,
+      migrate: (persisted) => {
+        const prev = (persisted ?? {}) as Partial<AurinState>;
+        return {
+          ...emptyState(),
+          ...prev,
+          goals: prev.goals?.length ? prev.goals : [emptyTreasury()],
+          profile: prev.profile ?? { ...EMPTY_PROFILE },
+          customCategories: prev.customCategories ?? [],
+          recurring: prev.recurring ?? [],
+          hasOnboarded: prev.hasOnboarded ?? Boolean(prev.transactions?.length),
+          celebration: null,
+        } as AurinState;
+      },
     },
   ),
 );
+
 
 /* ---------------------------------- seletores --------------------------------- */
 

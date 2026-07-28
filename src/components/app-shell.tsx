@@ -1,6 +1,7 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { ImpactModal } from "@/components/impact-modal";
+import { OnboardingDialog } from "@/components/onboarding-dialog";
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
   Coins,
@@ -10,9 +11,11 @@ import {
   LayoutDashboard,
   Plus,
   ScrollText,
+  Settings,
   Sparkles,
   TrendingUp,
 } from "lucide-react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -34,17 +37,33 @@ const NAV = [
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
-  useAurinHydrated();
+  const hydrated = useAurinHydrated();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   const xp = useAurinStore((s) => s.xp);
   const goals = useAurinStore((s) => s.goals);
   const assets = useAurinStore((s) => s.assets);
   const transactions = useAurinStore((s) => s.transactions);
+  const profileName = useAurinStore((s) => s.profile.name);
+  const applyRecurring = useAurinStore((s) => s.applyRecurring);
+
+  // Lançamentos fixos do mês entram sozinhos assim que o app abre.
+  useEffect(() => {
+    if (!hydrated) return;
+    const created = applyRecurring();
+    if (created > 0) {
+      toast.success(
+        created === 1
+          ? "1 lançamento fixo deste mês foi registrado para você."
+          : `${created} lançamentos fixos deste mês foram registrados para você.`,
+      );
+    }
+  }, [hydrated, applyRecurring]);
 
   const level = useMemo(() => levelFor(xp), [xp]);
   const wealth = useMemo(() => totalWealth(goals, assets), [goals, assets]);
   const month = useMemo(() => monthTotals(transactions, currentMonthKey()), [transactions]);
+
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -80,7 +99,20 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 </Link>
               );
             })}
+            <Link
+              to="/ajustes"
+              className={cn(
+                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                pathname.startsWith("/ajustes")
+                  ? "bg-primary/15 text-primary"
+                  : "text-muted-foreground hover:bg-sidebar-accent hover:text-foreground",
+              )}
+            >
+              <Settings className="h-4 w-4 shrink-0" />
+              <span className="truncate">Meus dados</span>
+            </Link>
           </nav>
+
 
           <div className="mt-auto rounded-xl border border-border bg-card p-4">
             <p className="text-xs uppercase tracking-wide text-muted-foreground">Tesouro total</p>
@@ -108,7 +140,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 </span>
                 <div className="min-w-0">
                   <p className="truncate font-display text-sm font-bold sm:text-base">
-                    {level.title}
+                    {profileName ? `${profileName} · ${level.title}` : level.title}
                   </p>
                   <div className="mt-1 flex items-center gap-2">
                     <Progress value={level.progress} className="h-1.5 w-28 sm:w-44" />
@@ -119,12 +151,30 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 </div>
               </div>
 
-              <Button aria-label="Nova Transação" onClick={() => setOpen(true)} className="shrink-0 bg-gold text-primary-foreground shadow-gold hover:opacity-90">
-                <Plus className="h-4 w-4" />
-                <span className="hidden sm:inline">Nova Transação</span>
-              </Button>
+              <div className="flex shrink-0 items-center gap-2">
+                <Button
+                  asChild
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Meus dados"
+                  className="lg:hidden"
+                >
+                  <Link to="/ajustes">
+                    <Settings className="h-4 w-4" />
+                  </Link>
+                </Button>
+                <Button
+                  aria-label="Nova Transação"
+                  onClick={() => setOpen(true)}
+                  className="bg-gold text-primary-foreground shadow-gold hover:opacity-90"
+                >
+                  <Plus className="h-4 w-4" />
+                  <span className="hidden sm:inline">Nova Transação</span>
+                </Button>
+              </div>
             </div>
           </header>
+
 
           <main className="min-w-0 flex-1 px-4 pb-24 pt-5 sm:px-6 lg:pb-10">{children}</main>
           <ImpactModal />
@@ -156,6 +206,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </nav>
 
       <TransactionDialog open={open} onOpenChange={setOpen} />
+      {hydrated && <OnboardingDialog />}
     </div>
   );
 }

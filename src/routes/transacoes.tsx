@@ -13,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { EmptyState } from "@/components/empty-state";
 import { TransactionDialog } from "@/components/transaction-dialog";
 import {
   EXPENSE_CATEGORIES,
@@ -164,11 +165,25 @@ function TransactionsPage() {
           <CardTitle className="text-base">Histórico</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
-          {filtered.length === 0 && (
-            <p className="py-8 text-center text-sm text-muted-foreground">
-              Nenhuma moeda encontrada com esses filtros.
-            </p>
-          )}
+          {filtered.length === 0 &&
+            (transactions.length === 0 ? (
+              <EmptyState
+                className="border-0 bg-transparent"
+                icon={<Sparkles className="h-6 w-6" />}
+                title="Sua história começa aqui"
+                description="Registre a primeira entrada ou despesa real. Não precisa ser perfeito — precisa ser verdadeiro."
+                actionLabel="Registrar minha primeira moeda"
+                hint="Uma parte de tudo que ganho é minha para guardar."
+                onAction={() => {
+                  setEditing(null);
+                  setOpen(true);
+                }}
+              />
+            ) : (
+              <p className="py-8 text-center text-sm text-muted-foreground">
+                Nenhuma moeda encontrada com esses filtros.
+              </p>
+            ))}
           {filtered.map((t) => (
             <div
               key={t.id}

@@ -1,11 +1,12 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { Building2, Plus, ShieldCheck, Sparkles, Target, Trash2 } from "lucide-react";
+import { Building2, Pencil, Plus, ShieldCheck, Sparkles, Target, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { CurrencyInput } from "@/components/currency-input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
@@ -69,6 +70,8 @@ function MultiplierPage() {
   const addGoal = useAurinStore((s) => s.addGoal);
   const removeGoal = useAurinStore((s) => s.removeGoal);
   const depositToGoal = useAurinStore((s) => s.depositToGoal);
+  const updateGoal = useAurinStore((s) => s.updateGoal);
+  const [editGoalId, setEditGoalId] = useState<string | null>(null);
   const addAsset = useAurinStore((s) => s.addAsset);
   const removeAsset = useAurinStore((s) => s.removeAsset);
 
@@ -143,6 +146,15 @@ function MultiplierPage() {
                       {GOAL_LABELS[goal.kind]}
                     </Badge>
                   </div>
+                  <div className="flex shrink-0 items-center">
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      aria-label={`Ajustar ${goal.name}`}
+                      onClick={() => setEditGoalId(goal.id)}
+                    >
+                      <Pencil className="h-4 w-4 text-muted-foreground" />
+                    </Button>
                   {goal.id !== TREASURY_GOAL_ID && (
                     <Button
                       size="icon"
@@ -156,6 +168,7 @@ function MultiplierPage() {
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
                   )}
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <p className="font-display text-xl font-bold text-gold">{brl(goal.balance)}</p>
@@ -230,6 +243,11 @@ function MultiplierPage() {
       </section>
 
       <GoalDialog open={goalOpen} onOpenChange={setGoalOpen} onSubmit={addGoal} />
+      <EditGoalDialog
+        goalId={editGoalId}
+        onClose={() => setEditGoalId(null)}
+        onSave={updateGoal}
+      />
       <DepositDialog
         goalId={depositId}
         onClose={() => setDepositId(null)}
@@ -435,16 +453,16 @@ function GoalDialog({
   onSubmit: (goal: { name: string; target: number; balance: number; kind: GoalKind }) => void;
 }) {
   const [name, setName] = useState("");
-  const [target, setTarget] = useState("");
-  const [balance, setBalance] = useState("");
+  const [target, setTarget] = useState(0);
+  const [balance, setBalance] = useState(0);
   const [kind, setKind] = useState<GoalKind>("investimento");
   const [error, setError] = useState("");
 
   function submit() {
     const parsed = goalSchema.safeParse({
       name,
-      target: Number(target.replace(",", ".")),
-      balance: Number(balance.replace(",", ".") || 0),
+      target,
+      balance,
       kind,
     });
     if (!parsed.success) {
@@ -454,8 +472,8 @@ function GoalDialog({
     onSubmit(parsed.data);
     toast.success("Cofre criado");
     setName("");
-    setTarget("");
-    setBalance("");
+    setTarget(0);
+    setBalance(0);
     setError("");
     onOpenChange(false);
   }
@@ -480,22 +498,12 @@ function GoalDialog({
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="grid gap-2">
-              <Label htmlFor="goal-target">Meta (R$)</Label>
-              <Input
-                id="goal-target"
-                inputMode="decimal"
-                value={target}
-                onChange={(e) => setTarget(e.target.value)}
-              />
+              <Label htmlFor="goal-target">Meta</Label>
+              <CurrencyInput id="goal-target" value={target} onValueChange={setTarget} />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="goal-balance">Saldo atual (R$)</Label>
-              <Input
-                id="goal-balance"
-                inputMode="decimal"
-                value={balance}
-                onChange={(e) => setBalance(e.target.value)}
-              />
+              <Label htmlFor="goal-balance">Saldo atual</Label>
+              <CurrencyInput id="goal-balance" value={balance} onValueChange={setBalance} />
             </div>
           </div>
           <div className="grid gap-2">
@@ -528,6 +536,70 @@ function GoalDialog({
   );
 }
 
+function EditGoalDialog({
+  goalId,
+  onClose,
+  onSave,
+}: {
+  goalId: string | null;
+  onClose: () => void;
+  onSave: (id: string, patch: { name?: string; target?: number }) => void;
+}) {
+  const goal = useAurinStore((s) => s.goals.find((g) => g.id === goalId));
+  const [name, setName] = useState("");
+  const [target, setTarget] = useState(0);
+
+  useEffect(() => {
+    if (goal) {
+      setName(goal.name);
+      setTarget(goal.target);
+    }
+  }, [goal?.id]);
+
+  return (
+    <Dialog open={Boolean(goalId)} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent className="sm:max-w-sm">
+        <DialogHeader>
+          <DialogTitle className="font-display">Ajustar cofre</DialogTitle>
+          <DialogDescription>Seu sonho pode mudar de tamanho. Tudo bem.</DialogDescription>
+        </DialogHeader>
+        <div className="grid gap-4">
+          <div className="grid gap-2">
+            <Label htmlFor="eg-name">Nome</Label>
+            <Input
+              id="eg-name"
+              value={name}
+              maxLength={60}
+              onChange={(e) => setName(e.target.value)}
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="eg-target">Meta</Label>
+            <CurrencyInput id="eg-target" value={target} onValueChange={setTarget} />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="ghost" onClick={onClose}>
+            Cancelar
+          </Button>
+          <Button
+            className="bg-gold text-primary-foreground hover:opacity-90"
+            disabled={!name.trim()}
+            onClick={() => {
+              if (!goalId) return;
+              onSave(goalId, { name: name.trim(), target });
+              toast.success("Cofre atualizado");
+              onClose();
+            }}
+          >
+            Salvar
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function DepositDialog({
   goalId,
   onClose,
@@ -537,19 +609,20 @@ function DepositDialog({
   onClose: () => void;
   onDeposit: (id: string, amount: number) => void;
 }) {
-  const [amount, setAmount] = useState("");
+  const [amount, setAmount] = useState(0);
   const [error, setError] = useState("");
   const goal = useAurinStore((s) => s.goals.find((g) => g.id === goalId));
+  const withdrawFromGoal = useAurinStore((s) => s.withdrawFromGoal);
 
   function submit() {
-    const value = Number(amount.replace(",", "."));
+    const value = amount;
     if (!Number.isFinite(value) || value <= 0 || value > 100_000_000) {
       setError("Informe um valor válido");
       return;
     }
     if (goalId) onDeposit(goalId, value);
     toast.success(`${brl(value)} depositados no cofre`);
-    setAmount("");
+    setAmount(0);
     setError("");
     onClose();
   }
@@ -562,19 +635,24 @@ function DepositDialog({
           <DialogDescription className="truncate">{goal?.name}</DialogDescription>
         </DialogHeader>
         <div className="grid gap-2">
-          <Label htmlFor="deposit-amount">Valor (R$)</Label>
-          <Input
-            id="deposit-amount"
-            inputMode="decimal"
-            value={amount}
-            placeholder="0,00"
-            onChange={(e) => setAmount(e.target.value)}
-          />
+          <Label htmlFor="deposit-amount">Valor</Label>
+          <CurrencyInput id="deposit-amount" value={amount} onValueChange={setAmount} autoFocus />
           {error && <p className="text-xs text-destructive">{error}</p>}
         </div>
-        <DialogFooter>
-          <Button variant="ghost" onClick={onClose}>
-            Cancelar
+        <DialogFooter className="sm:justify-between">
+          <Button
+            variant="ghost"
+            className="text-muted-foreground"
+            disabled={amount <= 0}
+            onClick={() => {
+              if (!goalId) return;
+              withdrawFromGoal(goalId, amount);
+              toast.success(`${brl(amount)} retirados. Sem culpa: o dinheiro é seu.`);
+              setAmount(0);
+              onClose();
+            }}
+          >
+            Retirar
           </Button>
           <Button onClick={submit} className="bg-gold text-primary-foreground hover:opacity-90">
             Depositar

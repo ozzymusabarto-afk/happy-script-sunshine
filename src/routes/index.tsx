@@ -12,6 +12,7 @@ import {
 
 import { FreedomMeter, JourneyTrail, VaultJar } from "@/components/journey-visuals";
 import { MorningRitual } from "@/components/morning-ritual";
+import { QuickAdd } from "@/components/quick-add";
 import { LABELS, TONE_BG, TONE_LABEL, TONE_TEXT, pillarTone } from "@/lib/tone";
 import { monthsOfFreedom } from "@/lib/impact";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -134,6 +135,47 @@ function Dashboard() {
         debtRemaining={debts.remaining}
         monthlyPace={monthlyPace}
       />
+
+      <QuickAdd />
+
+      {transactions.length === 0 && (
+        <Card className="reveal-step border-dashed border-primary/30 bg-primary/[0.04]">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Sparkles className="h-4 w-4 text-primary" /> Seus primeiros passos
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="grid gap-3 sm:grid-cols-3">
+            {[
+              {
+                to: "/ajustes",
+                title: "1. Cadastre o que se repete",
+                text: "Salário, aluguel, assinaturas: uma vez só e o app registra todo mês.",
+              },
+              {
+                to: "/transacoes",
+                title: "2. Anote suas despesas reais",
+                text: "Sem julgamento. Ver com clareza já é metade do caminho.",
+              },
+              {
+                to: "/multiplicador",
+                title: "3. Escolha seu sonho",
+                text: "Um destino claro transforma cada moeda guardada em progresso visível.",
+              },
+            ].map((s) => (
+              <Link
+                key={s.to}
+                to={s.to}
+                className="rounded-xl border border-border bg-card p-4 transition-colors hover:border-primary/50"
+              >
+                <p className="text-sm font-semibold text-primary">{s.title}</p>
+                <p className="mt-1 text-xs text-muted-foreground">{s.text}</p>
+              </Link>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
 
       <div className="grid gap-4 sm:grid-cols-3">
         <StatTile
