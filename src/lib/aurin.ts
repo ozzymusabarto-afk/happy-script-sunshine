@@ -39,6 +39,40 @@ export interface FixedAsset {
   monthlyIncome: number;
 }
 
+/* ------------------------------- perfil ----------------------------------- */
+
+export interface Profile {
+  name: string;
+  monthlyIncome: number;
+  dreamName: string;
+  dreamTarget: number;
+  dreamYears: number;
+}
+
+export const EMPTY_PROFILE: Profile = {
+  name: "",
+  monthlyIncome: 0,
+  dreamName: "",
+  dreamTarget: 0,
+  dreamYears: 5,
+};
+
+/* ---------------------------- lançamentos fixos ---------------------------- */
+
+export interface Recurring {
+  id: string;
+  title: string;
+  amount: number;
+  type: TxType;
+  category: string;
+  method: PaymentMethod;
+  day: number;
+  savedTenPercent: boolean;
+  cardId?: string;
+  /** Último mês (yyyy-mm) em que este lançamento já foi aplicado. */
+  lastApplied?: string;
+}
+
 /* --------------------------------- cartões --------------------------------- */
 
 export type CardBrand = "Visa" | "Mastercard" | "Elo" | "Amex" | "Outro";
