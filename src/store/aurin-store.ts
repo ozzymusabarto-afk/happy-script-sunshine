@@ -61,6 +61,22 @@ export interface OnboardingPayload {
   startingBalance: number;
 }
 
+export interface SecuritySettings {
+  /** Hash PBKDF2 do PIN — o PIN em si nunca é guardado. */
+  pinHash: string | null;
+  salt: string | null;
+  biometricId: string | null;
+  /** 0 = pede sempre ao abrir. */
+  autoLockMinutes: number;
+}
+
+export interface ReminderSettings {
+  enabled: boolean;
+  /** "HH:MM" */
+  time: string;
+  lastShown: string | null;
+}
+
 export interface AurinState {
   hasOnboarded: boolean;
   plan: PlanId;
@@ -79,8 +95,15 @@ export interface AurinState {
   pillarSplit: Record<PillarId, number>;
   celebration: Celebration | null;
   celebrationsEnabled: boolean;
+  security: SecuritySettings;
+  reminder: ReminderSettings;
+  lastBackupAt: string | null;
   dismissCelebration: () => void;
   setCelebrationsEnabled: (enabled: boolean) => void;
+  setSecurity: (patch: Partial<SecuritySettings>) => void;
+  disableLock: () => void;
+  setReminder: (patch: Partial<ReminderSettings>) => void;
+  markBackup: () => void;
   setPlan: (plan: PlanId) => void;
   setProfile: (patch: Partial<Profile>) => void;
   completeOnboarding: (payload: OnboardingPayload) => void;
