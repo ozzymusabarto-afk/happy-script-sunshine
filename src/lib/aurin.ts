@@ -321,6 +321,18 @@ export const BADGES: BadgeDef[] = [
     name: "Arquiteto do Futuro",
     description: "Registrou um ativo fixo ou fonte de renda passiva.",
   },
+  {
+    id: "sem-correntes",
+    icon: "⛓️‍💥",
+    name: "Sem Correntes",
+    description: "Quitou integralmente uma dívida.",
+  },
+  {
+    id: "mestre-fatura",
+    icon: "💳",
+    name: "Mestre da Fatura",
+    description: "Nenhum cartão acima de 70% do limite utilizado.",
+  },
 ];
 
 /* ----------------------------- ciclos de fatura ---------------------------- */
