@@ -70,6 +70,8 @@ function MultiplierPage() {
   const addGoal = useAurinStore((s) => s.addGoal);
   const removeGoal = useAurinStore((s) => s.removeGoal);
   const depositToGoal = useAurinStore((s) => s.depositToGoal);
+  const updateGoal = useAurinStore((s) => s.updateGoal);
+  const [editGoalId, setEditGoalId] = useState<string | null>(null);
   const addAsset = useAurinStore((s) => s.addAsset);
   const removeAsset = useAurinStore((s) => s.removeAsset);
 
@@ -144,6 +146,15 @@ function MultiplierPage() {
                       {GOAL_LABELS[goal.kind]}
                     </Badge>
                   </div>
+                  <div className="flex shrink-0 items-center">
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      aria-label={`Ajustar ${goal.name}`}
+                      onClick={() => setEditGoalId(goal.id)}
+                    >
+                      <Pencil className="h-4 w-4 text-muted-foreground" />
+                    </Button>
                   {goal.id !== TREASURY_GOAL_ID && (
                     <Button
                       size="icon"
@@ -157,6 +168,7 @@ function MultiplierPage() {
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
                   )}
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <p className="font-display text-xl font-bold text-gold">{brl(goal.balance)}</p>
@@ -231,6 +243,11 @@ function MultiplierPage() {
       </section>
 
       <GoalDialog open={goalOpen} onOpenChange={setGoalOpen} onSubmit={addGoal} />
+      <EditGoalDialog
+        goalId={editGoalId}
+        onClose={() => setEditGoalId(null)}
+        onSave={updateGoal}
+      />
       <DepositDialog
         goalId={depositId}
         onClose={() => setDepositId(null)}
@@ -512,6 +529,70 @@ function GoalDialog({
           </Button>
           <Button onClick={submit} className="bg-gold text-primary-foreground hover:opacity-90">
             Criar cofre
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function EditGoalDialog({
+  goalId,
+  onClose,
+  onSave,
+}: {
+  goalId: string | null;
+  onClose: () => void;
+  onSave: (id: string, patch: { name?: string; target?: number }) => void;
+}) {
+  const goal = useAurinStore((s) => s.goals.find((g) => g.id === goalId));
+  const [name, setName] = useState("");
+  const [target, setTarget] = useState(0);
+
+  useEffect(() => {
+    if (goal) {
+      setName(goal.name);
+      setTarget(goal.target);
+    }
+  }, [goal?.id]);
+
+  return (
+    <Dialog open={Boolean(goalId)} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent className="sm:max-w-sm">
+        <DialogHeader>
+          <DialogTitle className="font-display">Ajustar cofre</DialogTitle>
+          <DialogDescription>Seu sonho pode mudar de tamanho. Tudo bem.</DialogDescription>
+        </DialogHeader>
+        <div className="grid gap-4">
+          <div className="grid gap-2">
+            <Label htmlFor="eg-name">Nome</Label>
+            <Input
+              id="eg-name"
+              value={name}
+              maxLength={60}
+              onChange={(e) => setName(e.target.value)}
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="eg-target">Meta</Label>
+            <CurrencyInput id="eg-target" value={target} onValueChange={setTarget} />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="ghost" onClick={onClose}>
+            Cancelar
+          </Button>
+          <Button
+            className="bg-gold text-primary-foreground hover:opacity-90"
+            disabled={!name.trim()}
+            onClick={() => {
+              if (!goalId) return;
+              onSave(goalId, { name: name.trim(), target });
+              toast.success("Cofre atualizado");
+              onClose();
+            }}
+          >
+            Salvar
           </Button>
         </DialogFooter>
       </DialogContent>
