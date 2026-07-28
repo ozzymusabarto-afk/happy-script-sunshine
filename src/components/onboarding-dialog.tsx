@@ -142,12 +142,41 @@ export function OnboardingDialog() {
 
         {step === 2 && (
           <div className="space-y-3">
-            <Label htmlFor="ob-balance">Já tem algo guardado hoje? (opcional)</Label>
-            <CurrencyInput
-              id="ob-balance"
-              value={startingBalance}
-              onValueChange={setStartingBalance}
-            />
+            <div className="flex flex-wrap gap-2">
+              {PEACE_GOALS.map((g) => (
+                <Button
+                  key={g}
+                  type="button"
+                  size="sm"
+                  variant={peaceGoal === g ? "default" : "outline"}
+                  className={peaceGoal === g ? "bg-gold text-primary-foreground" : ""}
+                  onClick={() => setPeaceGoal(g)}
+                >
+                  {g}
+                </Button>
+              ))}
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="ob-name">Como te chamamos? (opcional)</Label>
+                <Input
+                  id="ob-name"
+                  value={name}
+                  maxLength={40}
+                  placeholder="Ex.: Ana"
+                  onChange={(e) => setName(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="ob-balance">Já tem algo guardado? (opcional)</Label>
+                <CurrencyInput
+                  id="ob-balance"
+                  value={startingBalance}
+                  onValueChange={setStartingBalance}
+                />
+              </div>
+            </div>
+
             <div className="rounded-xl border border-primary/20 bg-primary/[0.06] p-4 text-sm">
               <p className="flex items-center gap-2 font-semibold text-primary">
                 <Sparkles className="h-4 w-4" /> Seu ponto de partida
