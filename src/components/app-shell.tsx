@@ -199,7 +199,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       {/* Bottom nav mobile */}
       <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-sidebar/95 backdrop-blur lg:hidden">
-        <div className="grid grid-cols-8">
+        <div className="flex snap-x overflow-x-auto pb-[env(safe-area-inset-bottom)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {NAV.map((item) => {
             const active = item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
             return (
@@ -207,7 +207,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 key={item.to}
                 to={item.to}
                 className={cn(
-                  "flex flex-col items-center gap-1 py-2.5 text-[10px] font-medium transition-colors",
+                  "flex min-w-[4.5rem] flex-1 shrink-0 snap-start flex-col items-center gap-1 py-2.5 text-[10px] font-medium transition-colors",
                   active ? "text-primary" : "text-muted-foreground",
                 )}
               >
