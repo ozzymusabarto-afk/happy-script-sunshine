@@ -189,8 +189,98 @@ function expandInstallments(tx: NewTransaction, cards: CreditCard[]): Transactio
 
 export const useAurinStore = create<AurinState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       ...initial,
+
+      setProfile: (patch) => set((state) => ({ profile: { ...state.profile, ...patch } })),
+
+      completeOnboarding: (payload) =>
+        set((state) => {
+          const goals = state.goals.map((g) =>
+            g.id === TREASURY_GOAL_ID
+              ? {
+                  ...g,
+                  balance: payload.startingBalance,
+                  target: payload.dreamTarget > 0 ? payload.dreamTarget : g.target,
+                }
+              : g,
+          );
+          if (payload.dreamName.trim() && payload.dreamTarget > 0) {
+            goals.push({
+              id: uid(),
+              name: payload.dreamName.trim(),
+              target: payload.dreamTarget,
+              balance: 0,
+              kind: "outro",
+            });
+          }
+          return {
+            hasOnboarded: true,
+            profile: {
+              name: payload.name.trim(),
+              monthlyIncome: payload.monthlyIncome,
+              dreamName: payload.dreamName.trim(),
+              dreamTarget: payload.dreamTarget,
+              dreamYears: payload.dreamYears,
+            },
+            goals,
+            xp: state.xp + 50,
+          };
+        }),
+
+      skipOnboarding: () => set({ hasOnboarded: true }),
+
+      addCustomCategory: (name) =>
+        set((state) => {
+          const clean = name.trim().slice(0, 30);
+          if (!clean || state.customCategories.includes(clean)) return state;
+          return { customCategories: [...state.customCategories, clean] };
+        }),
+
+      removeCustomCategory: (name) =>
+        set((state) => ({ customCategories: state.customCategories.filter((c) => c !== name) })),
+
+      addRecurring: (item) =>
+        set((state) => ({ recurring: [...state.recurring, { ...item, id: uid() }] })),
+
+      removeRecurring: (id) =>
+        set((state) => ({ recurring: state.recurring.filter((r) => r.id !== id) })),
+
+      applyRecurring: () => {
+        const state = get();
+        const key = new Date().toISOString().slice(0, 7);
+        const [y, m] = key.split("-").map(Number);
+        const pending = state.recurring.filter((r) => r.lastApplied !== key);
+        if (!pending.length) return 0;
+        const created: Transaction[] = pending.map((r) => ({
+          id: uid(),
+          title: r.title,
+          amount: r.amount,
+          type: r.type,
+          category: r.category,
+          date: `${key}-${String(clampDay(y, m - 1, r.day)).padStart(2, "0")}`,
+          method: r.method,
+          savedTenPercent: r.type === "entrada" ? r.savedTenPercent : false,
+          cardId: r.cardId,
+        }));
+        const titheTotal = created
+          .filter((t) => t.type === "entrada" && t.savedTenPercent)
+          .reduce((s, t) => s + t.amount * 0.1, 0);
+        set({
+          transactions: [...created, ...state.transactions],
+          recurring: state.recurring.map((r) =>
+            r.lastApplied === key ? r : { ...r, lastApplied: key },
+          ),
+          goals: titheTotal
+            ? state.goals.map((g) =>
+                g.id === TREASURY_GOAL_ID ? { ...g, balance: g.balance + titheTotal } : g,
+              )
+            : state.goals,
+          xp: state.xp + created.length * 10,
+        });
+        return created.length;
+      },
+
 
       addTransaction: (tx) =>
         set((state) => {
