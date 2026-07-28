@@ -432,7 +432,7 @@ export const useAurinStore = create<AurinState>()(
             title: `Pagamento — ${debt.name}`,
             amount: value,
             type: "saida",
-            category: "Dívidas",
+            category: "Resgate de Paz",
             date: new Date().toISOString().slice(0, 10),
             method: "transferencia",
             savedTenPercent: false,

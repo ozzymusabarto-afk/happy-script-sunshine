@@ -31,16 +31,16 @@ import { DEBT_LABELS, brl, brlCompact, type Debt, type DebtType } from "@/lib/au
 import { cn } from "@/lib/utils";
 import { debtSummary, simulatePayoff, useAurinStore, type Strategy } from "@/store/aurin-store";
 
-export const Route = createFileRoute("/dividas")({
+export const Route = createFileRoute("/libertacao")({
   head: () => ({
     meta: [
-      { title: "Rota de Libertação | AURIN" },
+      { title: "Plano de Libertação | AURIN" },
       {
         name: "description",
         content:
-          "Acompanhe quanto do seu futuro você já libertou, registre pagamentos e veja sua data de liberdade se aproximar.",
+          "Veja quanto da sua paz já foi reconquistada e a data em que você fica livre.",
       },
-      { property: "og:title", content: "Rota de Libertação | AURIN" },
+      { property: "og:title", content: "Plano de Libertação | AURIN" },
       {
         property: "og:description",
         content: "Cada pagamento solta uma corrente e antecipa a sua paz.",
@@ -104,7 +104,7 @@ function DebtsPage() {
       <header className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
         <div className="min-w-0">
           <h1 className="font-display text-2xl font-extrabold sm:text-3xl">
-            Rota de Libertação
+            Plano de Libertação
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Você já libertou {summary.progress.toFixed(0)}% do seu futuro. Cada pagamento solta uma
@@ -116,14 +116,14 @@ function DebtsPage() {
           onClick={() => setOpen(true)}
         >
           <Plus className="h-4 w-4" />
-          <span className="hidden sm:inline">Nova dívida</span>
+          <span className="hidden sm:inline">Novo resgate</span>
         </Button>
       </header>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Stat label="Já libertado" value={brl(summary.paid)} tone="success" />
         <Stat label="Ainda a soltar" value={brl(summary.remaining)} />
-        <Stat label="Custo médio das correntes" value={`${summary.weightedRate.toFixed(2)}% a.m.`} />
+        <Stat label="Peso médio por mês" value={`${summary.weightedRate.toFixed(2)}% a.m.`} />
         <Stat
           label="Sua liberdade chega em"
           value={summary.monthsToFreedom > 0 ? `${summary.monthsToFreedom} meses` : "Você já é livre"}
@@ -149,13 +149,13 @@ function DebtsPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
             <HandCoins className="h-4 w-4 text-primary" />
-            Suas correntes
+            Seus resgates de paz
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-5">
           {debts.length === 0 && (
             <p className="py-8 text-center text-sm text-muted-foreground">
-              Nenhuma corrente presa a você. Aproveite essa leveza.
+              Nenhum peso preso a você hoje. Aproveite essa leveza.
             </p>
           )}
           {debts.map((debt) => {
@@ -206,7 +206,7 @@ function DebtsPage() {
                     aria-label={`Remover ${debt.name}`}
                     onClick={() => {
                       removeDebt(debt.id);
-                      toast.success("Corrente removida da sua rota");
+                      toast.success("Resgate removido do seu plano");
                     }}
                   >
                     <Trash2 className="h-3.5 w-3.5 text-destructive" />
@@ -220,13 +220,13 @@ function DebtsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Simulador de liberdade</CardTitle>
+          <CardTitle className="text-base">Quando a paz chega</CardTitle>
         </CardHeader>
         <CardContent className="space-y-5">
           <Tabs value={strategy} onValueChange={(v) => setStrategy(v as Strategy)}>
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="avalanche">Avalanche (maior juro)</TabsTrigger>
-              <TabsTrigger value="snowball">Bola de neve (menor saldo)</TabsTrigger>
+              <TabsTrigger value="avalanche">Mais econômico</TabsTrigger>
+              <TabsTrigger value="snowball">Vitórias rápidas</TabsTrigger>
             </TabsList>
           </Tabs>
 
@@ -242,7 +242,7 @@ function DebtsPage() {
               step={50}
               className="mt-3"
               onValueChange={([v]) => setBudget(v)}
-              aria-label="Valor mensal destinado às dívidas"
+              aria-label="Valor mensal dedicado à sua paz"
             />
           </div>
 
@@ -363,7 +363,7 @@ function DebtDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v: b
 
   function submit() {
     const value = Number(principal.replace(",", "."));
-    if (name.trim().length < 2) return setError("Informe o nome da dívida");
+    if (name.trim().length < 2) return setError("Informe o nome do compromisso");
     if (!Number.isFinite(value) || value <= 0) return setError("Informe um valor válido");
     addDebt({
       name: name.trim(),
@@ -373,7 +373,7 @@ function DebtDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v: b
       installments: Math.max(1, Number(installments) || 1),
       dueDay: Math.min(28, Math.max(1, Number(dueDay) || 1)),
     });
-    toast.success("Dívida registrada");
+    toast.success("Resgate de Paz criado");
     setName("");
     setPrincipal("");
     setError("");
@@ -384,9 +384,9 @@ function DebtDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v: b
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[92vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle className="font-display">Nova dívida</DialogTitle>
+          <DialogTitle className="font-display">Novo resgate</DialogTitle>
           <DialogDescription>
-            Registre o valor original, os juros e o prazo para simular a quitação.
+            Registre o valor, o custo mensal e o prazo para ver sua liberdade chegar.
           </DialogDescription>
         </DialogHeader>
 
@@ -432,7 +432,7 @@ function DebtDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v: b
 
           <div className="grid gap-4 sm:grid-cols-3">
             <div className="grid gap-2">
-              <Label htmlFor="debt-rate">Juros (% a.m.)</Label>
+              <Label htmlFor="debt-rate">Custo mensal (%)</Label>
               <Input
                 id="debt-rate"
                 inputMode="decimal"
@@ -495,7 +495,7 @@ function PaymentDialog({
         <DialogHeader>
           <DialogTitle className="font-display">Registrar pagamento</DialogTitle>
           <DialogDescription>
-            {debt?.name} — saldo devedor de {brl(remaining)}.
+            {debt?.name} — ainda falta libertar {brl(remaining)}.
           </DialogDescription>
         </DialogHeader>
 
@@ -509,7 +509,7 @@ function PaymentDialog({
             onChange={(e) => setAmount(e.target.value)}
           />
           <p className="text-xs text-muted-foreground">
-            Cria uma saída na categoria Dívidas (pilar de 20%).
+            Cria uma saída na categoria Resgate de Paz (pilar de 20%).
           </p>
         </div>
 

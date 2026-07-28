@@ -30,7 +30,7 @@ const NAV = [
   { to: "/transacoes", label: "Moedas", icon: ScrollText },
   { to: "/orcamento", label: "Meu ritmo", short: "Ritmo", icon: Coins },
   { to: "/cartoes", label: "Cartões", icon: CreditCard },
-  { to: "/dividas", label: "Libertação", short: "Liberdade", icon: HandCoins },
+  { to: "/libertacao", label: "Libertação", short: "Liberdade", icon: HandCoins },
   { to: "/multiplicador", label: "Multiplicador", short: "Multipl.", icon: TrendingUp },
   { to: "/jornada", label: "Jornada", icon: Sparkles },
 ] as const;

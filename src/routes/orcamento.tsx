@@ -243,9 +243,9 @@ function BudgetPage() {
       </Card>
 
       <p className="text-xs text-muted-foreground">
-        O pilar Reservas & Dívidas é o que acelera a sua libertação — acompanhe na{" "}
-        <Link to="/dividas" className="text-primary underline-offset-4 hover:underline">
-          Rota de Libertação
+        O pilar Reservas & Resgate de Paz é o que acelera a sua libertação — acompanhe na{" "}
+        <Link to="/libertacao" className="text-primary underline-offset-4 hover:underline">
+          Plano de Libertação
         </Link>
         .
       </p>

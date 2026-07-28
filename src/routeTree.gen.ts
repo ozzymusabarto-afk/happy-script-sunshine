@@ -39,8 +39,8 @@ const JornadaRoute = JornadaRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const DividasRoute = DividasRouteImport.update({
-  id: '/dividas',
-  path: '/dividas',
+  id: '/libertacao',
+  path: '/libertacao',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CartoesRoute = CartoesRouteImport.update({
@@ -63,7 +63,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/ajustes': typeof AjustesRoute
   '/cartoes': typeof CartoesRoute
-  '/dividas': typeof DividasRoute
+  '/libertacao': typeof DividasRoute
   '/jornada': typeof JornadaRoute
   '/multiplicador': typeof MultiplicadorRoute
   '/orcamento': typeof OrcamentoRoute
@@ -73,7 +73,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/ajustes': typeof AjustesRoute
   '/cartoes': typeof CartoesRoute
-  '/dividas': typeof DividasRoute
+  '/libertacao': typeof DividasRoute
   '/jornada': typeof JornadaRoute
   '/multiplicador': typeof MultiplicadorRoute
   '/orcamento': typeof OrcamentoRoute
@@ -84,7 +84,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/ajustes': typeof AjustesRoute
   '/cartoes': typeof CartoesRoute
-  '/dividas': typeof DividasRoute
+  '/libertacao': typeof DividasRoute
   '/jornada': typeof JornadaRoute
   '/multiplicador': typeof MultiplicadorRoute
   '/orcamento': typeof OrcamentoRoute
@@ -96,7 +96,7 @@ export interface FileRouteTypes {
     | '/'
     | '/ajustes'
     | '/cartoes'
-    | '/dividas'
+    | '/libertacao'
     | '/jornada'
     | '/multiplicador'
     | '/orcamento'
@@ -106,7 +106,7 @@ export interface FileRouteTypes {
     | '/'
     | '/ajustes'
     | '/cartoes'
-    | '/dividas'
+    | '/libertacao'
     | '/jornada'
     | '/multiplicador'
     | '/orcamento'
@@ -116,7 +116,7 @@ export interface FileRouteTypes {
     | '/'
     | '/ajustes'
     | '/cartoes'
-    | '/dividas'
+    | '/libertacao'
     | '/jornada'
     | '/multiplicador'
     | '/orcamento'
@@ -164,10 +164,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof JornadaRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/dividas': {
-      id: '/dividas'
-      path: '/dividas'
-      fullPath: '/dividas'
+    '/libertacao': {
+      id: '/libertacao'
+      path: '/libertacao'
+      fullPath: '/libertacao'
       preLoaderRoute: typeof DividasRouteImport
       parentRoute: typeof rootRouteImport
     }

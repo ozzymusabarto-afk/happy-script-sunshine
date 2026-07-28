@@ -146,7 +146,7 @@ export function VaultJar({ item, delay = 0 }: { item: VaultItem; delay?: number 
 
 /* -------------------------------- corrente/dívida ------------------------------- */
 
-/** Elos que se rompem conforme a dívida é paga. */
+/** Elos que se rompem conforme o resgate avança. */
 export function ChainProgress({
   percent,
   links = 10,

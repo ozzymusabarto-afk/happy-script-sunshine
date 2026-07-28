@@ -34,7 +34,7 @@ import { currentMonthKey, monthTotals, useAurinStore } from "@/store/aurin-store
 export const Route = createFileRoute("/multiplicador")({
   head: () => ({
     meta: [
-      { title: "Multiplicador de Ouro — Cofres e Juros Compostos | AURIN" },
+      { title: "Moedas do Futuro — Cofres que crescem | AURIN" },
       {
         name: "description",
         content:
@@ -43,7 +43,7 @@ export const Route = createFileRoute("/multiplicador")({
       { property: "og:title", content: "Multiplicador de Ouro | AURIN" },
       {
         property: "og:description",
-        content: "Cofres, reserva de emergência, ativos fixos e simulador de juros compostos.",
+        content: "Cofres, reserva de emergência, ativos fixos e simulador de Moedas do Futuro.",
       },
     ],
   }),
@@ -307,7 +307,7 @@ function CompoundSimulator() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
           <Target className="h-4 w-4 text-primary" />
-          Ouro que Gera Filhos — Juros Compostos
+          Ouro que Gera Filhos — Moedas do Futuro
         </CardTitle>
       </CardHeader>
       <CardContent className="grid gap-6 lg:grid-cols-[minmax(0,320px)_minmax(0,1fr)]">
@@ -355,7 +355,7 @@ function CompoundSimulator() {
             </p>
             <p className="mt-1 font-display text-2xl font-extrabold text-gold">{brl(last.total)}</p>
             <p className="mt-2 text-xs text-muted-foreground">
-              Aportes: {brl(last.aportes)} · Juros:{" "}
+              Aportes: {brl(last.aportes)} · Moedas do Futuro:{" "}
               <span className="font-semibold text-success">{brl(last.juros)}</span>
             </p>
           </div>
@@ -396,7 +396,7 @@ function CompoundSimulator() {
             ))}
           </div>
           <div className="mt-4 rounded-xl border border-accent/30 bg-accent/10 p-3 text-sm">
-            <span className="font-semibold text-accent">Juros trabalhando por você:</span>{" "}
+            <span className="font-semibold text-accent">Moedas do Futuro trabalhando por você:</span>{" "}
             {last.aportes > 0
               ? `cada R$ 1 aportado virou R$ ${(last.total / last.aportes).toFixed(2)}.`
               : "aumente seus aportes para ver o efeito."}
