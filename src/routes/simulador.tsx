@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { useAurinHydrated } from "@/hooks/use-aurin-hydrated";
-import { brl } from "@/lib/aurin";
+import { TREASURY_GOAL_ID, brl } from "@/lib/aurin";
 import { daysOfFreedom, formatDays, futureValue, lifeCostPerDay } from "@/lib/impact";
 import { cn } from "@/lib/utils";
 import { debtSummary, monthTotals, currentMonthKey, useAurinStore } from "@/store/aurin-store";
@@ -52,7 +52,7 @@ function SimulatorPage() {
     [transactions],
   );
 
-  const dream = goals.find((g) => g.kind !== "tesouro") ?? goals[0];
+  const dream = goals.find((g) => g.id !== TREASURY_GOAL_ID) ?? goals[0];
   const dreamShare =
     dream && dream.target > 0 ? Math.min(100, (amount / dream.target) * 100) : 0;
 

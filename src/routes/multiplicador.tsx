@@ -1,6 +1,18 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { Building2, Pencil, Plus, ShieldCheck, Sparkles, Target, Trash2 } from "lucide-react";
+import {
+  Building2,
+  Crown,
+  Pencil,
+  Plus,
+  ShieldCheck,
+  Sparkles,
+  Target,
+  Trash2,
+} from "lucide-react";
+import { PremiumDialog } from "@/components/premium-dialog";
+import { useIsPremium } from "@/components/premium-gate";
+import { FREE_LIMITS } from "@/lib/plan";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -70,7 +82,7 @@ function MultiplierPage() {
   const addGoal = useAurinStore((s) => s.addGoal);
   const premium = useIsPremium();
   const [salesOpen, setSalesOpen] = useState(false);
-  const dreamCount = goals.filter((g) => g.kind !== "tesouro").length;
+  const dreamCount = goals.filter((g) => g.id !== TREASURY_GOAL_ID).length;
   const lockedDreams = !premium && dreamCount >= FREE_LIMITS.dreams;
   const removeGoal = useAurinStore((s) => s.removeGoal);
   const depositToGoal = useAurinStore((s) => s.depositToGoal);
