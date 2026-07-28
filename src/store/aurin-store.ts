@@ -7,8 +7,10 @@ import {
   CATEGORY_PILLAR,
   COST_CATEGORIES,
   DEFAULT_PILLAR_SPLIT,
+  EMPTY_PROFILE,
   TREASURY_GOAL_ID,
   addMonthsIso,
+  clampDay,
   currentInvoiceKey,
   invoiceCycleFor,
   monthKey,
@@ -17,6 +19,8 @@ import {
   type FixedAsset,
   type Goal,
   type PillarId,
+  type Profile,
+  type Recurring,
   type Transaction,
 } from "@/lib/aurin";
 import {
@@ -47,7 +51,20 @@ export interface Celebration {
   cleared?: boolean;
 }
 
+export interface OnboardingPayload {
+  name: string;
+  monthlyIncome: number;
+  dreamName: string;
+  dreamTarget: number;
+  dreamYears: number;
+  startingBalance: number;
+}
+
 export interface AurinState {
+  hasOnboarded: boolean;
+  profile: Profile;
+  customCategories: string[];
+  recurring: Recurring[];
   transactions: Transaction[];
   goals: Goal[];
   assets: FixedAsset[];
@@ -62,12 +79,22 @@ export interface AurinState {
   celebrationsEnabled: boolean;
   dismissCelebration: () => void;
   setCelebrationsEnabled: (enabled: boolean) => void;
+  setProfile: (patch: Partial<Profile>) => void;
+  completeOnboarding: (payload: OnboardingPayload) => void;
+  skipOnboarding: () => void;
+  addCustomCategory: (name: string) => void;
+  removeCustomCategory: (name: string) => void;
+  addRecurring: (item: Omit<Recurring, "id" | "lastApplied">) => void;
+  removeRecurring: (id: string) => void;
+  applyRecurring: () => number;
   addTransaction: (tx: NewTransaction) => void;
   updateTransaction: (id: string, tx: Partial<Transaction>) => void;
   removeTransaction: (id: string) => void;
   addGoal: (goal: Omit<Goal, "id">) => void;
+  updateGoal: (id: string, patch: Partial<Goal>) => void;
   removeGoal: (id: string) => void;
   depositToGoal: (id: string, amount: number) => void;
+  withdrawFromGoal: (id: string, amount: number) => void;
   addAsset: (asset: Omit<FixedAsset, "id">) => void;
   removeAsset: (id: string) => void;
   addCard: (card: Omit<CreditCard, "id">) => void;
@@ -81,23 +108,62 @@ export interface AurinState {
   setBudgetSplit: (category: string, percent: number) => void;
   setPillarSplit: (pillar: PillarId, percent: number) => void;
   resetPillarSplit: () => void;
+  loadDemoData: () => void;
+  clearAll: () => void;
+  importState: (data: Partial<AurinState>) => void;
   resetToSeed: () => void;
 }
 
-const initial = {
+export const emptyTreasury = (): Goal => ({
+  id: TREASURY_GOAL_ID,
+  name: "Tesouro Pessoal (Dízimo de Arkad)",
+  target: 0,
+  balance: 0,
+  kind: "investimento",
+});
+
+/** Estado de quem está começando agora: tudo vazio, pronto para digitar. */
+const emptyState = () => ({
+  hasOnboarded: false,
+  profile: { ...EMPTY_PROFILE },
+  customCategories: [] as string[],
+  recurring: [] as Recurring[],
+  transactions: [] as Transaction[],
+  goals: [emptyTreasury()],
+  assets: [] as FixedAsset[],
+  cards: [] as CreditCard[],
+  debts: [] as Debt[],
+  paidInvoices: [] as string[],
+  xp: 0,
+  badges: [] as string[],
+  budgetSplit: { ...BUDGET_SPLIT },
+  pillarSplit: { ...DEFAULT_PILLAR_SPLIT },
+  celebration: null as Celebration | null,
+  celebrationsEnabled: true,
+});
+
+/** Conteúdo de demonstração — só entra quando o usuário pede. */
+const demoState = () => ({
+  ...emptyState(),
+  hasOnboarded: true,
+  profile: {
+    name: "Explorador",
+    monthlyIncome: 8200,
+    dreamName: "Liberdade Financeira",
+    dreamTarget: 500000,
+    dreamYears: 15,
+  },
   transactions: seedTransactions,
   goals: seedGoals,
   assets: seedAssets,
   cards: seedCards,
   debts: seedDebts,
-  paidInvoices: [] as string[],
   xp: seedXp,
   badges: seedBadges,
-  budgetSplit: { ...BUDGET_SPLIT },
-  pillarSplit: { ...DEFAULT_PILLAR_SPLIT },
-  celebration: null as Celebration | null,
-  celebrationsEnabled: true,
-};
+});
+
+const initial = emptyState();
+
 
 function expandInstallments(tx: NewTransaction, cards: CreditCard[]): Transaction[] {
   const count = Math.max(1, Math.floor(tx.installments ?? 1));
