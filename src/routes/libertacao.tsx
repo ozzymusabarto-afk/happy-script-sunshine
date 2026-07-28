@@ -313,6 +313,12 @@ function DebtsPage() {
       </Card>
 
       <DebtDialog open={open} onOpenChange={setOpen} />
+      <PremiumDialog
+        open={salesOpen}
+        onOpenChange={setSalesOpen}
+        highlight="Vários Resgates de Paz ao mesmo tempo"
+      />
+
       <PaymentDialog
         debt={payTarget}
         onClose={() => setPayTarget(null)}
