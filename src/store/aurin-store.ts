@@ -533,9 +533,11 @@ export const useAurinStore = create<AurinState>()(
       clearAll: () => set({ ...emptyState(), hasOnboarded: false }),
 
       importState: (data) =>
-        set(() => ({
+        set((state) => ({
           ...emptyState(),
           ...data,
+          // A proteção deste aparelho não vem do backup.
+          security: state.security,
           celebration: null,
           hasOnboarded: true,
         })),
