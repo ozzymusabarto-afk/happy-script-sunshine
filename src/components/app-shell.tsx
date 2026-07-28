@@ -99,7 +99,20 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 </Link>
               );
             })}
+            <Link
+              to="/ajustes"
+              className={cn(
+                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                pathname.startsWith("/ajustes")
+                  ? "bg-primary/15 text-primary"
+                  : "text-muted-foreground hover:bg-sidebar-accent hover:text-foreground",
+              )}
+            >
+              <Settings className="h-4 w-4 shrink-0" />
+              <span className="truncate">Meus dados</span>
+            </Link>
           </nav>
+
 
           <div className="mt-auto rounded-xl border border-border bg-card p-4">
             <p className="text-xs uppercase tracking-wide text-muted-foreground">Tesouro total</p>
