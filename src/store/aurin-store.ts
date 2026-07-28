@@ -546,7 +546,7 @@ export const useAurinStore = create<AurinState>()(
     }),
     {
       name: "aurin-store-v3",
-      version: 4,
+      version: 5,
       skipHydration: true,
       partialize: (state) => {
         const { celebration: _c, ...rest } = state;
