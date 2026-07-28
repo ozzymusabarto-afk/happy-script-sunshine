@@ -187,8 +187,13 @@ export function MorningRitual({
                       <p className="mt-1.5 text-xs text-muted-foreground">
                         {steps !== null && steps > 0
                           ? `Faltam ${steps} aporte${steps === 1 ? "" : "s"} no seu ritmo atual.`
-                          : "Praticamente lá — mais um gesto e é seu."}
+                          : percent >= 99.5
+                            ? "Conquistado. Esse sonho já é seu."
+                            : percent > 0
+                              ? "Praticamente lá — mais um gesto e é seu."
+                              : "Ainda no começo, e começar já é muito."}
                       </p>
+
                     </div>
                   );
                 })}
