@@ -152,7 +152,20 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <Settings className="h-4 w-4 shrink-0" />
               <span className="truncate">Meus dados</span>
             </Link>
+            <Link
+              to="/conta"
+              className={cn(
+                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                pathname.startsWith("/conta")
+                  ? "bg-primary/15 text-primary"
+                  : "text-muted-foreground hover:bg-sidebar-accent hover:text-foreground",
+              )}
+            >
+              <CloudUpload className="h-4 w-4 shrink-0" />
+              <span className="truncate">Minha conta</span>
+            </Link>
           </nav>
+
 
 
           <div className="mt-auto space-y-3">
