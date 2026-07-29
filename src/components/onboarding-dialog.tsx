@@ -61,11 +61,11 @@ export function OnboardingDialog() {
   return (
     <Dialog open>
       <DialogContent
-        className="max-w-lg gap-5 overflow-hidden"
+        className="flex max-h-[85vh] max-w-lg flex-col gap-5 overflow-hidden"
         onInteractOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
       >
-        <div className="space-y-1">
+        <div className="shrink-0 space-y-1">
           <p className="text-xs uppercase tracking-[0.2em] text-primary">Ritual de entrada</p>
           <DialogTitle className="font-display text-2xl">
             {
@@ -87,8 +87,9 @@ export function OnboardingDialog() {
           </DialogDescription>
         </div>
 
-        <Progress value={((step + 1) / 3) * 100} className="h-1.5" />
+        <Progress value={((step + 1) / 3) * 100} className="h-1.5 shrink-0" />
 
+        <div className="min-h-0 flex-1 overflow-y-auto pr-1">
         {step === 1 && (
           <div className="space-y-3">
             <Label htmlFor="ob-income">Renda mensal média</Label>
@@ -218,8 +219,9 @@ export function OnboardingDialog() {
             </div>
           </div>
         )}
+        </div>
 
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex shrink-0 items-center justify-between gap-3 border-t border-border pt-4">
           {step > 0 ? (
             <Button variant="ghost" onClick={() => setStep((s) => s - 1)}>
               <ArrowLeft className="h-4 w-4" /> Voltar
