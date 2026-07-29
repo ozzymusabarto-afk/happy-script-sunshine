@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { LEVELS, brl, levelFor } from "@/lib/aurin";
+import { SymbolBadge, userSymbol } from "@/lib/symbols";
 import { cn } from "@/lib/utils";
 import {
   currentMonthKey,
@@ -55,6 +56,8 @@ const BADGE_ICONS: Record<string, React.ComponentType<{ className?: string }>> =
 
 function JourneyPage() {
   const xp = useAurinStore((s) => s.xp);
+  const profileName = useAurinStore((s) => s.profile.name);
+  const profileSymbol = useAurinStore((s) => s.profile.symbol);
   const transactions = useAurinStore((s) => s.transactions);
   const goals = useAurinStore((s) => s.goals);
   const assets = useAurinStore((s) => s.assets);
