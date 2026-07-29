@@ -68,13 +68,16 @@ function JourneyPage() {
   const goals = useAurinStore((s) => s.goals);
   const assets = useAurinStore((s) => s.assets);
   const badges = useAurinStore((s) => s.badges);
+  const cards = useAurinStore((s) => s.cards);
+  const debts = useAurinStore((s) => s.debts);
+  const paidInvoices = useAurinStore((s) => s.paidInvoices);
 
   const level = useMemo(() => levelFor(xp), [xp]);
   const streak = useMemo(() => loggingStreak(transactions), [transactions]);
   const month = useMemo(() => monthTotals(transactions, currentMonthKey()), [transactions]);
   const list = useMemo(
-    () => earnedBadges({ transactions, goals, assets, badges }),
-    [transactions, goals, assets, badges],
+    () => earnedBadges({ transactions, goals, assets, badges, cards, debts, paidInvoices }),
+    [transactions, goals, assets, badges, cards, debts, paidInvoices],
   );
 
   const seen = useRef<Set<string> | null>(null);
