@@ -340,7 +340,14 @@ function DebtsPage() {
         </CardContent>
       </Card>
 
-      <DebtDialog open={open} onOpenChange={setOpen} />
+      <DebtDialog
+        open={open}
+        onOpenChange={(v) => {
+          setOpen(v);
+          if (!v) setEditing(null);
+        }}
+        editing={editing}
+      />
       <PremiumDialog
         open={salesOpen}
         onOpenChange={setSalesOpen}
