@@ -78,7 +78,7 @@ export function LockScreen({ onUnlock }: { onUnlock: () => void }) {
   return (
     <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-background px-6 py-10 text-center">
       <span className="grid h-14 w-14 place-items-center rounded-2xl bg-gold text-primary-foreground">
-        <Landmark className="h-7 w-7" />
+        <SymbolIcon className="h-7 w-7" />
       </span>
       <h1 className="mt-5 font-display text-2xl font-extrabold">
         {name ? `Bem-vindo de volta, ${name}` : "Bem-vindo de volta"}
