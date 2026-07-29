@@ -35,7 +35,9 @@ export const Route = createFileRoute("/conta")({
 function snapshot() {
   const state = useAurinStore.getState();
   const { celebration: _c, security: _s, ...rest } = state;
-  return Object.fromEntries(Object.entries(rest).filter(([, v]) => typeof v !== "function"));
+  return JSON.parse(
+    JSON.stringify(Object.fromEntries(Object.entries(rest).filter(([, v]) => typeof v !== "function"))),
+  ) as Record<string, unknown>;
 }
 
 function AccountPage() {
@@ -93,7 +95,7 @@ function AccountPage() {
     const { error } = await supabase.from("aurin_backups").upsert(
       {
         user_id: session.user.id,
-        payload: snapshot(),
+        payload: snapshot() as never,
         device_label: navigator.userAgent.slice(0, 120),
       },
       { onConflict: "user_id" },

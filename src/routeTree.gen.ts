@@ -15,6 +15,7 @@ import { Route as OrcamentoRouteImport } from './routes/orcamento'
 import { Route as MultiplicadorRouteImport } from './routes/multiplicador'
 import { Route as LibertacaoRouteImport } from './routes/libertacao'
 import { Route as JornadaRouteImport } from './routes/jornada'
+import { Route as ContaRouteImport } from './routes/conta'
 import { Route as CartoesRouteImport } from './routes/cartoes'
 import { Route as AjustesRouteImport } from './routes/ajustes'
 import { Route as IndexRouteImport } from './routes/index'
@@ -49,6 +50,11 @@ const JornadaRoute = JornadaRouteImport.update({
   path: '/jornada',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ContaRoute = ContaRouteImport.update({
+  id: '/conta',
+  path: '/conta',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CartoesRoute = CartoesRouteImport.update({
   id: '/cartoes',
   path: '/cartoes',
@@ -69,6 +75,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/ajustes': typeof AjustesRoute
   '/cartoes': typeof CartoesRoute
+  '/conta': typeof ContaRoute
   '/jornada': typeof JornadaRoute
   '/libertacao': typeof LibertacaoRoute
   '/multiplicador': typeof MultiplicadorRoute
@@ -80,6 +87,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/ajustes': typeof AjustesRoute
   '/cartoes': typeof CartoesRoute
+  '/conta': typeof ContaRoute
   '/jornada': typeof JornadaRoute
   '/libertacao': typeof LibertacaoRoute
   '/multiplicador': typeof MultiplicadorRoute
@@ -92,6 +100,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/ajustes': typeof AjustesRoute
   '/cartoes': typeof CartoesRoute
+  '/conta': typeof ContaRoute
   '/jornada': typeof JornadaRoute
   '/libertacao': typeof LibertacaoRoute
   '/multiplicador': typeof MultiplicadorRoute
@@ -105,6 +114,7 @@ export interface FileRouteTypes {
     | '/'
     | '/ajustes'
     | '/cartoes'
+    | '/conta'
     | '/jornada'
     | '/libertacao'
     | '/multiplicador'
@@ -116,6 +126,7 @@ export interface FileRouteTypes {
     | '/'
     | '/ajustes'
     | '/cartoes'
+    | '/conta'
     | '/jornada'
     | '/libertacao'
     | '/multiplicador'
@@ -127,6 +138,7 @@ export interface FileRouteTypes {
     | '/'
     | '/ajustes'
     | '/cartoes'
+    | '/conta'
     | '/jornada'
     | '/libertacao'
     | '/multiplicador'
@@ -139,6 +151,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AjustesRoute: typeof AjustesRoute
   CartoesRoute: typeof CartoesRoute
+  ContaRoute: typeof ContaRoute
   JornadaRoute: typeof JornadaRoute
   LibertacaoRoute: typeof LibertacaoRoute
   MultiplicadorRoute: typeof MultiplicadorRoute
@@ -191,6 +204,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof JornadaRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/conta': {
+      id: '/conta'
+      path: '/conta'
+      fullPath: '/conta'
+      preLoaderRoute: typeof ContaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/cartoes': {
       id: '/cartoes'
       path: '/cartoes'
@@ -219,6 +239,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AjustesRoute: AjustesRoute,
   CartoesRoute: CartoesRoute,
+  ContaRoute: ContaRoute,
   JornadaRoute: JornadaRoute,
   LibertacaoRoute: LibertacaoRoute,
   MultiplicadorRoute: MultiplicadorRoute,
