@@ -1,6 +1,17 @@
 import { useEffect, useMemo, useRef } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { Coins, Crown, Flame, Landmark, Lock, Shield, TrendingUp, Trophy } from "lucide-react";
+import {
+  Coins,
+  CreditCard,
+  Crown,
+  Flame,
+  HandCoins,
+  Landmark,
+  Lock,
+  Shield,
+  TrendingUp,
+  Trophy,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
@@ -45,6 +56,8 @@ const BADGE_ICONS: Record<string, React.ComponentType<{ className?: string }>> =
   consistencia: Flame,
   "senhor-dizimo": Crown,
   "arquiteto-futuro": Landmark,
+  "sem-correntes": HandCoins,
+  "mestre-fatura": CreditCard,
 };
 
 function JourneyPage() {
@@ -55,13 +68,16 @@ function JourneyPage() {
   const goals = useAurinStore((s) => s.goals);
   const assets = useAurinStore((s) => s.assets);
   const badges = useAurinStore((s) => s.badges);
+  const cards = useAurinStore((s) => s.cards);
+  const debts = useAurinStore((s) => s.debts);
+  const paidInvoices = useAurinStore((s) => s.paidInvoices);
 
   const level = useMemo(() => levelFor(xp), [xp]);
   const streak = useMemo(() => loggingStreak(transactions), [transactions]);
   const month = useMemo(() => monthTotals(transactions, currentMonthKey()), [transactions]);
   const list = useMemo(
-    () => earnedBadges({ transactions, goals, assets, badges }),
-    [transactions, goals, assets, badges],
+    () => earnedBadges({ transactions, goals, assets, badges, cards, debts, paidInvoices }),
+    [transactions, goals, assets, badges, cards, debts, paidInvoices],
   );
 
   const seen = useRef<Set<string> | null>(null);

@@ -2,7 +2,9 @@ import { useRef, useState } from "react";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import {
   BookOpen,
+  Check,
   Download,
+  Pencil,
   Plus,
   PlayCircle,
   RefreshCw,
@@ -70,6 +72,7 @@ function Settings() {
   const removeCustomCategory = useAurinStore((s) => s.removeCustomCategory);
   const recurring = useAurinStore((s) => s.recurring);
   const addRecurring = useAurinStore((s) => s.addRecurring);
+  const updateRecurring = useAurinStore((s) => s.updateRecurring);
   const removeRecurring = useAurinStore((s) => s.removeRecurring);
   const celebrationsEnabled = useAurinStore((s) => s.celebrationsEnabled);
   const setCelebrationsEnabled = useAurinStore((s) => s.setCelebrationsEnabled);
@@ -80,6 +83,7 @@ function Settings() {
   const markBackup = useAurinStore((s) => s.markBackup);
 
   const [newCategory, setNewCategory] = useState("");
+  const [editingRec, setEditingRec] = useState<string | null>(null);
   const [rec, setRec] = useState({
     title: "",
     amount: 0,
@@ -89,6 +93,18 @@ function Settings() {
     savedTenPercent: true,
   });
   const fileRef = useRef<HTMLInputElement>(null);
+
+  const resetRecForm = () => {
+    setEditingRec(null);
+    setRec({
+      title: "",
+      amount: 0,
+      type: "saida",
+      category: "Moradia",
+      day: 5,
+      savedTenPercent: true,
+    });
+  };
 
   const categoryOptions =
     rec.type === "entrada" ? [...INCOME_CATEGORIES] : [...EXPENSE_CATEGORIES, ...customCategories];
@@ -408,12 +424,12 @@ function Settings() {
                   </Label>
                 </div>
               )}
-              <div className="flex items-end">
+              <div className="flex items-end gap-2">
                 <Button
                   className="w-full bg-gold text-primary-foreground hover:opacity-90"
                   disabled={!rec.title.trim() || rec.amount <= 0}
                   onClick={() => {
-                    addRecurring({
+                    const payload = {
                       title: rec.title.trim(),
                       amount: rec.amount,
                       type: rec.type,
@@ -421,13 +437,32 @@ function Settings() {
                       method: (rec.type === "entrada" ? "transferencia" : "pix") as PaymentMethod,
                       day: rec.day,
                       savedTenPercent: rec.type === "entrada" && rec.savedTenPercent,
-                    });
-                    setRec({ ...rec, title: "", amount: 0 });
-                    toast.success("Lançamento fixo criado. Ele entra sozinho todo mês.");
+                    };
+                    if (editingRec) {
+                      updateRecurring(editingRec, payload);
+                      toast.success("Lançamento fixo atualizado.");
+                    } else {
+                      addRecurring(payload);
+                      toast.success("Lançamento fixo criado. Ele entra sozinho todo mês.");
+                    }
+                    resetRecForm();
                   }}
                 >
-                  <Plus className="h-4 w-4" /> Adicionar
+                  {editingRec ? (
+                    <>
+                      <Check className="h-4 w-4" /> Salvar
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="h-4 w-4" /> Adicionar
+                    </>
+                  )}
                 </Button>
+                {editingRec && (
+                  <Button variant="ghost" onClick={resetRecForm}>
+                    Cancelar
+                  </Button>
+                )}
               </div>
             </div>
 
@@ -461,8 +496,29 @@ function Settings() {
                       <Button
                         size="icon"
                         variant="ghost"
+                        aria-label={`Editar ${r.title}`}
+                        onClick={() => {
+                          setEditingRec(r.id);
+                          setRec({
+                            title: r.title,
+                            amount: r.amount,
+                            type: r.type,
+                            category: r.category,
+                            day: r.day,
+                            savedTenPercent: Boolean(r.savedTenPercent),
+                          });
+                        }}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="ghost"
                         aria-label={`Remover ${r.title}`}
-                        onClick={() => removeRecurring(r.id)}
+                        onClick={() => {
+                          if (editingRec === r.id) resetRecForm();
+                          removeRecurring(r.id);
+                        }}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>

@@ -152,6 +152,7 @@ export interface AurinState {
   addCustomCategory: (name: string) => void;
   removeCustomCategory: (name: string) => void;
   addRecurring: (item: Omit<Recurring, "id" | "lastApplied">) => void;
+  updateRecurring: (id: string, patch: Partial<Omit<Recurring, "id">>) => void;
   removeRecurring: (id: string) => void;
   applyRecurring: () => number;
   addTransaction: (tx: NewTransaction) => void;
@@ -318,6 +319,12 @@ export const useAurinStore = create<AurinState>()(
 
       addRecurring: (item) =>
         set((state) => ({ recurring: [...state.recurring, { ...item, id: uid() }] })),
+
+      updateRecurring: (id, patch) =>
+        set((state) => ({
+          recurring: state.recurring.map((r) => (r.id === id ? { ...r, ...patch } : r)),
+        })),
+
 
       removeRecurring: (id) =>
         set((state) => ({ recurring: state.recurring.filter((r) => r.id !== id) })),

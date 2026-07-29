@@ -1,7 +1,7 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { ChainProgress } from "@/components/journey-visuals";
-import { Crown, HandCoins, Plus, Quote, Trash2 } from "lucide-react";
+import { Crown, HandCoins, Pencil, Plus, Quote, Trash2 } from "lucide-react";
 import { PremiumDialog } from "@/components/premium-dialog";
 import { useIsPremium } from "@/components/premium-gate";
 import { FREE_LIMITS } from "@/lib/plan";
@@ -67,6 +67,7 @@ function DebtsPage() {
   const lockedRescues = !premium && activeRescues >= FREE_LIMITS.rescues;
 
   const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<Debt | null>(null);
   const [payTarget, setPayTarget] = useState<Debt | null>(null);
   const [strategy, setStrategy] = useState<Strategy>("avalanche");
   const [budget, setBudget] = useState(1200);
@@ -125,7 +126,14 @@ function DebtsPage() {
         </div>
         <Button
           className="shrink-0 bg-gold text-primary-foreground hover:opacity-90"
-          onClick={() => (lockedRescues ? setSalesOpen(true) : setOpen(true))}
+          onClick={() => {
+            if (lockedRescues) {
+              setSalesOpen(true);
+              return;
+            }
+            setEditing(null);
+            setOpen(true);
+          }}
         >
           {lockedRescues ? <Crown className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
           <span className="hidden sm:inline">Novo resgate</span>
@@ -216,6 +224,18 @@ function DebtsPage() {
                     onClick={() => setPayTarget(debt)}
                   >
                     Soltar mais um pedaço
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    aria-label={`Editar ${debt.name}`}
+                    onClick={() => {
+                      setEditing(debt);
+                      setOpen(true);
+                    }}
+                  >
+                    <Pencil className="h-3.5 w-3.5" />
+                    Editar
                   </Button>
                   <Button
                     size="sm"
@@ -320,7 +340,14 @@ function DebtsPage() {
         </CardContent>
       </Card>
 
-      <DebtDialog open={open} onOpenChange={setOpen} />
+      <DebtDialog
+        open={open}
+        onOpenChange={(v) => {
+          setOpen(v);
+          if (!v) setEditing(null);
+        }}
+        editing={editing}
+      />
       <PremiumDialog
         open={salesOpen}
         onOpenChange={setSalesOpen}
@@ -372,8 +399,17 @@ function Stat({
   );
 }
 
-function DebtDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) {
+function DebtDialog({
+  open,
+  onOpenChange,
+  editing,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  editing?: Debt | null;
+}) {
   const addDebt = useAurinStore((s) => s.addDebt);
+  const updateDebt = useAurinStore((s) => s.updateDebt);
   const [name, setName] = useState("");
   const [type, setType] = useState<DebtType>("emprestimo");
   const [principal, setPrincipal] = useState("");
@@ -382,21 +418,49 @@ function DebtDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v: b
   const [dueDay, setDueDay] = useState("10");
   const [error, setError] = useState("");
 
+  // Preenche o formulário ao abrir para editar; limpa ao abrir para criar.
+  useEffect(() => {
+    if (!open) return;
+    setError("");
+    if (editing) {
+      setName(editing.name);
+      setType(editing.type);
+      setPrincipal(String(editing.principal).replace(".", ","));
+      setRate(String(editing.interestRate).replace(".", ","));
+      setInstallments(String(editing.installments));
+      setDueDay(String(editing.dueDay));
+    } else {
+      setName("");
+      setType("emprestimo");
+      setPrincipal("");
+      setRate("2");
+      setInstallments("12");
+      setDueDay("10");
+    }
+  }, [open, editing]);
+
   function submit() {
     const value = Number(principal.replace(",", "."));
     if (name.trim().length < 2) return setError("Informe o nome do compromisso");
     if (!Number.isFinite(value) || value <= 0) return setError("Informe um valor válido");
-    addDebt({
+    if (editing && value < editing.paid) {
+      return setError(`O valor não pode ser menor que ${brl(editing.paid)} já libertados`);
+    }
+    const payload = {
       name: name.trim(),
       type,
       principal: value,
       interestRate: Number(rate.replace(",", ".")) || 0,
       installments: Math.max(1, Number(installments) || 1),
       dueDay: Math.min(28, Math.max(1, Number(dueDay) || 1)),
-    });
-    toast.success("Resgate de Paz criado");
-    setName("");
-    setPrincipal("");
+    };
+    if (editing) {
+      updateDebt(editing.id, payload);
+      toast.success("Resgate de Paz atualizado");
+    } else {
+      addDebt(payload);
+      toast.success("Resgate de Paz criado");
+    }
     setError("");
     onOpenChange(false);
   }
@@ -405,9 +469,13 @@ function DebtDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v: b
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[92vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle className="font-display">Novo resgate</DialogTitle>
+          <DialogTitle className="font-display">
+            {editing ? "Editar resgate" : "Novo resgate"}
+          </DialogTitle>
           <DialogDescription>
-            Registre o valor, o custo mensal e o prazo para ver sua liberdade chegar.
+            {editing
+              ? "Ajuste os detalhes deste compromisso. O que você já libertou continua guardado."
+              : "Registre o valor, o custo mensal e o prazo para ver sua liberdade chegar."}
           </DialogDescription>
         </DialogHeader>
 
@@ -489,7 +557,7 @@ function DebtDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v: b
             Cancelar
           </Button>
           <Button onClick={submit} className="bg-gold text-primary-foreground hover:opacity-90">
-            Registrar
+            {editing ? "Salvar alterações" : "Registrar"}
           </Button>
         </DialogFooter>
       </DialogContent>
