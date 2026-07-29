@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { z } from "zod";
 
 /**
  * Webhook da Hotmart.
@@ -8,22 +9,32 @@ import { createFileRoute } from "@tanstack/react-router";
  * e defina o mesmo token secreto que está salvo em HOTMART_WEBHOOK_TOKEN.
  */
 
-type HotmartPayload = {
-  event?: string;
-  hottok?: string;
-  data?: {
-    buyer?: { email?: string; name?: string };
-    purchase?: {
-      transaction?: string;
-      approved_date?: number;
-      status?: string;
-      recurrence_number?: number;
-      offer?: { code?: string };
-      price?: { value?: number };
-    };
-    subscription?: { plan?: { name?: string } };
-  };
-};
+const MAX_BODY_BYTES = 64 * 1024;
+
+const payloadSchema = z.object({
+  event: z.string().max(120).optional(),
+  hottok: z.string().max(512).optional(),
+  data: z
+    .object({
+      buyer: z.object({ email: z.string().email().max(320).optional() }).partial().optional(),
+      purchase: z
+        .object({
+          transaction: z.string().max(120).optional(),
+          approved_date: z.number().int().nonnegative().optional(),
+          offer: z.object({ code: z.string().max(120).optional() }).partial().optional(),
+        })
+        .partial()
+        .optional(),
+      subscription: z
+        .object({ plan: z.object({ name: z.string().max(200).optional() }).partial().optional() })
+        .partial()
+        .optional(),
+    })
+    .partial()
+    .optional(),
+});
+
+type HotmartPayload = z.infer<typeof payloadSchema>;
 
 const APPROVE_EVENTS = new Set(["PURCHASE_APPROVED", "PURCHASE_COMPLETE"]);
 const REVOKE_EVENTS = new Set([
@@ -36,11 +47,12 @@ const REVOKE_EVENTS = new Set([
 
 function planFromPayload(payload: HotmartPayload): "monthly" | "yearly" {
   const name =
-    payload.data?.subscription?.plan?.name ??
-    payload.data?.purchase?.offer?.code ??
-    "";
+    payload.data?.subscription?.plan?.name ?? payload.data?.purchase?.offer?.code ?? "";
   return /anual|year|annual/i.test(name) ? "yearly" : "monthly";
 }
+
+/** Resposta genérica: nunca revela por que a requisição foi recusada. */
+const rejected = () => new Response("Rejected", { status: 400 });
 
 export const Route = createFileRoute("/api/public/hotmart")({
   server: {
@@ -48,16 +60,21 @@ export const Route = createFileRoute("/api/public/hotmart")({
       POST: async ({ request }) => {
         const secret = process.env.HOTMART_WEBHOOK_TOKEN;
         if (!secret) {
-          console.error("[hotmart] HOTMART_WEBHOOK_TOKEN não configurado");
-          return new Response("Not configured", { status: 500 });
+          console.error("[hotmart] webhook token não configurado");
+          return rejected();
         }
 
+        const declared = Number(request.headers.get("content-length") ?? "0");
+        if (Number.isFinite(declared) && declared > MAX_BODY_BYTES) return rejected();
+
         const raw = await request.text();
+        if (raw.length > MAX_BODY_BYTES) return rejected();
+
         let payload: HotmartPayload;
         try {
-          payload = JSON.parse(raw) as HotmartPayload;
+          payload = payloadSchema.parse(JSON.parse(raw));
         } catch {
-          return new Response("Invalid payload", { status: 400 });
+          return rejected();
         }
 
         const token =
@@ -66,23 +83,22 @@ export const Route = createFileRoute("/api/public/hotmart")({
           payload.hottok ??
           "";
 
-        if (token !== secret) {
-          return new Response("Invalid token", { status: 401 });
-        }
+        if (token !== secret) return rejected();
 
         const event = payload.event ?? "";
         const email = payload.data?.buyer?.email?.trim().toLowerCase();
-        if (!email) {
-          return new Response("Missing buyer email", { status: 400 });
-        }
+        if (!email) return rejected();
 
         const approving = APPROVE_EVENTS.has(event);
         const revoking = REVOKE_EVENTS.has(event);
-        if (!approving && !revoking) {
-          return new Response("Ignored", { status: 200 });
-        }
+        if (!approving && !revoking) return Response.json({ ok: true });
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+        // Vincula à conta quando o comprador já existe; e-mail fica como fallback.
+        const { data: userId } = await supabaseAdmin.rpc("user_id_for_email", {
+          _email: email,
+        });
 
         const plan = planFromPayload(payload);
         const approvedAt = payload.data?.purchase?.approved_date
@@ -92,6 +108,7 @@ export const Route = createFileRoute("/api/public/hotmart")({
         const { error } = await supabaseAdmin.from("premium_status").upsert(
           {
             email,
+            user_id: (userId as string | null) ?? null,
             plan,
             active: approving,
             transaction: payload.data?.purchase?.transaction ?? null,
@@ -103,8 +120,8 @@ export const Route = createFileRoute("/api/public/hotmart")({
         );
 
         if (error) {
-          console.error("[hotmart] upsert failed", error.message);
-          return new Response("Storage error", { status: 500 });
+          console.error("[hotmart] falha ao gravar status premium");
+          return new Response("Rejected", { status: 500 });
         }
 
         return Response.json({ ok: true });
