@@ -30,6 +30,7 @@ const KIND_COPY: Record<string, { eyebrow: string; headline: string }> = {
 export function ImpactModal() {
   const celebration = useAurinStore((s) => s.celebration);
   const dismiss = useAurinStore((s) => s.dismissCelebration);
+  const profileName = useAurinStore((s) => s.profile.name);
   const goals = useAurinStore((s) => s.goals);
   const transactions = useAurinStore((s) => s.transactions);
   const debts = useAurinStore((s) => s.debts);
@@ -53,7 +54,7 @@ export function ImpactModal() {
 
   const copy = KIND_COPY[celebration.kind] ?? KIND_COPY.tesouro;
   const goal = goals.find((g) => g.id === celebration.goalId);
-  const profileName = useAurinStore.getState().profile.name;
+
   const isDebt = celebration.kind === "divida";
   const amount = celebration.amount;
 
