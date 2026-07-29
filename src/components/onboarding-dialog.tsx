@@ -219,8 +219,9 @@ export function OnboardingDialog() {
             </div>
           </div>
         )}
+        </div>
 
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex shrink-0 items-center justify-between gap-3 border-t border-border pt-4">
           {step > 0 ? (
             <Button variant="ghost" onClick={() => setStep((s) => s - 1)}>
               <ArrowLeft className="h-4 w-4" /> Voltar
