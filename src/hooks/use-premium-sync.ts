@@ -17,16 +17,18 @@ export function usePremiumSync() {
     try {
       const { data } = await supabase.auth.getSession();
       if (!data.session) return { signedIn: false, active: false };
+      // O servidor é a fonte de verdade; o plano local é só cache de interface.
       const status = await getPremiumStatus();
-      if (status.active) setPlan("premium");
+      setPlan(status.active ? "premium" : "free");
       return { signedIn: true, active: status.active };
-    } catch (error) {
-      console.error("[premium] verificação falhou", error);
+    } catch {
+      console.error("[premium] verificação falhou");
       return { signedIn: true, active: false };
     } finally {
       setChecking(false);
     }
   }, [setPlan]);
+
 
   return { check, checking };
 }

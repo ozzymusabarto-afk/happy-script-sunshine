@@ -2,30 +2,56 @@ import { createServerFn } from "@tanstack/react-start";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
+type StatusRow = { active: boolean; plan: string | null; expires_at: string | null };
+
+const INACTIVE = { active: false as const, plan: null, expiresAt: null };
+
 /**
  * Consulta o status Premium do usuário logado.
- * A RLS já filtra pelo e-mail da conta, então basta ler a própria linha.
+ * A RLS já isola a linha, mas filtramos explicitamente por conta/e-mail
+ * como defesa em profundidade.
  */
 export const getPremiumStatus = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { data, error } = await context.supabase
+    const claims = context.claims as { email?: string } | undefined;
+    const email = claims?.email?.trim().toLowerCase() ?? null;
+
+    const byUser = await context.supabase
       .from("premium_status")
       .select("active, plan, expires_at")
-      .limit(1)
+      .eq("user_id", context.userId)
       .maybeSingle();
 
-    if (error) {
-      console.error("[premium] status read failed", error.message);
-      return { active: false as const, plan: null, expiresAt: null };
+    if (byUser.error) {
+      console.error("[premium] status read failed");
+      return INACTIVE;
     }
 
+    let row: StatusRow | null = byUser.data ?? null;
+
+    if (!row && email) {
+      const byEmail = await context.supabase
+        .from("premium_status")
+        .select("active, plan, expires_at")
+        .eq("email", email)
+        .maybeSingle();
+
+      if (byEmail.error) {
+        console.error("[premium] status read failed");
+        return INACTIVE;
+      }
+      row = byEmail.data ?? null;
+    }
+
+    if (!row) return INACTIVE;
+
     const expired =
-      data?.expires_at != null && new Date(data.expires_at).getTime() < Date.now();
+      row.expires_at != null && new Date(row.expires_at).getTime() < Date.now();
 
     return {
-      active: Boolean(data?.active) && !expired,
-      plan: data?.plan ?? null,
-      expiresAt: data?.expires_at ?? null,
+      active: Boolean(row.active) && !expired,
+      plan: row.plan ?? null,
+      expiresAt: row.expires_at ?? null,
     };
   });
