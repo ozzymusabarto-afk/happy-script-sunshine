@@ -5,6 +5,12 @@ import { ArrowRight, HandCoins, Sparkles, Sunrise, Target } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { brl, TREASURY_GOAL_ID, type Goal } from "@/lib/aurin";
 import { futureValue, monthsOfFreedom } from "@/lib/impact";
+import {
+  goalIcon,
+  inferGoalIcon,
+  SymbolBadge,
+  userSymbol,
+} from "@/lib/symbols";
 import { dailyLine, greeting, longDate } from "@/lib/tone";
 import { cn } from "@/lib/utils";
 
@@ -106,6 +112,12 @@ export function MorningRitual({
         <div className="reveal-step flex items-center gap-2 text-xs uppercase tracking-[0.22em] text-primary">
           <Sunrise className="h-3.5 w-3.5" />
           {greeting()}
+          {profileName && (
+            <span className="flex items-center gap-1.5 normal-case tracking-normal text-foreground">
+              <SymbolBadge symbol={userSymbol(profileSymbol)} size="sm" />
+              <span className="font-display text-sm font-semibold">{profileName}</span>
+            </span>
+          )}
         </div>
 
         <h1
@@ -173,7 +185,13 @@ export function MorningRitual({
                   return (
                     <div key={g.id} className="min-w-0">
                       <div className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-3">
-                        <span className="truncate text-sm font-medium">{g.name}</span>
+                        <span className="flex min-w-0 items-center gap-2 text-sm font-medium">
+                          <SymbolBadge
+                            symbol={goalIcon(g.icon ?? inferGoalIcon(g.name))}
+                            size="sm"
+                          />
+                          <span className="truncate">{g.name}</span>
+                        </span>
                         <span className="shrink-0 font-display text-sm font-bold text-gold">
                           {percent.toFixed(0)}%
                         </span>
