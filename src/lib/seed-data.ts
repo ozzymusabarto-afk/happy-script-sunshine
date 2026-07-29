@@ -181,10 +181,10 @@ export const seedDebts: Debt[] = [
 ];
 
 export const seedGoals: Goal[] = [
-  { id: TREASURY_GOAL_ID, name: "Tesouro Pessoal (Dízimo de Arkad)", target: 20000, balance: 6420, kind: "investimento" },
-  { id: id("goal"), name: "Reserva de Emergência", target: 32000, balance: 19800, kind: "reserva" },
-  { id: id("goal"), name: "Aparato de Moradia", target: 90000, balance: 24500, kind: "moradia" },
-  { id: id("goal"), name: "Liberdade Financeira", target: 500000, balance: 58300, kind: "aposentadoria" },
+  { id: TREASURY_GOAL_ID, name: "Tesouro Pessoal (Dízimo de Arkad)", icon: "tesouro", target: 20000, balance: 6420, kind: "investimento" },
+  { id: id("goal"), name: "Reserva de Emergência", icon: "reserva", target: 32000, balance: 19800, kind: "reserva" },
+  { id: id("goal"), name: "Aparato de Moradia", icon: "casa", target: 90000, balance: 24500, kind: "moradia" },
+  { id: id("goal"), name: "Liberdade Financeira", icon: "liberdade", target: 500000, balance: 58300, kind: "aposentadoria" },
 ];
 
 export const seedAssets: FixedAsset[] = [
