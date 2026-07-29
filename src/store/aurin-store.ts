@@ -365,7 +365,14 @@ export const useAurinStore = create<AurinState>()(
       removeTransaction: (id) =>
         set((state) => ({ transactions: state.transactions.filter((t) => t.id !== id) })),
 
-      addGoal: (goal) => set((state) => ({ goals: [...state.goals, { ...goal, id: uid() }], xp: state.xp + 25 })),
+      addGoal: (goal) =>
+        set((state) => ({
+          goals: [
+            ...state.goals,
+            { ...goal, icon: goal.icon ?? inferGoalIcon(goal.name), id: uid() },
+          ],
+          xp: state.xp + 25,
+        })),
 
       updateGoal: (id, patch) =>
         set((state) => ({ goals: state.goals.map((g) => (g.id === id ? { ...g, ...patch } : g)) })),
@@ -562,7 +569,10 @@ export const useAurinStore = create<AurinState>()(
         return {
           ...emptyState(),
           ...prev,
-          goals: prev.goals?.length ? prev.goals : [emptyTreasury()],
+          goals: (prev.goals?.length ? prev.goals : [emptyTreasury()]).map((g: Goal) => ({
+            ...g,
+            icon: g.icon ?? inferGoalIcon(g.name),
+          })),
           profile: { ...EMPTY_PROFILE, ...(prev.profile ?? {}) },
           recurring: prev.recurring ?? [],
           hasOnboarded: prev.hasOnboarded ?? Boolean(prev.transactions?.length),
