@@ -475,7 +475,13 @@ function GoalDialog({
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
-  onSubmit: (goal: { name: string; target: number; balance: number; kind: GoalKind }) => void;
+  onSubmit: (goal: {
+    name: string;
+    target: number;
+    balance: number;
+    kind: GoalKind;
+    icon?: string;
+  }) => void;
 }) {
   const [name, setName] = useState("");
   const [target, setTarget] = useState(0);
