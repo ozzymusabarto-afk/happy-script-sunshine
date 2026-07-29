@@ -23,6 +23,7 @@ import {
   type Recurring,
   type Transaction,
 } from "@/lib/aurin";
+import type { ReminderFrequency, ReminderTone } from "@/lib/notifications";
 import type { PlanId } from "@/lib/plan";
 import { DEFAULT_USER_SYMBOL, inferGoalIcon } from "@/lib/symbols";
 import {
@@ -206,13 +207,8 @@ const emptyState = () => ({
   pillarSplit: { ...DEFAULT_PILLAR_SPLIT },
   celebration: null as Celebration | null,
   celebrationsEnabled: true,
-  security: {
-    pinHash: null,
-    salt: null,
-    biometricId: null,
-    autoLockMinutes: 0,
-  } as SecuritySettings,
-  reminder: { enabled: false, time: "08:00", lastShown: null } as ReminderSettings,
+  security: { ...DEFAULT_SECURITY } as SecuritySettings,
+  reminder: { ...DEFAULT_REMINDER } as ReminderSettings,
   lastBackupAt: null as string | null,
 });
 
@@ -570,8 +566,7 @@ export const useAurinStore = create<AurinState>()(
 
       setSecurity: (patch) => set((state) => ({ security: { ...state.security, ...patch } })),
 
-      disableLock: () =>
-        set({ security: { pinHash: null, salt: null, biometricId: null, autoLockMinutes: 0 } }),
+      disableLock: () => set({ security: { ...DEFAULT_SECURITY } }),
 
       setReminder: (patch) => set((state) => ({ reminder: { ...state.reminder, ...patch } })),
 
@@ -595,7 +590,7 @@ export const useAurinStore = create<AurinState>()(
     }),
     {
       name: "aurin-store-v3",
-      version: 5,
+      version: 6,
       skipHydration: true,
       partialize: (state) => {
         const { celebration: _c, ...rest } = state;
@@ -620,13 +615,8 @@ export const useAurinStore = create<AurinState>()(
           customCategories: (prev.customCategories ?? []).map((c: string) =>
             c === "Dívidas" ? "Resgate de Paz" : c,
           ),
-          security: prev.security ?? {
-            pinHash: null,
-            salt: null,
-            biometricId: null,
-            autoLockMinutes: 0,
-          },
-          reminder: prev.reminder ?? { enabled: false, time: "08:00", lastShown: null },
+          security: { ...DEFAULT_SECURITY, ...(prev.security ?? {}) },
+          reminder: { ...DEFAULT_REMINDER, ...(prev.reminder ?? {}) },
           lastBackupAt: prev.lastBackupAt ?? null,
           celebration: null,
         } as AurinState;
