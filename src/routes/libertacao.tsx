@@ -57,6 +57,7 @@ export const Route = createFileRoute("/libertacao")({
 function DebtsPage() {
   const hydrated = useAurinHydrated();
   const debts = useAurinStore((s) => s.debts);
+  const profileName = useAurinStore((s) => s.profile.name);
   const payDebt = useAurinStore((s) => s.payDebt);
   const removeDebt = useAurinStore((s) => s.removeDebt);
   const premium = useIsPremium();
