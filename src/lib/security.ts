@@ -110,3 +110,43 @@ export function cooldownSeconds(attempts: number) {
   if (attempts < 8) return 60;
   return 300;
 }
+
+/* --------------------------- frase de recuperação -------------------------- */
+
+/**
+ * Palavras simples e fáceis de escrever à mão. A frase nunca é guardada:
+ * salvamos apenas o hash, do mesmo jeito que o PIN.
+ */
+const WORDLIST = [
+  "ouro","paz","rio","monte","semente","fogo","porto","estrela","chave","ponte",
+  "vela","raiz","trilha","areia","cedro","farol","muro","norte","sul","leste",
+  "oeste","calma","sabio","forte","leve","claro","fundo","alto","novo","antigo",
+  "campo","pedra","folha","chuva","sol","lua","mar","vento","terra","luz",
+  "jardim","celeiro","moeda","cofre","escudo","lanca","carta","livro","mesa","porta",
+  "areia2","bravo","doce","firme","gentil","humilde","justo","livre","manso","nobre",
+  "puro","quieto","sereno","tranquilo","unido","valente","zelo","aurora","brisa","canto",
+];
+
+export function generateRecoveryPhrase(words = 12) {
+  const picks = crypto.getRandomValues(new Uint32Array(words));
+  return Array.from(picks, (n) => WORDLIST[n % WORDLIST.length]).join(" ");
+}
+
+export function normalizePhrase(phrase: string) {
+  return phrase
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9\s]/g, " ")
+    .trim()
+    .split(/\s+/)
+    .join(" ");
+}
+
+export async function hashRecoveryPhrase(phrase: string, salt: string) {
+  return hashPin(normalizePhrase(phrase), salt);
+}
+
+export async function verifyRecoveryPhrase(phrase: string, salt: string, expected: string) {
+  return (await hashRecoveryPhrase(phrase, salt)) === expected;
+}
