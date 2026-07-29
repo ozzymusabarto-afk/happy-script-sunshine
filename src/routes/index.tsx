@@ -10,6 +10,7 @@ import {
   Sparkles,
 } from "lucide-react";
 
+import { openGuidedTour } from "@/components/guided-tour";
 import { FreedomMeter, JourneyTrail, VaultJar } from "@/components/journey-visuals";
 import { MorningRitual } from "@/components/morning-ritual";
 import { QuickAdd } from "@/components/quick-add";
@@ -60,6 +61,7 @@ function Dashboard() {
   const debtList = useAurinStore((s) => s.debts);
   const paidInvoices = useAurinStore((s) => s.paidInvoices);
   const pillarSplit = useAurinStore((s) => s.pillarSplit);
+  const tourSeenAt = useAurinStore((s) => s.tourSeenAt);
 
   const key = currentMonthKey();
   const month = useMemo(() => monthTotals(transactions, key), [transactions, key]);
@@ -131,6 +133,21 @@ function Dashboard() {
 
   return (
     <div className="space-y-6">
+      {!tourSeenAt && (
+        <button
+          type="button"
+          onClick={openGuidedTour}
+          className="reveal-step flex w-full items-center gap-3 rounded-2xl border border-primary/25 bg-primary/[0.06] p-4 text-left transition-colors hover:bg-primary/10"
+        >
+          <Sparkles className="h-5 w-5 shrink-0 text-primary" />
+          <span className="min-w-0 flex-1">
+            <span className="block text-sm font-semibold">Novo por aqui? Comece pelo tutorial</span>
+            <span className="block text-xs text-muted-foreground">
+              8 passos curtos mostrando o que fazer primeiro. Dá para pular e rever quando quiser.
+            </span>
+          </span>
+        </button>
+      )}
       <MorningRitual
         goals={goals}
         wealth={wealth}

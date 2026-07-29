@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ArrowLeft, ArrowRight, Coins, Sparkles, Target, Wallet } from "lucide-react";
 
 import { CurrencyInput } from "@/components/currency-input";
+import { openGuidedTour } from "@/components/guided-tour";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
@@ -48,7 +49,7 @@ export function OnboardingDialog() {
   const canAdvance = [dreamName.trim().length > 1 && dreamTarget > 0, income > 0, true][step];
   const monthlyTithe = income * 0.1;
 
-  const finish = () =>
+  const finish = () => {
     completeOnboarding({
       name: name.trim() || "Viajante",
       monthlyIncome: income,
@@ -58,6 +59,8 @@ export function OnboardingDialog() {
       startingBalance,
       symbol,
     });
+    openGuidedTour();
+  };
 
   return (
     <Dialog open>
@@ -228,7 +231,15 @@ export function OnboardingDialog() {
 
         <div className="shrink-0 border-t border-border pt-4">
           <p className="mb-3 text-center text-xs text-muted-foreground">
-            Primeira vez por aqui? Leia o{" "}
+            Primeira vez por aqui? Veja o{" "}
+            <button
+              type="button"
+              onClick={openGuidedTour}
+              className="font-medium text-primary underline-offset-2 hover:underline"
+            >
+              tutorial em 8 passos
+            </button>{" "}
+            ou leia o{" "}
             <Link to="/manual" className="font-medium text-primary underline-offset-2 hover:underline">
               Guia do AURIN
             </Link>{" "}
@@ -240,7 +251,16 @@ export function OnboardingDialog() {
               <ArrowLeft className="h-4 w-4" /> Voltar
             </Button>
           ) : (
-            <Button variant="ghost" className="text-muted-foreground" onClick={loadDemoData}>
+            <Button
+              variant="ghost"
+              className="text-muted-foreground"
+              onClick={() => {
+                const ok = window.confirm(
+                  "Vamos preencher o app com um exemplo só para você ver como ele funciona. Depois é só usar \u201cComeçar do zero\u201d em Meus dados. Continuar?",
+                );
+                if (ok) loadDemoData();
+              }}
+            >
               Ver com dados de exemplo
             </Button>
           )}

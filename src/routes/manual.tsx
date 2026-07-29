@@ -11,6 +11,7 @@ import {
   Sparkles,
 } from "lucide-react";
 
+import { TourButton } from "@/components/guided-tour";
 import { PremiumButton } from "@/components/premium-gate";
 import {
   Accordion,
@@ -91,6 +92,7 @@ function ManualPage() {
           dinheiro para você. Este guia explica os princípios que sustentam o app, por que cada um
           funciona e como percorrer suas telas sem se perder.
         </p>
+        <TourButton label="Prefere assistir? Ver o tutorial em 8 passos" />
       </header>
 
       {/* Índice */}
