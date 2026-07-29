@@ -34,6 +34,7 @@ import {
   type CardBrand,
   type CreditCard,
 } from "@/lib/aurin";
+import { cardGuidance } from "@/lib/tone";
 import { cn } from "@/lib/utils";
 import { cardSummary, useAurinStore } from "@/store/aurin-store";
 
@@ -175,9 +176,17 @@ function CardsPage() {
                   </p>
 
                   {warn && (
-                    <p className="flex items-center gap-1.5 text-xs text-warning">
-                      <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
-                      Uso de limite acima de 70%
+                    <p className="flex items-start gap-1.5 text-xs text-warning">
+                      <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                      <span>
+                        {cardGuidance({
+                          card: s.card.name,
+                          usage: s.usage,
+                          free: s.available,
+                          money: brl,
+                          seed: (s.card.name.length % 7) / 7,
+                        })}
+                      </span>
                     </p>
                   )}
                   {days !== null && days <= 3 && days >= 0 && (
