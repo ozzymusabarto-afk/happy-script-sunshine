@@ -31,6 +31,8 @@ export const Route = createFileRoute("/jornada")({
         property: "og:description",
         content: "Níveis, XP, streak de registro diário e insígnias inspiradas em Arkad.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: JourneyPage,

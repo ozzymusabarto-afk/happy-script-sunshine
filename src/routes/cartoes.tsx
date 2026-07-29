@@ -59,6 +59,8 @@ export const Route = createFileRoute("/cartoes")({
         property: "og:description",
         content: "Limite, fatura atual e próxima fatura de cada cartão em um só lugar.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: CardsPage,

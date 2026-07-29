@@ -31,6 +31,8 @@ export const Route = createFileRoute("/orcamento")({
         property: "og:description",
         content: "Três pilares babilônicos para manter seus gastos no lugar certo.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: BudgetPage,

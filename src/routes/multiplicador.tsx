@@ -58,6 +58,8 @@ export const Route = createFileRoute("/multiplicador")({
         property: "og:description",
         content: "Cofres, reserva de emergência, ativos fixos e simulador de Moedas do Futuro.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: MultiplierPage,

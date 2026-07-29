@@ -45,6 +45,8 @@ export const Route = createFileRoute("/")({
         property: "og:description",
         content: "Visão completa do seu ouro: fluxo mensal, categorias e as leis da Babilônia.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Dashboard,

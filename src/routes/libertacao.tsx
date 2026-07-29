@@ -48,6 +48,8 @@ export const Route = createFileRoute("/libertacao")({
         property: "og:description",
         content: "Cada pagamento solta uma corrente e antecipa a sua paz.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: DebtsPage,

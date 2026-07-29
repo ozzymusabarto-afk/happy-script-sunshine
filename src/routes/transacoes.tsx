@@ -39,6 +39,8 @@ export const Route = createFileRoute("/transacoes")({
         property: "og:description",
         content: "Histórico completo de transações com filtros por categoria, tipo e pagamento.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: TransactionsPage,
