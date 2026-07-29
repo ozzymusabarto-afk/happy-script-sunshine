@@ -163,3 +163,78 @@ const PEACE_LINES = [
 export function peaceLine(seed = Math.random()) {
   return PEACE_LINES[Math.floor(seed * PEACE_LINES.length) % PEACE_LINES.length];
 }
+
+/* ------------------------- voz do mentor sábio ---------------------------- */
+
+/** Princípios de disciplina que sustentam cada orientação. */
+const PRINCIPLES = [
+  "Parte de tudo o que você ganha é sua para guardar.",
+  "O ouro foge de quem o gasta sem plano, e procura quem o protege.",
+  "Um plano simples, seguido com constância, vence qualquer mês difícil.",
+  "Controlar as escolhas de hoje é o que sustenta a paz de amanhã.",
+  "Cada moeda guardada é um servo que trabalha por você.",
+];
+
+function pick<T>(pool: T[], seed: number) {
+  const i = Math.abs(Math.floor(seed * pool.length)) % pool.length;
+  return pool[i];
+}
+
+/**
+ * Correção de rota: reconhecimento neutro → princípio → um passo concreto.
+ * Sereno, educado e firme. Nunca culpa, nunca alarme.
+ */
+export function routeCorrection(opts: {
+  area: string;
+  over: number;
+  money: (v: number) => string;
+  seed?: number;
+  name?: string;
+}) {
+  const { area, over, money, seed = 0.5, name } = opts;
+  const weekly = money(Math.max(1, Math.round(over / 4)));
+  const who = name?.trim() ? `${name.trim()}, ` : "";
+  const openings = [
+    `${who}${area} pediu ${money(over)} a mais este mês. Isso é informação, não falha.`,
+    `${who}o combinado de ${area} foi ultrapassado em ${money(over)}. Nada aqui está perdido.`,
+    `${who}${area} passou do ritmo em ${money(over)}. Um desvio percebido a tempo é fácil de corrigir.`,
+  ];
+  const actions = [
+    `Redirecione ${weekly} por semana e o ritmo volta antes do próximo ciclo.`,
+    `Escolha um único gasto de ${weekly} para adiar nesta semana — isso já recoloca a rota.`,
+    `Guarde ${weekly} nas próximas quatro semanas e o mês fecha equilibrado de novo.`,
+  ];
+  return `${pick(openings, seed)} ${pick(PRINCIPLES, seed * 1.7)} ${pick(actions, seed * 2.3)}`;
+}
+
+/** Aviso sereno de aproximação do limite — firme, sem alarme. */
+export function routeWatch(area: string, left: number, money: (v: number) => string) {
+  return `${area} está perto do combinado: restam ${money(Math.max(0, left))}. Proteger essa margem agora é o que mantém o plano de pé.`;
+}
+
+/**
+ * Celebração: entusiasmo com ganho concreto de paz.
+ */
+export function mentorPraise(opts: {
+  amount: number;
+  days: number;
+  future: number;
+  money: (v: number) => string;
+  seed?: number;
+  name?: string;
+}) {
+  const { amount, days, future, money, seed = 0.5, name } = opts;
+  const who = name?.trim() ? `${name.trim()}, ` : "";
+  const openings = [
+    `${who}excelente decisão.`,
+    `${who}é exatamente assim que se constrói.`,
+    `${who}mais uma vitória silenciosa.`,
+    `${who}que gesto poderoso.`,
+  ];
+  const dayText =
+    days >= 1
+      ? `${Math.round(days)} dia${Math.round(days) === 1 ? "" : "s"} de liberdade`
+      : "algumas horas de liberdade";
+  return `${pick(openings, seed)} ${money(amount)} guardados hoje compraram ${dayText} e viram ${money(future)} em dez anos.`;
+}
+
