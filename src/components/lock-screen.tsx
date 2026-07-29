@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { Fingerprint, Landmark, ShieldCheck } from "lucide-react";
+import { Fingerprint, ShieldCheck } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cooldownSeconds, verifyBiometrics, verifyPin } from "@/lib/security";
+import { userSymbol } from "@/lib/symbols";
 import { cn } from "@/lib/utils";
 import { useAurinStore } from "@/store/aurin-store";
 
@@ -11,6 +12,8 @@ const KEYS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "", "0", "⌫"];
 export function LockScreen({ onUnlock }: { onUnlock: () => void }) {
   const security = useAurinStore((s) => s.security);
   const name = useAurinStore((s) => s.profile.name);
+  const symbol = useAurinStore((s) => s.profile.symbol);
+  const SymbolIcon = userSymbol(symbol).icon;
   const clearAll = useAurinStore((s) => s.clearAll);
   const disableLock = useAurinStore((s) => s.disableLock);
 
