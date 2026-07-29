@@ -92,7 +92,7 @@ export function PremiumDialog({
   if (plan === "premium") {
     return (
       <Dialog open={open} onOpenChange={close}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-h-[85vh] max-w-md overflow-y-auto">
           <div className="space-y-4 py-4 text-center">
             <span className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-gold text-primary-foreground">
               <Crown className="h-8 w-8" />
