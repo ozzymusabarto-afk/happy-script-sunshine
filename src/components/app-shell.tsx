@@ -7,6 +7,7 @@ import { PremiumButton, useIsPremium } from "@/components/premium-gate";
 import { OnboardingDialog } from "@/components/onboarding-dialog";
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
+  BookOpen,
   CloudUpload,
   Coins,
   Compass,
@@ -44,6 +45,7 @@ const NAV = [
   { to: "/simulador", label: "Simulador", short: "Simular", icon: Compass },
   { to: "/multiplicador", label: "Multiplicador", short: "Multipl.", icon: TrendingUp },
   { to: "/jornada", label: "Jornada", icon: Sparkles },
+  { to: "/manual", label: "Guia do AURIN", short: "Guia", icon: BookOpen },
 ] as const;
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -147,6 +149,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 </Link>
               );
             })}
+            <Link
+              to="/manual"
+              className={cn(
+                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                pathname.startsWith("/manual")
+                  ? "bg-primary/15 text-primary"
+                  : "text-muted-foreground hover:bg-sidebar-accent hover:text-foreground",
+              )}
+            >
+              <BookOpen className="h-4 w-4 shrink-0" />
+              <span className="truncate">Guia do AURIN</span>
+            </Link>
             <Link
               to="/ajustes"
               className={cn(
