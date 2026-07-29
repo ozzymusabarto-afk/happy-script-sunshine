@@ -35,6 +35,7 @@ import {
   type PaymentMethod,
   type TxType,
 } from "@/lib/aurin";
+import { DEFAULT_USER_SYMBOL, SymbolPicker, USER_SYMBOLS } from "@/lib/symbols";
 import { useAurinStore } from "@/store/aurin-store";
 
 export const Route = createFileRoute("/ajustes")({
