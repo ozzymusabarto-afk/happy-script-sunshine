@@ -28,6 +28,7 @@ import { Progress } from "@/components/ui/progress";
 import { TransactionDialog } from "@/components/transaction-dialog";
 import { useAurinHydrated } from "@/hooks/use-aurin-hydrated";
 import { useAppLock, useMorningReminder } from "@/hooks/use-aurin-guard";
+import { usePremiumAutoSync } from "@/hooks/use-premium-sync";
 import { brl, levelFor, TREASURY_GOAL_ID } from "@/lib/aurin";
 import { registerServiceWorker } from "@/lib/register-sw";
 import { SymbolBadge, userSymbol } from "@/lib/symbols";
@@ -103,6 +104,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     (day: string) => setReminder({ lastShown: day }),
     (message: string) => toast(message, { duration: 8000 }),
   );
+
+  usePremiumAutoSync();
+
+
+
+
 
 
   if (locked) return <LockScreen onUnlock={unlock} />;

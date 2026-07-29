@@ -38,6 +38,42 @@ export type Database = {
         }
         Relationships: []
       }
+      premium_status: {
+        Row: {
+          active: boolean
+          approved_at: string | null
+          created_at: string
+          email: string
+          expires_at: string | null
+          plan: string
+          transaction: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          active?: boolean
+          approved_at?: string | null
+          created_at?: string
+          email: string
+          expires_at?: string | null
+          plan?: string
+          transaction?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          active?: boolean
+          approved_at?: string | null
+          created_at?: string
+          email?: string
+          expires_at?: string | null
+          plan?: string
+          transaction?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
