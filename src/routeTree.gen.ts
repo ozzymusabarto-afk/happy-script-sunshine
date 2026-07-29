@@ -19,6 +19,7 @@ import { Route as ContaRouteImport } from './routes/conta'
 import { Route as CartoesRouteImport } from './routes/cartoes'
 import { Route as AjustesRouteImport } from './routes/ajustes'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiPublicHotmartRouteImport } from './routes/api/public/hotmart'
 
 const TransacoesRoute = TransacoesRouteImport.update({
   id: '/transacoes',
@@ -70,6 +71,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicHotmartRoute = ApiPublicHotmartRouteImport.update({
+  id: '/api/public/hotmart',
+  path: '/api/public/hotmart',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -82,6 +88,7 @@ export interface FileRoutesByFullPath {
   '/orcamento': typeof OrcamentoRoute
   '/simulador': typeof SimuladorRoute
   '/transacoes': typeof TransacoesRoute
+  '/api/public/hotmart': typeof ApiPublicHotmartRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -94,6 +101,7 @@ export interface FileRoutesByTo {
   '/orcamento': typeof OrcamentoRoute
   '/simulador': typeof SimuladorRoute
   '/transacoes': typeof TransacoesRoute
+  '/api/public/hotmart': typeof ApiPublicHotmartRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -107,6 +115,7 @@ export interface FileRoutesById {
   '/orcamento': typeof OrcamentoRoute
   '/simulador': typeof SimuladorRoute
   '/transacoes': typeof TransacoesRoute
+  '/api/public/hotmart': typeof ApiPublicHotmartRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -121,6 +130,7 @@ export interface FileRouteTypes {
     | '/orcamento'
     | '/simulador'
     | '/transacoes'
+    | '/api/public/hotmart'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -133,6 +143,7 @@ export interface FileRouteTypes {
     | '/orcamento'
     | '/simulador'
     | '/transacoes'
+    | '/api/public/hotmart'
   id:
     | '__root__'
     | '/'
@@ -145,6 +156,7 @@ export interface FileRouteTypes {
     | '/orcamento'
     | '/simulador'
     | '/transacoes'
+    | '/api/public/hotmart'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -158,6 +170,7 @@ export interface RootRouteChildren {
   OrcamentoRoute: typeof OrcamentoRoute
   SimuladorRoute: typeof SimuladorRoute
   TransacoesRoute: typeof TransacoesRoute
+  ApiPublicHotmartRoute: typeof ApiPublicHotmartRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -232,6 +245,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hotmart': {
+      id: '/api/public/hotmart'
+      path: '/api/public/hotmart'
+      fullPath: '/api/public/hotmart'
+      preLoaderRoute: typeof ApiPublicHotmartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -246,6 +266,7 @@ const rootRouteChildren: RootRouteChildren = {
   OrcamentoRoute: OrcamentoRoute,
   SimuladorRoute: SimuladorRoute,
   TransacoesRoute: TransacoesRoute,
+  ApiPublicHotmartRoute: ApiPublicHotmartRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
