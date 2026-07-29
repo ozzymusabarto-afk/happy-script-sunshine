@@ -331,7 +331,7 @@ function Dashboard() {
               Sabedoria do dia
             </p>
             <p className="mt-1 font-display text-lg leading-snug">"{quote}"</p>
-            <p className="mt-1 text-xs text-muted-foreground">— O Homem Mais Rico da Babilônia</p>
+            <p className="mt-1 text-xs text-muted-foreground">— Sabedoria da Babilônia</p>
           </div>
         </CardContent>
       </Card>
