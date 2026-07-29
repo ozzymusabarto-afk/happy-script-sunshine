@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ArrowLeft, ArrowRight, Coins, Sparkles, Target, Wallet } from "lucide-react";
 
 import { CurrencyInput } from "@/components/currency-input";
+import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -225,7 +226,15 @@ export function OnboardingDialog() {
           )}
         </div>
 
-        <div className="flex shrink-0 items-center justify-between gap-3 border-t border-border pt-4">
+        <div className="shrink-0 border-t border-border pt-4">
+          <p className="mb-3 text-center text-xs text-muted-foreground">
+            Primeira vez por aqui? Leia o{" "}
+            <Link to="/manual" className="font-medium text-primary underline-offset-2 hover:underline">
+              Guia do AURIN
+            </Link>{" "}
+            para entender o método em poucos minutos.
+          </p>
+          <div className="flex items-center justify-between gap-3">
           {step > 0 ? (
             <Button variant="ghost" onClick={() => setStep((s) => s - 1)}>
               <ArrowLeft className="h-4 w-4" /> Voltar
@@ -248,6 +257,7 @@ export function OnboardingDialog() {
               Começar minha jornada <Sparkles className="h-4 w-4" />
             </Button>
           )}
+          </div>
         </div>
       </DialogContent>
     </Dialog>

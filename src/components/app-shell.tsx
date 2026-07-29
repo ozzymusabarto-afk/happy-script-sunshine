@@ -7,6 +7,7 @@ import { PremiumButton, useIsPremium } from "@/components/premium-gate";
 import { OnboardingDialog } from "@/components/onboarding-dialog";
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
+  BookOpen,
   CloudUpload,
   Coins,
   Compass,
@@ -44,6 +45,7 @@ const NAV = [
   { to: "/simulador", label: "Simulador", short: "Simular", icon: Compass },
   { to: "/multiplicador", label: "Multiplicador", short: "Multipl.", icon: TrendingUp },
   { to: "/jornada", label: "Jornada", icon: Sparkles },
+  { to: "/manual", label: "Guia do AURIN", short: "Guia", icon: BookOpen },
 ] as const;
 
 export function AppShell({ children }: { children: React.ReactNode }) {

@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import {
+  BookOpen,
   Download,
   Plus,
   RefreshCw,
@@ -137,6 +138,20 @@ function Settings() {
           Tudo aqui é seu e fica no seu aparelho. Ajuste no seu ritmo, sem pressa.
         </p>
       </header>
+
+      <Link
+        to="/manual"
+        className="reveal-step flex items-center gap-3 rounded-xl border border-primary/25 bg-primary/[0.06] p-4 transition-colors hover:bg-primary/10"
+      >
+        <BookOpen className="h-5 w-5 shrink-0 text-primary" />
+        <span className="min-w-0 flex-1">
+          <span className="block text-sm font-semibold">Como usar o AURIN</span>
+          <span className="block text-xs text-muted-foreground">
+            Os princípios, a rotina e o que cada tela faz — em poucos minutos.
+          </span>
+        </span>
+      </Link>
+
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Perfil */}

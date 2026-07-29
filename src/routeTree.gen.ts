@@ -13,6 +13,7 @@ import { Route as TransacoesRouteImport } from './routes/transacoes'
 import { Route as SimuladorRouteImport } from './routes/simulador'
 import { Route as OrcamentoRouteImport } from './routes/orcamento'
 import { Route as MultiplicadorRouteImport } from './routes/multiplicador'
+import { Route as ManualRouteImport } from './routes/manual'
 import { Route as LibertacaoRouteImport } from './routes/libertacao'
 import { Route as JornadaRouteImport } from './routes/jornada'
 import { Route as ContaRouteImport } from './routes/conta'
@@ -39,6 +40,11 @@ const OrcamentoRoute = OrcamentoRouteImport.update({
 const MultiplicadorRoute = MultiplicadorRouteImport.update({
   id: '/multiplicador',
   path: '/multiplicador',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ManualRoute = ManualRouteImport.update({
+  id: '/manual',
+  path: '/manual',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LibertacaoRoute = LibertacaoRouteImport.update({
@@ -84,6 +90,7 @@ export interface FileRoutesByFullPath {
   '/conta': typeof ContaRoute
   '/jornada': typeof JornadaRoute
   '/libertacao': typeof LibertacaoRoute
+  '/manual': typeof ManualRoute
   '/multiplicador': typeof MultiplicadorRoute
   '/orcamento': typeof OrcamentoRoute
   '/simulador': typeof SimuladorRoute
@@ -97,6 +104,7 @@ export interface FileRoutesByTo {
   '/conta': typeof ContaRoute
   '/jornada': typeof JornadaRoute
   '/libertacao': typeof LibertacaoRoute
+  '/manual': typeof ManualRoute
   '/multiplicador': typeof MultiplicadorRoute
   '/orcamento': typeof OrcamentoRoute
   '/simulador': typeof SimuladorRoute
@@ -111,6 +119,7 @@ export interface FileRoutesById {
   '/conta': typeof ContaRoute
   '/jornada': typeof JornadaRoute
   '/libertacao': typeof LibertacaoRoute
+  '/manual': typeof ManualRoute
   '/multiplicador': typeof MultiplicadorRoute
   '/orcamento': typeof OrcamentoRoute
   '/simulador': typeof SimuladorRoute
@@ -126,6 +135,7 @@ export interface FileRouteTypes {
     | '/conta'
     | '/jornada'
     | '/libertacao'
+    | '/manual'
     | '/multiplicador'
     | '/orcamento'
     | '/simulador'
@@ -139,6 +149,7 @@ export interface FileRouteTypes {
     | '/conta'
     | '/jornada'
     | '/libertacao'
+    | '/manual'
     | '/multiplicador'
     | '/orcamento'
     | '/simulador'
@@ -152,6 +163,7 @@ export interface FileRouteTypes {
     | '/conta'
     | '/jornada'
     | '/libertacao'
+    | '/manual'
     | '/multiplicador'
     | '/orcamento'
     | '/simulador'
@@ -166,6 +178,7 @@ export interface RootRouteChildren {
   ContaRoute: typeof ContaRoute
   JornadaRoute: typeof JornadaRoute
   LibertacaoRoute: typeof LibertacaoRoute
+  ManualRoute: typeof ManualRoute
   MultiplicadorRoute: typeof MultiplicadorRoute
   OrcamentoRoute: typeof OrcamentoRoute
   SimuladorRoute: typeof SimuladorRoute
@@ -201,6 +214,13 @@ declare module '@tanstack/react-router' {
       path: '/multiplicador'
       fullPath: '/multiplicador'
       preLoaderRoute: typeof MultiplicadorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/manual': {
+      id: '/manual'
+      path: '/manual'
+      fullPath: '/manual'
+      preLoaderRoute: typeof ManualRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/libertacao': {
@@ -262,6 +282,7 @@ const rootRouteChildren: RootRouteChildren = {
   ContaRoute: ContaRoute,
   JornadaRoute: JornadaRoute,
   LibertacaoRoute: LibertacaoRoute,
+  ManualRoute: ManualRoute,
   MultiplicadorRoute: MultiplicadorRoute,
   OrcamentoRoute: OrcamentoRoute,
   SimuladorRoute: SimuladorRoute,
@@ -271,13 +292,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
