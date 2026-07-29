@@ -97,13 +97,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }, [goals]);
 
   useMorningReminder(
-    hydrated && reminder.enabled && !locked,
-    reminder.time,
-    reminder.lastShown,
+    { ...reminder, enabled: hydrated && reminder.enabled && !locked },
     { name: profile.name, dreamName: profile.dreamName, dreamProgress },
-    (day) => setReminder({ lastShown: day }),
-    (message) => toast(message, { duration: 8000 }),
+    (day: string) => setReminder({ lastShown: day }),
+    (message: string) => toast(message, { duration: 8000 }),
   );
+
 
   if (locked) return <LockScreen onUnlock={unlock} />;
 
