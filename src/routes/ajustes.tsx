@@ -496,8 +496,29 @@ function Settings() {
                       <Button
                         size="icon"
                         variant="ghost"
+                        aria-label={`Editar ${r.title}`}
+                        onClick={() => {
+                          setEditingRec(r.id);
+                          setRec({
+                            title: r.title,
+                            amount: r.amount,
+                            type: r.type,
+                            category: r.category,
+                            day: r.day,
+                            savedTenPercent: Boolean(r.savedTenPercent),
+                          });
+                        }}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="ghost"
                         aria-label={`Remover ${r.title}`}
-                        onClick={() => removeRecurring(r.id)}
+                        onClick={() => {
+                          if (editingRec === r.id) resetRecForm();
+                          removeRecurring(r.id);
+                        }}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
