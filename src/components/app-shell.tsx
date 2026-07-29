@@ -102,7 +102,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     { name: profile.name, dreamName: profile.dreamName, dreamProgress },
     (day: string) => setReminder({ lastShown: day }),
     (message: string) => toast(message, { duration: 8000 }),
-  );
+  usePremiumAutoSync();
+
+
 
 
   if (locked) return <LockScreen onUnlock={unlock} />;
