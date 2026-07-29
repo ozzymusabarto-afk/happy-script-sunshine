@@ -11,6 +11,7 @@ import {
   SymbolBadge,
   userSymbol,
 } from "@/lib/symbols";
+import { useAurinStore } from "@/store/aurin-store";
 import { dailyLine, greeting, longDate } from "@/lib/tone";
 import { cn } from "@/lib/utils";
 
@@ -37,6 +38,8 @@ export function MorningRitual({
   debtRemaining,
   monthlyPace,
 }: Props) {
+  const profileName = useAurinStore((s) => s.profile.name);
+  const profileSymbol = useAurinStore((s) => s.profile.symbol);
   const dreams = useMemo(
     () => goals.filter((g) => g.id !== TREASURY_GOAL_ID && g.target > 0),
     [goals],
