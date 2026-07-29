@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { LEVELS, brl, levelFor } from "@/lib/aurin";
+import { SymbolBadge, userSymbol } from "@/lib/symbols";
 import { cn } from "@/lib/utils";
 import {
   currentMonthKey,
@@ -32,7 +33,7 @@ export const Route = createFileRoute("/jornada")({
       {
         name: "description",
         content:
-          "Suba de Aprendiz de Babilônia a AURIN Master conquistando XP, streaks e insígnias douradas.",
+          "Acompanhe seu progresso, sua constância diária e as insígnias douradas conquistadas na jornada.",
       },
       { property: "og:title", content: "Jornada e Conquistas — AURIN" },
       {
@@ -55,6 +56,8 @@ const BADGE_ICONS: Record<string, React.ComponentType<{ className?: string }>> =
 
 function JourneyPage() {
   const xp = useAurinStore((s) => s.xp);
+  const profileName = useAurinStore((s) => s.profile.name);
+  const profileSymbol = useAurinStore((s) => s.profile.symbol);
   const transactions = useAurinStore((s) => s.transactions);
   const goals = useAurinStore((s) => s.goals);
   const assets = useAurinStore((s) => s.assets);
@@ -87,11 +90,16 @@ function JourneyPage() {
 
   return (
     <div className="space-y-6">
-      <header>
-        <h1 className="font-display text-2xl font-extrabold sm:text-3xl">Jornada e Conquistas</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Disciplina diária transforma aprendizes em guardiões do ouro.
-        </p>
+      <header className="flex items-center gap-3">
+        <SymbolBadge symbol={userSymbol(profileSymbol)} size="lg" />
+        <div className="min-w-0">
+          <h1 className="truncate font-display text-2xl font-extrabold sm:text-3xl">
+            {profileName ? `Jornada de ${profileName}` : "Sua jornada"}
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Constância diária é o que transforma escolhas simples em liberdade.
+          </p>
+        </div>
       </header>
 
       <Card className="relative overflow-hidden border-primary/30">

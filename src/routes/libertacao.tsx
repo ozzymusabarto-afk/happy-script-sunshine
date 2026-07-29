@@ -31,6 +31,7 @@ import { Slider } from "@/components/ui/slider";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAurinHydrated } from "@/hooks/use-aurin-hydrated";
 import { DEBT_LABELS, brl, brlCompact, type Debt, type DebtType } from "@/lib/aurin";
+import { rescueEncouragement } from "@/lib/tone";
 import { cn } from "@/lib/utils";
 import { debtSummary, simulatePayoff, useAurinStore, type Strategy } from "@/store/aurin-store";
 
@@ -56,6 +57,7 @@ export const Route = createFileRoute("/libertacao")({
 function DebtsPage() {
   const hydrated = useAurinHydrated();
   const debts = useAurinStore((s) => s.debts);
+  const profileName = useAurinStore((s) => s.profile.name);
   const payDebt = useAurinStore((s) => s.payDebt);
   const removeDebt = useAurinStore((s) => s.removeDebt);
   const premium = useIsPremium();
@@ -114,8 +116,12 @@ function DebtsPage() {
             Plano de Libertação
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Você já libertou {summary.progress.toFixed(0)}% do seu futuro. Cada pagamento solta uma
-            corrente e antecipa a sua paz.
+            {rescueEncouragement({
+              progress: summary.progress,
+              months: chosen.months,
+              name: profileName,
+              seed: ((summary.progress | 0) % 7) / 7,
+            })}
           </p>
         </div>
         <Button

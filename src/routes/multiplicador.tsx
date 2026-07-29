@@ -691,7 +691,10 @@ function DepositDialog({
     <Dialog open={Boolean(goalId)} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
-          <DialogTitle className="font-display">Depositar Ouro</DialogTitle>
+          <DialogTitle className="flex items-center gap-2 font-display">
+            {goal && <SymbolBadge symbol={goalIcon(goal.icon ?? inferGoalIcon(goal.name))} size="sm" />}
+            Depositar Ouro
+          </DialogTitle>
           <DialogDescription className="truncate">{goal?.name}</DialogDescription>
         </DialogHeader>
         <div className="grid gap-2">
