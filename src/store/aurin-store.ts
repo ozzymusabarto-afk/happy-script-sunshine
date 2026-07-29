@@ -24,6 +24,7 @@ import {
   type Transaction,
 } from "@/lib/aurin";
 import type { PlanId } from "@/lib/plan";
+import { DEFAULT_USER_SYMBOL, inferGoalIcon } from "@/lib/symbols";
 import {
   seedAssets,
   seedBadges,
@@ -184,6 +185,7 @@ const demoState = () => ({
   hasOnboarded: true,
   profile: {
     name: "Explorador",
+    symbol: "leao",
     monthlyIncome: 8200,
     dreamName: "Liberdade Financeira",
     dreamTarget: 500000,
@@ -561,7 +563,7 @@ export const useAurinStore = create<AurinState>()(
           ...emptyState(),
           ...prev,
           goals: prev.goals?.length ? prev.goals : [emptyTreasury()],
-          profile: prev.profile ?? { ...EMPTY_PROFILE },
+          profile: { ...EMPTY_PROFILE, ...(prev.profile ?? {}) },
           recurring: prev.recurring ?? [],
           hasOnboarded: prev.hasOnboarded ?? Boolean(prev.transactions?.length),
           plan: prev.plan ?? "free",
