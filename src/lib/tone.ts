@@ -129,12 +129,12 @@ export function pillarMessage(
     return `Faltam ${money(gap)} para completar o ouro deste mês — o pedaço que constrói o seu futuro.`;
   }
   if (tone === "ritmo") {
-    return `${label} está no ritmo. Sobram ${money(Math.max(0, gap))} de folga tranquila.`;
+    return `${label} está no ritmo. Sobram ${money(Math.max(0, gap))} de folga tranquila — proteja essa margem.`;
   }
   if (tone === "atencao") {
-    return `${label} está chegando perto do combinado. Restam ${money(Math.max(0, gap))} — dá para fechar com calma.`;
+    return routeWatch(label, gap, money);
   }
-  return `${label} pediu ${money(Math.abs(gap))} a mais este mês. Um ajuste desse tamanho já recoloca você no ritmo.`;
+  return routeCorrection({ area: label, over: Math.abs(gap), money, seed: (label.length % 7) / 7 });
 }
 
 /** Resumo geral do mês, em tom de acolhimento. */
