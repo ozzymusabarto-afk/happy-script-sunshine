@@ -113,6 +113,16 @@ function Settings() {
     try {
       const parsed = JSON.parse(await file.text());
       if (!parsed || typeof parsed !== "object") throw new Error("formato");
+      const resumo = [
+        `${parsed.transactions?.length ?? 0} lançamentos`,
+        `${parsed.goals?.length ?? 0} cofres`,
+        `${parsed.cards?.length ?? 0} cartões`,
+        `${parsed.debts?.length ?? 0} resgates de paz`,
+      ].join(" · ");
+      const ok = window.confirm(
+        `Este backup traz: ${resumo}.\n\nAo importar, os dados atuais deste aparelho serão substituídos. Deseja continuar?`,
+      );
+      if (!ok) return;
       importState(parsed);
       toast.success("Dados restaurados com sucesso.");
     } catch {
