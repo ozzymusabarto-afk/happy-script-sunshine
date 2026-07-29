@@ -126,7 +126,14 @@ function DebtsPage() {
         </div>
         <Button
           className="shrink-0 bg-gold text-primary-foreground hover:opacity-90"
-          onClick={() => (lockedRescues ? setSalesOpen(true) : setOpen(true))}
+          onClick={() => {
+            if (lockedRescues) {
+              setSalesOpen(true);
+              return;
+            }
+            setEditing(null);
+            setOpen(true);
+          }}
         >
           {lockedRescues ? <Crown className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
           <span className="hidden sm:inline">Novo resgate</span>
