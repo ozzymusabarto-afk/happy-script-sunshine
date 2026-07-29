@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { BellRing, Fingerprint, Lock, ShieldCheck } from "lucide-react";
+import { BellRing, Copy, Fingerprint, KeyRound, Lock, MoonStar, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -14,15 +14,38 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
 import {
+  FREQUENCY_LABELS,
+  TONE_LABELS,
+  WEEKDAY_LABELS,
   askNotificationPermission,
-  morningMessage,
   notificationPermission,
   notificationsSupported,
-  showMorningNotification,
+  reminderMessage,
+  showReminderNotification,
+  type ReminderFrequency,
+  type ReminderTone,
 } from "@/lib/notifications";
-import { biometricsSupported, hashPin, newSalt, registerBiometrics } from "@/lib/security";
+import {
+  biometricsSupported,
+  generateRecoveryPhrase,
+  hashPin,
+  hashRecoveryPhrase,
+  newSalt,
+  registerBiometrics,
+} from "@/lib/security";
+import { cn } from "@/lib/utils";
 import { useAurinStore } from "@/store/aurin-store";
+
+const AUTOLOCK_OPTIONS = [
+  { value: "0", label: "Sempre que eu abrir" },
+  { value: "1", label: "Depois de 1 minuto fora" },
+  { value: "5", label: "Depois de 5 minutos fora" },
+  { value: "15", label: "Depois de 15 minutos fora" },
+  { value: "30", label: "Depois de 30 minutos fora" },
+  { value: "60", label: "Depois de 1 hora fora" },
+];
 
 export function SecurityCard() {
   const security = useAurinStore((s) => s.security);
@@ -34,6 +57,7 @@ export function SecurityCard() {
   const [confirmPin, setConfirmPin] = useState("");
   const [canBio, setCanBio] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [phrase, setPhrase] = useState<string | null>(null);
 
   useEffect(() => {
     void biometricsSupported().then(setCanBio);
@@ -78,6 +102,17 @@ export function SecurityCard() {
       toast.error("Seu aparelho recusou o cadastro da biometria.");
     }
     setBusy(false);
+  };
+
+  const createRecovery = async () => {
+    setBusy(true);
+    const words = generateRecoveryPhrase(12);
+    const recoverySalt = newSalt();
+    const recoveryHash = await hashRecoveryPhrase(words, recoverySalt);
+    setSecurity({ recoveryHash, recoverySalt, recoveryCreatedAt: new Date().toISOString() });
+    setPhrase(words);
+    setBusy(false);
+    toast.success("Frase criada. Guarde-a em um lugar seguro.");
   };
 
   return (
@@ -176,12 +211,70 @@ export function SecurityCard() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="0">Sempre que eu abrir</SelectItem>
-                  <SelectItem value="1">Depois de 1 minuto fora</SelectItem>
-                  <SelectItem value="5">Depois de 5 minutos fora</SelectItem>
-                  <SelectItem value="30">Depois de 30 minutos fora</SelectItem>
+                  {AUTOLOCK_OPTIONS.map((o) => (
+                    <SelectItem key={o.value} value={o.value}>
+                      {o.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
+              <p className="text-xs text-muted-foreground">
+                Escolha o tempo que faz sentido para o seu dia. Nada muda para quem está fora.
+              </p>
+            </div>
+
+            {/* Recuperação de acesso */}
+            <div className="space-y-3 rounded-xl border border-border p-3">
+              <div>
+                <p className="flex items-center gap-2 text-sm font-medium">
+                  <KeyRound className="h-4 w-4 text-primary" /> Se eu esquecer meu PIN
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Crie uma frase de 12 palavras. Ela abre seu templo sem expor nada: guardamos
+                  apenas o hash dela, nunca as palavras.
+                </p>
+              </div>
+
+              {security.recoveryHash && !phrase && (
+                <p className="text-xs text-primary">
+                  Frase de recuperação ativa
+                  {security.recoveryCreatedAt
+                    ? ` desde ${new Date(security.recoveryCreatedAt).toLocaleDateString("pt-BR")}`
+                    : ""}
+                  .
+                </p>
+              )}
+
+              {phrase && (
+                <div className="space-y-2 rounded-lg border border-primary/40 bg-primary/5 p-3">
+                  <p className="text-xs text-muted-foreground">
+                    Anote agora — não mostraremos de novo.
+                  </p>
+                  <p className="font-mono text-sm leading-relaxed">{phrase}</p>
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        void navigator.clipboard
+                          ?.writeText(phrase)
+                          .then(() => toast.success("Frase copiada."))
+                          .catch(() => toast.error("Copie manualmente, por favor."));
+                      }}
+                    >
+                      <Copy className="h-4 w-4" /> Copiar
+                    </Button>
+                    <Button size="sm" variant="ghost" onClick={() => setPhrase(null)}>
+                      Já guardei
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              <Button variant="outline" disabled={busy} onClick={() => void createRecovery()}>
+                <KeyRound className="h-4 w-4" />
+                {security.recoveryHash ? "Gerar nova frase" : "Criar frase de recuperação"}
+              </Button>
             </div>
           </div>
         )}
@@ -218,6 +311,15 @@ export function ReminderCard() {
     }
   };
 
+  const toggleDay = (day: number) => {
+    const has = reminder.days.includes(day);
+    const next = has ? reminder.days.filter((d) => d !== day) : [...reminder.days, day].sort();
+    setReminder({ days: next.length ? next : [day] });
+  };
+
+  const voice = { tone: reminder.tone, customMessage: reminder.customMessage };
+  const ctx = { name: profile.name, dreamName: profile.dreamName, dreamProgress: 0 };
+
   return (
     <Card className="reveal-step">
       <CardHeader>
@@ -225,7 +327,7 @@ export function ReminderCard() {
           <BellRing className="h-4 w-4 text-primary" /> Meu chamado da manhã
         </CardTitle>
         <CardDescription>
-          Um lembrete gentil por dia, só sobre o seu progresso — nunca cobrança.
+          Você escolhe o horário, o ritmo e as palavras. Nunca é cobrança — é lembrete de cuidado.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -235,7 +337,7 @@ export function ReminderCard() {
             <p className="text-xs text-muted-foreground">
               {permission === "denied"
                 ? "As notificações estão bloqueadas nas configurações do navegador."
-                : "Aparece uma vez por dia, no horário que você escolher."}
+                : "No horário e nos dias que você escolher."}
             </p>
           </div>
           <Switch
@@ -246,28 +348,157 @@ export function ReminderCard() {
         </div>
 
         {reminder.enabled && (
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="rem-time">Horário</Label>
-              <Input
-                id="rem-time"
-                type="time"
-                value={reminder.time}
-                onChange={(e) => setReminder({ time: e.target.value || "08:00" })}
-              />
+          <div className="space-y-4">
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="rem-time">Horário</Label>
+                <Input
+                  id="rem-time"
+                  type="time"
+                  value={reminder.time}
+                  onChange={(e) => setReminder({ time: e.target.value || "08:00" })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Frequência</Label>
+                <Select
+                  value={reminder.frequency}
+                  onValueChange={(v) => setReminder({ frequency: v as ReminderFrequency })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(FREQUENCY_LABELS).map(([value, label]) => (
+                      <SelectItem key={value} value={value}>
+                        {label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-            <div className="flex items-end">
+
+            {(reminder.frequency === "personalizado" || reminder.frequency === "semanal") && (
+              <div className="space-y-2">
+                <Label>
+                  {reminder.frequency === "semanal" ? "Dia da semana" : "Dias que eu escolho"}
+                </Label>
+                <div className="flex flex-wrap gap-2">
+                  {WEEKDAY_LABELS.map((label, day) => {
+                    const active =
+                      reminder.frequency === "semanal"
+                        ? reminder.days[0] === day
+                        : reminder.days.includes(day);
+                    return (
+                      <button
+                        key={label}
+                        type="button"
+                        onClick={() =>
+                          reminder.frequency === "semanal"
+                            ? setReminder({ days: [day] })
+                            : toggleDay(day)
+                        }
+                        className={cn(
+                          "rounded-full border px-3 py-1.5 text-xs font-medium transition-colors",
+                          active
+                            ? "border-primary bg-primary/15 text-primary"
+                            : "border-border text-muted-foreground hover:bg-accent",
+                        )}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <Label>Tom da mensagem</Label>
+              <Select
+                value={reminder.tone}
+                onValueChange={(v) => setReminder({ tone: v as ReminderTone })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(TONE_LABELS).map(([value, label]) => (
+                    <SelectItem key={value} value={value}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {reminder.tone === "personalizado" && (
+              <div className="space-y-2">
+                <Label htmlFor="rem-msg">Minha mensagem</Label>
+                <Textarea
+                  id="rem-msg"
+                  rows={3}
+                  placeholder="Ex.: {nome}, hoje você constrói {sonho}. Guarde sua parte."
+                  value={reminder.customMessage ?? ""}
+                  onChange={(e) => setReminder({ customMessage: e.target.value })}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Use <span className="font-mono">{"{nome}"}</span> e{" "}
+                  <span className="font-mono">{"{sonho}"}</span> para personalizar.
+                </p>
+              </div>
+            )}
+
+            <div className="space-y-3 rounded-xl border border-border p-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="flex items-center gap-2 text-sm font-medium">
+                    <MoonStar className="h-4 w-4 text-primary" /> Não perturbe
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Silêncio total dentro dessa janela — nada aparece nem vibra.
+                  </p>
+                </div>
+                <Switch
+                  checked={reminder.quietEnabled}
+                  onCheckedChange={(v) => setReminder({ quietEnabled: v })}
+                  aria-label="Ativar não perturbe"
+                />
+              </div>
+              {reminder.quietEnabled && (
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="dnd-from">A partir de</Label>
+                    <Input
+                      id="dnd-from"
+                      type="time"
+                      value={reminder.quietFrom}
+                      onChange={(e) => setReminder({ quietFrom: e.target.value || "22:00" })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="dnd-to">Até</Label>
+                    <Input
+                      id="dnd-to"
+                      type="time"
+                      value={reminder.quietTo}
+                      onChange={(e) => setReminder({ quietTo: e.target.value || "07:00" })}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="rounded-xl border border-dashed border-border p-3">
+              <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Prévia</p>
+              <p className="mt-1 text-sm">{reminderMessage(ctx, voice)}</p>
               <Button
                 variant="outline"
-                className="w-full"
+                className="mt-3"
                 onClick={() => {
-                  const ctx = {
-                    name: profile.name,
-                    dreamName: profile.dreamName,
-                    dreamProgress: 0,
-                  };
-                  const sent = notificationsSupported() && showMorningNotification(ctx);
-                  if (!sent) toast(morningMessage(ctx));
+                  const sent = notificationsSupported() && showReminderNotification(ctx, voice);
+                  if (!sent) toast(reminderMessage(ctx, voice));
                 }}
               >
                 Ver como fica

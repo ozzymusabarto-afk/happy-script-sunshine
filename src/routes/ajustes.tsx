@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 import {
   Download,
   Plus,
@@ -73,6 +73,8 @@ function Settings() {
   const loadDemoData = useAurinStore((s) => s.loadDemoData);
   const clearAll = useAurinStore((s) => s.clearAll);
   const importState = useAurinStore((s) => s.importState);
+  const lastBackupAt = useAurinStore((s) => s.lastBackupAt);
+  const markBackup = useAurinStore((s) => s.markBackup);
 
   const [newCategory, setNewCategory] = useState("");
   const [rec, setRec] = useState({
@@ -103,6 +105,7 @@ function Settings() {
     a.download = `aurin-backup-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
+    markBackup();
     toast.success("Backup salvo. Sua jornada está guardada com você.");
   };
 
@@ -110,6 +113,16 @@ function Settings() {
     try {
       const parsed = JSON.parse(await file.text());
       if (!parsed || typeof parsed !== "object") throw new Error("formato");
+      const resumo = [
+        `${parsed.transactions?.length ?? 0} lançamentos`,
+        `${parsed.goals?.length ?? 0} cofres`,
+        `${parsed.cards?.length ?? 0} cartões`,
+        `${parsed.debts?.length ?? 0} resgates de paz`,
+      ].join(" · ");
+      const ok = window.confirm(
+        `Este backup traz: ${resumo}.\n\nAo importar, os dados atuais deste aparelho serão substituídos. Deseja continuar?`,
+      );
+      if (!ok) return;
       importState(parsed);
       toast.success("Dados restaurados com sucesso.");
     } catch {
@@ -445,16 +458,50 @@ function Settings() {
               <Sparkles className="h-4 w-4 text-primary" /> Backup e recomeço
             </CardTitle>
             <CardDescription>
-              Seus dados ficam apenas neste aparelho. Exporte de tempos em tempos.
+              Exportar e importar são e sempre serão gratuitos: seus dados pertencem a você.
             </CardDescription>
           </CardHeader>
-          <CardContent className="flex flex-wrap gap-3">
-            <Button variant="outline" onClick={exportData}>
-              <Download className="h-4 w-4" /> Exportar meus dados
-            </Button>
-            <Button variant="outline" onClick={() => fileRef.current?.click()}>
-              <Upload className="h-4 w-4" /> Importar backup
-            </Button>
+          <CardContent className="space-y-4">
+            <div className="grid gap-3 sm:grid-cols-2">
+              <button
+                type="button"
+                onClick={exportData}
+                className="flex items-start gap-3 rounded-2xl border border-primary/30 bg-primary/5 p-4 text-left transition-colors hover:bg-primary/10"
+              >
+                <Download className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+                <span>
+                  <span className="block text-sm font-semibold">Exportar meus dados</span>
+                  <span className="block text-xs text-muted-foreground">
+                    Salva um arquivo com toda a sua jornada neste aparelho.
+                    {lastBackupAt
+                      ? ` Último: ${new Date(lastBackupAt).toLocaleDateString("pt-BR")}.`
+                      : ""}
+                  </span>
+                  <span className="mt-2 inline-block text-[11px] font-semibold uppercase tracking-[0.15em] text-primary">
+                    Sempre gratuito
+                  </span>
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => fileRef.current?.click()}
+                className="flex items-start gap-3 rounded-2xl border border-border p-4 text-left transition-colors hover:bg-accent"
+              >
+                <Upload className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+                <span>
+                  <span className="block text-sm font-semibold">Importar backup</span>
+                  <span className="block text-xs text-muted-foreground">
+                    Traga de volta um arquivo exportado pelo AURIN. Mostramos um resumo antes de
+                    substituir.
+                  </span>
+                  <span className="mt-2 inline-block text-[11px] font-semibold uppercase tracking-[0.15em] text-primary">
+                    Sempre gratuito
+                  </span>
+                </span>
+              </button>
+            </div>
+
             <input
               ref={fileRef}
               type="file"
@@ -466,21 +513,33 @@ function Settings() {
                 e.target.value = "";
               }}
             />
-            <Button variant="outline" onClick={loadDemoData}>
-              <RefreshCw className="h-4 w-4" /> Carregar exemplo
-            </Button>
-            <Button
-              variant="ghost"
-              className="text-muted-foreground hover:text-destructive"
-              onClick={() => {
-                clearAll();
-                toast.success("Tudo limpo. Sua jornada recomeça agora.");
-              }}
-            >
-              <Trash2 className="h-4 w-4" /> Começar do zero
-            </Button>
+
+            <div className="flex flex-wrap gap-3">
+              <Button variant="outline" onClick={loadDemoData}>
+                <RefreshCw className="h-4 w-4" /> Carregar exemplo
+              </Button>
+              <Button
+                variant="ghost"
+                className="text-muted-foreground hover:text-destructive"
+                onClick={() => {
+                  clearAll();
+                  toast.success("Tudo limpo. Sua jornada recomeça agora.");
+                }}
+              >
+                <Trash2 className="h-4 w-4" /> Começar do zero
+              </Button>
+            </div>
+
+            <p className="text-xs text-muted-foreground">
+              Quer sincronizar entre aparelhos?{" "}
+              <Link to="/conta" className="text-primary underline-offset-4 hover:underline">
+                Conecte sua conta na nuvem
+              </Link>
+              .
+            </p>
           </CardContent>
         </Card>
+
       </div>
     </div>
   );

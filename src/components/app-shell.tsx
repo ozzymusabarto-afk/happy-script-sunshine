@@ -7,6 +7,7 @@ import { PremiumButton, useIsPremium } from "@/components/premium-gate";
 import { OnboardingDialog } from "@/components/onboarding-dialog";
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
+  CloudUpload,
   Coins,
   Compass,
   Crown,
@@ -97,13 +98,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }, [goals]);
 
   useMorningReminder(
-    hydrated && reminder.enabled && !locked,
-    reminder.time,
-    reminder.lastShown,
+    { ...reminder, enabled: hydrated && reminder.enabled && !locked },
     { name: profile.name, dreamName: profile.dreamName, dreamProgress },
-    (day) => setReminder({ lastShown: day }),
-    (message) => toast(message, { duration: 8000 }),
+    (day: string) => setReminder({ lastShown: day }),
+    (message: string) => toast(message, { duration: 8000 }),
   );
+
 
   if (locked) return <LockScreen onUnlock={unlock} />;
 
@@ -153,7 +153,20 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <Settings className="h-4 w-4 shrink-0" />
               <span className="truncate">Meus dados</span>
             </Link>
+            <Link
+              to="/conta"
+              className={cn(
+                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                pathname.startsWith("/conta")
+                  ? "bg-primary/15 text-primary"
+                  : "text-muted-foreground hover:bg-sidebar-accent hover:text-foreground",
+              )}
+            >
+              <CloudUpload className="h-4 w-4 shrink-0" />
+              <span className="truncate">Minha conta</span>
+            </Link>
           </nav>
+
 
 
           <div className="mt-auto space-y-3">
