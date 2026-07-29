@@ -601,6 +601,8 @@ function EditGoalDialog({
       setTarget(goal.target);
       setIcon(goal.icon ?? inferGoalIcon(goal.name));
     }
+    // Recarrega os campos apenas quando muda o cofre em edição.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [goal?.id]);
 
   return (
