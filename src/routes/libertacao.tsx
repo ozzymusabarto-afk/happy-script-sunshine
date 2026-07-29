@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { ChainProgress } from "@/components/journey-visuals";
-import { Crown, HandCoins, Plus, Quote, Trash2 } from "lucide-react";
+import { Crown, HandCoins, Pencil, Plus, Quote, Trash2 } from "lucide-react";
 import { PremiumDialog } from "@/components/premium-dialog";
 import { useIsPremium } from "@/components/premium-gate";
 import { FREE_LIMITS } from "@/lib/plan";
