@@ -56,6 +56,8 @@ const BADGE_ICONS: Record<string, React.ComponentType<{ className?: string }>> =
   consistencia: Flame,
   "senhor-dizimo": Crown,
   "arquiteto-futuro": Landmark,
+  "sem-correntes": HandCoins,
+  "mestre-fatura": CreditCard,
 };
 
 function JourneyPage() {
