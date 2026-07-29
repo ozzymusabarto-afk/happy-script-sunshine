@@ -29,6 +29,7 @@ import { useAurinHydrated } from "@/hooks/use-aurin-hydrated";
 import { useAppLock, useMorningReminder } from "@/hooks/use-aurin-guard";
 import { brl, levelFor, TREASURY_GOAL_ID } from "@/lib/aurin";
 import { registerServiceWorker } from "@/lib/register-sw";
+import { SymbolBadge, userSymbol } from "@/lib/symbols";
 import { cn } from "@/lib/utils";
 import { currentMonthKey, monthTotals, totalWealth, useAurinStore } from "@/store/aurin-store";
 
@@ -53,6 +54,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const assets = useAurinStore((s) => s.assets);
   const transactions = useAurinStore((s) => s.transactions);
   const profileName = useAurinStore((s) => s.profile.name);
+  const profileSymbol = useAurinStore((s) => s.profile.symbol);
   const profile = useAurinStore((s) => s.profile);
   const applyRecurring = useAurinStore((s) => s.applyRecurring);
   const security = useAurinStore((s) => s.security);
