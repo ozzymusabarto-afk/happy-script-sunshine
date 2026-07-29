@@ -67,6 +67,7 @@ function DebtsPage() {
   const lockedRescues = !premium && activeRescues >= FREE_LIMITS.rescues;
 
   const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<Debt | null>(null);
   const [payTarget, setPayTarget] = useState<Debt | null>(null);
   const [strategy, setStrategy] = useState<Strategy>("avalanche");
   const [budget, setBudget] = useState(1200);
