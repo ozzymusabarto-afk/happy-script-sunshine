@@ -320,6 +320,12 @@ export const useAurinStore = create<AurinState>()(
       addRecurring: (item) =>
         set((state) => ({ recurring: [...state.recurring, { ...item, id: uid() }] })),
 
+      updateRecurring: (id, patch) =>
+        set((state) => ({
+          recurring: state.recurring.map((r) => (r.id === id ? { ...r, ...patch } : r)),
+        })),
+
+
       removeRecurring: (id) =>
         set((state) => ({ recurring: state.recurring.filter((r) => r.id !== id) })),
 
