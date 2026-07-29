@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { brl } from "@/lib/aurin";
+import { DEFAULT_USER_SYMBOL, SymbolPicker, USER_SYMBOLS } from "@/lib/symbols";
 import { useAurinStore } from "@/store/aurin-store";
 
 const DREAM_SUGGESTIONS = [
@@ -39,6 +40,7 @@ export function OnboardingDialog() {
   const [dreamYears, setDreamYears] = useState(5);
   const [startingBalance, setStartingBalance] = useState(0);
   const [peaceGoal, setPeaceGoal] = useState<(typeof PEACE_GOALS)[number]>(PEACE_GOALS[0]);
+  const [symbol, setSymbol] = useState(DEFAULT_USER_SYMBOL);
 
   if (hasOnboarded) return null;
 
@@ -53,6 +55,7 @@ export function OnboardingDialog() {
       dreamTarget,
       dreamYears,
       startingBalance,
+      symbol,
     });
 
   return (
@@ -177,13 +180,23 @@ export function OnboardingDialog() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="ob-balance">Já tem algo guardado? (opcional)</Label>
+                <Label htmlFor="ob-balance-label">Já tem algo guardado? (opcional)</Label>
                 <CurrencyInput
-                  id="ob-balance"
+                  id="ob-balance-label"
                   value={startingBalance}
                   onValueChange={setStartingBalance}
                 />
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Escolha o símbolo que representa você</Label>
+              <SymbolPicker
+                options={USER_SYMBOLS}
+                value={symbol}
+                onChange={setSymbol}
+                ariaLabel="Símbolo pessoal"
+              />
             </div>
 
             <div className="rounded-xl border border-primary/20 bg-primary/[0.06] p-4 text-sm">
