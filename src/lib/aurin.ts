@@ -30,6 +30,8 @@ export interface Goal {
   target: number;
   balance: number;
   kind: GoalKind;
+  /** Figurinha do cofre (id de GOAL_ICONS). */
+  icon?: string;
 }
 
 export interface FixedAsset {
