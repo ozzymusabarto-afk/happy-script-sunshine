@@ -59,6 +59,7 @@ export interface OnboardingPayload {
   dreamTarget: number;
   dreamYears: number;
   startingBalance: number;
+  symbol?: string;
 }
 
 export interface SecuritySettings {
@@ -249,12 +250,14 @@ export const useAurinStore = create<AurinState>()(
               target: payload.dreamTarget,
               balance: 0,
               kind: "outro",
+              icon: inferGoalIcon(payload.dreamName),
             });
           }
           return {
             hasOnboarded: true,
             profile: {
               name: payload.name.trim(),
+              symbol: payload.symbol || DEFAULT_USER_SYMBOL,
               monthlyIncome: payload.monthlyIncome,
               dreamName: payload.dreamName.trim(),
               dreamTarget: payload.dreamTarget,
