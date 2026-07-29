@@ -228,6 +228,18 @@ function DebtsPage() {
                   <Button
                     size="sm"
                     variant="ghost"
+                    aria-label={`Editar ${debt.name}`}
+                    onClick={() => {
+                      setEditing(debt);
+                      setOpen(true);
+                    }}
+                  >
+                    <Pencil className="h-3.5 w-3.5" />
+                    Editar
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
                     aria-label={`Remover ${debt.name}`}
                     onClick={() => {
                       removeDebt(debt.id);
