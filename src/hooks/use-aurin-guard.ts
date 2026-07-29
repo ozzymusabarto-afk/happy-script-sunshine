@@ -2,22 +2,38 @@ import { useEffect, useRef, useState } from "react";
 
 import {
   DEFAULT_REMINDER_TIME,
-  morningMessage,
+  inQuietHours,
+  isReminderDay,
   msUntil,
   notificationsSupported,
-  showMorningNotification,
+  reminderMessage,
+  showReminderNotification,
   todayKey,
   type MorningContext,
+  type ReminderFrequency,
+  type ReminderTone,
 } from "@/lib/notifications";
 
+export interface ReminderConfig {
+  enabled: boolean;
+  time: string;
+  lastShown: string | null;
+  frequency: ReminderFrequency;
+  days: number[];
+  tone: ReminderTone;
+  customMessage: string | null;
+  quietEnabled: boolean;
+  quietFrom: string;
+  quietTo: string;
+}
+
 /**
- * Dispara o chamado da manhã uma vez por dia. Se a notificação não estiver
- * disponível (iOS no navegador), a mensagem aparece ao abrir o app.
+ * Dispara o chamado da manhã no ritmo escolhido, respeitando o "não perturbe".
+ * Se a notificação não estiver disponível (iOS no navegador), a mensagem
+ * aparece ao abrir o app.
  */
 export function useMorningReminder(
-  enabled: boolean,
-  time: string | undefined,
-  lastShown: string | null,
+  config: ReminderConfig,
   ctx: MorningContext,
   markShown: (day: string) => void,
   fallback: (message: string) => void,
@@ -28,17 +44,34 @@ export function useMorningReminder(
   fallbackRef.current = fallback;
   const markRef = useRef(markShown);
   markRef.current = markShown;
+  const cfgRef = useRef(config);
+  cfgRef.current = config;
+
+  const {
+    enabled,
+    time,
+    lastShown,
+    frequency,
+    quietEnabled,
+    quietFrom,
+    quietTo,
+  } = config;
+  const daysKey = config.days.join(",");
 
   useEffect(() => {
     if (!enabled) return;
     const at = time || DEFAULT_REMINDER_TIME;
-    let timer: number | undefined;
+    const voice = { tone: cfgRef.current.tone, customMessage: cfgRef.current.customMessage };
 
     const fire = () => {
+      const cfg = cfgRef.current;
       const day = todayKey();
-      if (lastShown === day) return;
-      const sent = notificationsSupported() && showMorningNotification(ctxRef.current);
-      if (!sent) fallbackRef.current(morningMessage(ctxRef.current));
+      if (cfg.lastShown === day) return;
+      if (!isReminderDay(cfg.frequency, cfg.days)) return;
+      if (cfg.quietEnabled && inQuietHours(cfg.quietFrom, cfg.quietTo)) return;
+      const sent =
+        notificationsSupported() && showReminderNotification(ctxRef.current, voice);
+      if (!sent) fallbackRef.current(reminderMessage(ctxRef.current, voice));
       markRef.current(day);
     };
 
@@ -48,9 +81,9 @@ export function useMorningReminder(
     const passed = now.getHours() > h || (now.getHours() === h && now.getMinutes() >= m);
     if (passed) fire();
 
-    timer = window.setTimeout(fire, msUntil(at));
+    const timer = window.setTimeout(fire, msUntil(at));
     return () => window.clearTimeout(timer);
-  }, [enabled, time, lastShown]);
+  }, [enabled, time, lastShown, frequency, daysKey, quietEnabled, quietFrom, quietTo]);
 }
 
 /** Controla se a tela de bloqueio deve aparecer, respeitando o tempo escolhido. */
