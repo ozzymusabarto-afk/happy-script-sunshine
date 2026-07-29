@@ -70,6 +70,10 @@ export interface SecuritySettings {
   biometricId: string | null;
   /** 0 = pede sempre ao abrir. */
   autoLockMinutes: number;
+  /** Hash da frase de recuperação (12 palavras). A frase nunca é guardada. */
+  recoveryHash: string | null;
+  recoverySalt: string | null;
+  recoveryCreatedAt: string | null;
 }
 
 export interface ReminderSettings {
@@ -77,7 +81,40 @@ export interface ReminderSettings {
   /** "HH:MM" */
   time: string;
   lastShown: string | null;
+  frequency: ReminderFrequency;
+  /** Dias da semana (0=Dom) usados em "semanal" e "personalizado". */
+  days: number[];
+  tone: ReminderTone;
+  customMessage: string | null;
+  /** Não perturbe */
+  quietEnabled: boolean;
+  quietFrom: string;
+  quietTo: string;
 }
+
+export const DEFAULT_SECURITY: SecuritySettings = {
+  pinHash: null,
+  salt: null,
+  biometricId: null,
+  autoLockMinutes: 0,
+  recoveryHash: null,
+  recoverySalt: null,
+  recoveryCreatedAt: null,
+};
+
+export const DEFAULT_REMINDER: ReminderSettings = {
+  enabled: false,
+  time: "08:00",
+  lastShown: null,
+  frequency: "diario",
+  days: [1, 2, 3, 4, 5],
+  tone: "sereno",
+  customMessage: null,
+  quietEnabled: false,
+  quietFrom: "22:00",
+  quietTo: "07:00",
+};
+
 
 export interface AurinState {
   hasOnboarded: boolean;
