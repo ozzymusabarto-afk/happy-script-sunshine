@@ -212,6 +212,48 @@ export function routeWatch(area: string, left: number, money: (v: number) => str
   return `${area} está perto do combinado: restam ${money(Math.max(0, left))}. Proteger essa margem agora é o que mantém o plano de pé.`;
 }
 
+/** Orientação serena sobre o uso do limite de um cartão. */
+export function cardGuidance(opts: {
+  card: string;
+  usage: number;
+  free: number;
+  money: (v: number) => string;
+  seed?: number;
+}) {
+  const { card, usage, free, money, seed = 0.5 } = opts;
+  const lines = [
+    `${card} já usa ${usage.toFixed(0)}% do limite. Restam ${money(Math.max(0, free))} — trate esse espaço como reserva, não como dinheiro extra.`,
+    `${card} está em ${usage.toFixed(0)}% do limite. O crédito é ferramenta, nunca renda: preservar ${money(Math.max(0, free))} agora protege o próximo mês.`,
+    `${card} passou de dois terços do limite. Sobram ${money(Math.max(0, free))}; segurar o ritmo aqui evita comprometer o ouro de amanhã.`,
+  ];
+  return pick(lines, seed);
+}
+
+/** Encorajamento firme e acolhedor na Rota de Libertação. */
+export function rescueEncouragement(opts: {
+  progress: number;
+  months: number;
+  seed?: number;
+  name?: string;
+}) {
+  const { progress, months, seed = 0.5, name } = opts;
+  const who = name?.trim() ? `${name.trim()}, ` : "";
+  if (progress >= 100) return `${who}todas as correntes caíram. Agora todo o ouro trabalha só por você.`;
+  const openings = [
+    `${who}${progress.toFixed(0)}% do seu futuro já está livre.`,
+    `${who}você já libertou ${progress.toFixed(0)}% do caminho.`,
+    `${who}cada pagamento feito solta uma corrente — já são ${progress.toFixed(0)}%.`,
+  ];
+  const closings = [
+    months > 0
+      ? `Mantendo esse passo, a paz completa chega em ${months} mês${months === 1 ? "" : "es"}.`
+      : "A paz completa está ao alcance deste ciclo.",
+    "Constância vale mais que pressa: siga o plano e o resto se resolve.",
+    "Nada aqui exige perfeição — só continuidade.",
+  ];
+  return `${pick(openings, seed)} ${pick(closings, seed * 1.9)}`;
+}
+
 /**
  * Celebração: entusiasmo com ganho concreto de paz.
  */
