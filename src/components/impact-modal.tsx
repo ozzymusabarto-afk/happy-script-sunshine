@@ -15,7 +15,7 @@ import {
   milestoneCrossed,
   peaceGain,
 } from "@/lib/impact";
-import { peaceLine } from "@/lib/tone";
+import { mentorPraise, peaceLine } from "@/lib/tone";
 import { cn } from "@/lib/utils";
 import { currentMonthKey, monthTotals, useAurinStore } from "@/store/aurin-store";
 
@@ -30,6 +30,7 @@ const KIND_COPY: Record<string, { eyebrow: string; headline: string }> = {
 export function ImpactModal() {
   const celebration = useAurinStore((s) => s.celebration);
   const dismiss = useAurinStore((s) => s.dismissCelebration);
+  const profileName = useAurinStore((s) => s.profile.name);
   const goals = useAurinStore((s) => s.goals);
   const transactions = useAurinStore((s) => s.transactions);
   const debts = useAurinStore((s) => s.debts);
@@ -53,6 +54,7 @@ export function ImpactModal() {
 
   const copy = KIND_COPY[celebration.kind] ?? KIND_COPY.tesouro;
   const goal = goals.find((g) => g.id === celebration.goalId);
+
   const isDebt = celebration.kind === "divida";
   const amount = celebration.amount;
 
@@ -69,6 +71,15 @@ export function ImpactModal() {
   const encouragement = peaceLine(
     (celebration.id.charCodeAt(celebration.id.length - 1) % 100) / 100,
   );
+
+  const praise = mentorPraise({
+    amount,
+    days: freedom.days,
+    future: isDebt ? amount * 0.4 : in10,
+    money: brl,
+    seed: (celebration.id.charCodeAt(0) % 100) / 100,
+    name: profileName,
+  });
 
   const nextDream = goals
     .filter((g) => g.id !== TREASURY_GOAL_ID && g.balance < g.target)
@@ -109,6 +120,9 @@ export function ImpactModal() {
             </p>
             <p className="mt-1 text-sm text-muted-foreground">
               {isDebt ? `abatidos de ${celebration.title}` : `guardados em ${celebration.title}`}
+            </p>
+            <p className="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-foreground/90">
+              {praise}
             </p>
 
             <div className="mt-6 space-y-2.5 text-left">

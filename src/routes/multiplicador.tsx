@@ -40,6 +40,13 @@ import {
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { GOAL_LABELS, TREASURY_GOAL_ID, brl, brlCompact, type GoalKind } from "@/lib/aurin";
+import {
+  GOAL_ICONS,
+  goalIcon,
+  inferGoalIcon,
+  SymbolBadge,
+  SymbolPicker,
+} from "@/lib/symbols";
 import { cn } from "@/lib/utils";
 import { currentMonthKey, monthTotals, useAurinStore } from "@/store/aurin-store";
 
@@ -157,11 +164,14 @@ function MultiplierPage() {
             return (
               <Card key={goal.id} className="min-w-0">
                 <CardHeader className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2 pb-3">
-                  <div className="min-w-0">
+                  <div className="flex min-w-0 items-start gap-3">
+                    <SymbolBadge symbol={goalIcon(goal.icon ?? inferGoalIcon(goal.name))} />
+                    <div className="min-w-0">
                     <CardTitle className="truncate text-base">{goal.name}</CardTitle>
                     <Badge variant="outline" className="mt-2 border-primary/40 text-primary">
                       {GOAL_LABELS[goal.kind]}
                     </Badge>
+                    </div>
                   </div>
                   <div className="flex shrink-0 items-center">
                     <Button
@@ -472,12 +482,19 @@ function GoalDialog({
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
-  onSubmit: (goal: { name: string; target: number; balance: number; kind: GoalKind }) => void;
+  onSubmit: (goal: {
+    name: string;
+    target: number;
+    balance: number;
+    kind: GoalKind;
+    icon?: string;
+  }) => void;
 }) {
   const [name, setName] = useState("");
   const [target, setTarget] = useState(0);
   const [balance, setBalance] = useState(0);
   const [kind, setKind] = useState<GoalKind>("investimento");
+  const [icon, setIcon] = useState("");
   const [error, setError] = useState("");
 
   function submit() {
@@ -491,9 +508,10 @@ function GoalDialog({
       setError(parsed.error.issues[0].message);
       return;
     }
-    onSubmit(parsed.data);
+    onSubmit({ ...parsed.data, icon: icon || inferGoalIcon(parsed.data.name) });
     toast.success("Cofre criado");
     setName("");
+    setIcon("");
     setTarget(0);
     setBalance(0);
     setError("");
@@ -516,6 +534,15 @@ function GoalDialog({
               maxLength={60}
               onChange={(e) => setName(e.target.value)}
               placeholder="Ex.: Liberdade Financeira"
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label>Figurinha do sonho</Label>
+            <SymbolPicker
+              options={GOAL_ICONS}
+              value={icon || inferGoalIcon(name)}
+              onChange={setIcon}
+              ariaLabel="Figurinha do sonho"
             />
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
@@ -565,16 +592,18 @@ function EditGoalDialog({
 }: {
   goalId: string | null;
   onClose: () => void;
-  onSave: (id: string, patch: { name?: string; target?: number }) => void;
+  onSave: (id: string, patch: { name?: string; target?: number; icon?: string }) => void;
 }) {
   const goal = useAurinStore((s) => s.goals.find((g) => g.id === goalId));
   const [name, setName] = useState("");
   const [target, setTarget] = useState(0);
+  const [icon, setIcon] = useState("");
 
   useEffect(() => {
     if (goal) {
       setName(goal.name);
       setTarget(goal.target);
+      setIcon(goal.icon ?? inferGoalIcon(goal.name));
     }
   }, [goal?.id]);
 
@@ -599,6 +628,15 @@ function EditGoalDialog({
             <Label htmlFor="eg-target">Meta</Label>
             <CurrencyInput id="eg-target" value={target} onValueChange={setTarget} />
           </div>
+          <div className="grid gap-2">
+            <Label>Figurinha do sonho</Label>
+            <SymbolPicker
+              options={GOAL_ICONS}
+              value={icon || inferGoalIcon(name)}
+              onChange={setIcon}
+              ariaLabel="Figurinha do sonho"
+            />
+          </div>
         </div>
         <DialogFooter>
           <Button variant="ghost" onClick={onClose}>
@@ -609,7 +647,7 @@ function EditGoalDialog({
             disabled={!name.trim()}
             onClick={() => {
               if (!goalId) return;
-              onSave(goalId, { name: name.trim(), target });
+              onSave(goalId, { name: name.trim(), target, icon: icon || inferGoalIcon(name) });
               toast.success("Cofre atualizado");
               onClose();
             }}

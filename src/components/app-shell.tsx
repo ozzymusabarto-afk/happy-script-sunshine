@@ -29,6 +29,7 @@ import { useAurinHydrated } from "@/hooks/use-aurin-hydrated";
 import { useAppLock, useMorningReminder } from "@/hooks/use-aurin-guard";
 import { brl, levelFor, TREASURY_GOAL_ID } from "@/lib/aurin";
 import { registerServiceWorker } from "@/lib/register-sw";
+import { SymbolBadge, userSymbol } from "@/lib/symbols";
 import { cn } from "@/lib/utils";
 import { currentMonthKey, monthTotals, totalWealth, useAurinStore } from "@/store/aurin-store";
 
@@ -53,6 +54,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const assets = useAurinStore((s) => s.assets);
   const transactions = useAurinStore((s) => s.transactions);
   const profileName = useAurinStore((s) => s.profile.name);
+  const profileSymbol = useAurinStore((s) => s.profile.symbol);
   const profile = useAurinStore((s) => s.profile);
   const applyRecurring = useAurinStore((s) => s.applyRecurring);
   const security = useAurinStore((s) => s.security);
@@ -187,9 +189,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-gold text-primary-foreground lg:hidden">
                   <Landmark className="h-4 w-4" />
                 </span>
+                <SymbolBadge symbol={userSymbol(profileSymbol)} className="hidden lg:grid" />
                 <div className="min-w-0">
                   <p className="truncate font-display text-sm font-bold sm:text-base">
-                    {profileName ? `${profileName} · ${level.title}` : level.title}
+                    {profileName || "Sua jornada"}
                   </p>
                   <div className="mt-1 flex items-center gap-2">
                     <Progress value={level.progress} className="h-1.5 w-28 sm:w-44" />
@@ -199,6 +202,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   </div>
                 </div>
               </div>
+
 
               <div className="flex shrink-0 items-center gap-2">
                 {!premium && <PremiumButton className="hidden sm:inline-flex lg:hidden" />}

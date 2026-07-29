@@ -24,6 +24,7 @@ import {
   type Transaction,
 } from "@/lib/aurin";
 import type { PlanId } from "@/lib/plan";
+import { DEFAULT_USER_SYMBOL, inferGoalIcon } from "@/lib/symbols";
 import {
   seedAssets,
   seedBadges,
@@ -59,6 +60,7 @@ export interface OnboardingPayload {
   dreamTarget: number;
   dreamYears: number;
   startingBalance: number;
+  symbol?: string;
 }
 
 export interface SecuritySettings {
@@ -183,6 +185,7 @@ const demoState = () => ({
   hasOnboarded: true,
   profile: {
     name: "Explorador",
+    symbol: "leao",
     monthlyIncome: 8200,
     dreamName: "Liberdade Financeira",
     dreamTarget: 500000,
@@ -249,12 +252,14 @@ export const useAurinStore = create<AurinState>()(
               target: payload.dreamTarget,
               balance: 0,
               kind: "outro",
+              icon: inferGoalIcon(payload.dreamName),
             });
           }
           return {
             hasOnboarded: true,
             profile: {
               name: payload.name.trim(),
+              symbol: payload.symbol || DEFAULT_USER_SYMBOL,
               monthlyIncome: payload.monthlyIncome,
               dreamName: payload.dreamName.trim(),
               dreamTarget: payload.dreamTarget,
@@ -360,7 +365,14 @@ export const useAurinStore = create<AurinState>()(
       removeTransaction: (id) =>
         set((state) => ({ transactions: state.transactions.filter((t) => t.id !== id) })),
 
-      addGoal: (goal) => set((state) => ({ goals: [...state.goals, { ...goal, id: uid() }], xp: state.xp + 25 })),
+      addGoal: (goal) =>
+        set((state) => ({
+          goals: [
+            ...state.goals,
+            { ...goal, icon: goal.icon ?? inferGoalIcon(goal.name), id: uid() },
+          ],
+          xp: state.xp + 25,
+        })),
 
       updateGoal: (id, patch) =>
         set((state) => ({ goals: state.goals.map((g) => (g.id === id ? { ...g, ...patch } : g)) })),
@@ -557,8 +569,11 @@ export const useAurinStore = create<AurinState>()(
         return {
           ...emptyState(),
           ...prev,
-          goals: prev.goals?.length ? prev.goals : [emptyTreasury()],
-          profile: prev.profile ?? { ...EMPTY_PROFILE },
+          goals: (prev.goals?.length ? prev.goals : [emptyTreasury()]).map((g: Goal) => ({
+            ...g,
+            icon: g.icon ?? inferGoalIcon(g.name),
+          })),
+          profile: { ...EMPTY_PROFILE, ...(prev.profile ?? {}) },
           recurring: prev.recurring ?? [],
           hasOnboarded: prev.hasOnboarded ?? Boolean(prev.transactions?.length),
           plan: prev.plan ?? "free",

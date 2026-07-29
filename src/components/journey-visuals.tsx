@@ -3,6 +3,7 @@ import { Check, Coins, Lock, Sparkles, Trophy } from "lucide-react";
 import { GoldCounter } from "@/components/gold-counter";
 import { Badge } from "@/components/ui/badge";
 import { brl, brlCompact } from "@/lib/aurin";
+import { goalIcon, inferGoalIcon, SymbolBadge } from "@/lib/symbols";
 import { cn } from "@/lib/utils";
 
 /* ------------------------------ trilha da jornada ----------------------------- */
@@ -91,6 +92,7 @@ export function JourneyTrail({ stops }: { stops: TrailStop[] }) {
 export interface VaultItem {
   id: string;
   name: string;
+  icon?: string;
   balance: number;
   target: number;
   hint?: string;
@@ -128,7 +130,10 @@ export function VaultJar({ item, delay = 0 }: { item: VaultItem; delay?: number 
           )}
         </div>
         <div className="min-w-0">
-          <p className="truncate font-display text-sm font-semibold">{item.name}</p>
+          <p className="flex items-center gap-2 font-display text-sm font-semibold">
+            <SymbolBadge symbol={goalIcon(item.icon ?? inferGoalIcon(item.name))} size="sm" />
+            <span className="truncate">{item.name}</span>
+          </p>
           <p className="mt-0.5 font-display text-lg font-bold text-gold">
             <GoldCounter value={item.balance} />
           </p>

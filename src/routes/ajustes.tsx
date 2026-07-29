@@ -35,6 +35,7 @@ import {
   type PaymentMethod,
   type TxType,
 } from "@/lib/aurin";
+import { DEFAULT_USER_SYMBOL, SymbolPicker, USER_SYMBOLS } from "@/lib/symbols";
 import { useAurinStore } from "@/store/aurin-store";
 
 export const Route = createFileRoute("/ajustes")({
@@ -144,6 +145,18 @@ function Settings() {
                 maxLength={40}
                 onChange={(e) => setProfile({ name: e.target.value })}
               />
+            </div>
+            <div className="space-y-2">
+              <Label>Seu símbolo</Label>
+              <SymbolPicker
+                options={USER_SYMBOLS}
+                value={profile.symbol || DEFAULT_USER_SYMBOL}
+                onChange={(id) => setProfile({ symbol: id })}
+                ariaLabel="Símbolo pessoal"
+              />
+              <p className="text-xs text-muted-foreground">
+                Ele aparece ao lado do seu nome — sem títulos, só o que representa você.
+              </p>
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">

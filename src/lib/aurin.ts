@@ -30,6 +30,8 @@ export interface Goal {
   target: number;
   balance: number;
   kind: GoalKind;
+  /** Figurinha do cofre (id de GOAL_ICONS). */
+  icon?: string;
 }
 
 export interface FixedAsset {
@@ -43,6 +45,8 @@ export interface FixedAsset {
 
 export interface Profile {
   name: string;
+  /** Símbolo pessoal exibido ao lado do nome (id de USER_SYMBOLS). */
+  symbol: string;
   monthlyIncome: number;
   dreamName: string;
   dreamTarget: number;
@@ -51,6 +55,7 @@ export interface Profile {
 
 export const EMPTY_PROFILE: Profile = {
   name: "",
+  symbol: "portal",
   monthlyIncome: 0,
   dreamName: "",
   dreamTarget: 0,
