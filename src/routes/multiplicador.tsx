@@ -40,6 +40,13 @@ import {
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { GOAL_LABELS, TREASURY_GOAL_ID, brl, brlCompact, type GoalKind } from "@/lib/aurin";
+import {
+  GOAL_ICONS,
+  goalIcon,
+  inferGoalIcon,
+  SymbolBadge,
+  SymbolPicker,
+} from "@/lib/symbols";
 import { cn } from "@/lib/utils";
 import { currentMonthKey, monthTotals, useAurinStore } from "@/store/aurin-store";
 
