@@ -88,7 +88,7 @@ function Dashboard() {
       [...goals]
         .sort((a, b) => b.balance / (b.target || 1) - a.balance / (a.target || 1))
         .slice(0, 3)
-        .map((g) => ({ id: g.id, name: g.name, balance: g.balance, target: g.target })),
+        .map((g) => ({ id: g.id, name: g.name, icon: g.icon, balance: g.balance, target: g.target })),
     [goals],
   );
   const recent = useMemo(
