@@ -137,6 +137,8 @@ export interface AurinState {
   security: SecuritySettings;
   reminder: ReminderSettings;
   lastBackupAt: string | null;
+  tourSeenAt: string | null;
+  markTourSeen: () => void;
   dismissCelebration: () => void;
   setCelebrationsEnabled: (enabled: boolean) => void;
   setSecurity: (patch: Partial<SecuritySettings>) => void;
@@ -209,6 +211,7 @@ const emptyState = () => ({
   security: { ...DEFAULT_SECURITY } as SecuritySettings,
   reminder: { ...DEFAULT_REMINDER } as ReminderSettings,
   lastBackupAt: null as string | null,
+  tourSeenAt: null as string | null,
 });
 
 /** Conteúdo de demonstração — só entra quando o usuário pede. */
@@ -572,6 +575,8 @@ export const useAurinStore = create<AurinState>()(
 
       setReminder: (patch) => set((state) => ({ reminder: { ...state.reminder, ...patch } })),
 
+      markTourSeen: () => set({ tourSeenAt: new Date().toISOString() }),
+
       markBackup: () => set({ lastBackupAt: new Date().toISOString() }),
 
       loadDemoData: () => set({ ...demoState() }),
@@ -592,7 +597,7 @@ export const useAurinStore = create<AurinState>()(
     }),
     {
       name: "aurin-store-v3",
-      version: 6,
+      version: 7,
       skipHydration: true,
       partialize: (state) => {
         const { celebration: _c, ...rest } = state;
@@ -620,6 +625,7 @@ export const useAurinStore = create<AurinState>()(
           security: { ...DEFAULT_SECURITY, ...(prev.security ?? {}) },
           reminder: { ...DEFAULT_REMINDER, ...(prev.reminder ?? {}) },
           lastBackupAt: prev.lastBackupAt ?? null,
+          tourSeenAt: prev.tourSeenAt ?? null,
           celebration: null,
         } as AurinState;
       },
