@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { ChainProgress } from "@/components/journey-visuals";
 import { Crown, HandCoins, Plus, Quote, Trash2 } from "lucide-react";
