@@ -481,6 +481,7 @@ function GoalDialog({
   const [target, setTarget] = useState(0);
   const [balance, setBalance] = useState(0);
   const [kind, setKind] = useState<GoalKind>("investimento");
+  const [icon, setIcon] = useState("");
   const [error, setError] = useState("");
 
   function submit() {
@@ -494,7 +495,7 @@ function GoalDialog({
       setError(parsed.error.issues[0].message);
       return;
     }
-    onSubmit(parsed.data);
+    onSubmit({ ...parsed.data, icon: icon || inferGoalIcon(parsed.data.name) });
     toast.success("Cofre criado");
     setName("");
     setIcon("");
@@ -578,16 +579,18 @@ function EditGoalDialog({
 }: {
   goalId: string | null;
   onClose: () => void;
-  onSave: (id: string, patch: { name?: string; target?: number }) => void;
+  onSave: (id: string, patch: { name?: string; target?: number; icon?: string }) => void;
 }) {
   const goal = useAurinStore((s) => s.goals.find((g) => g.id === goalId));
   const [name, setName] = useState("");
   const [target, setTarget] = useState(0);
+  const [icon, setIcon] = useState("");
 
   useEffect(() => {
     if (goal) {
       setName(goal.name);
       setTarget(goal.target);
+      setIcon(goal.icon ?? inferGoalIcon(goal.name));
     }
   }, [goal?.id]);
 
@@ -612,6 +615,15 @@ function EditGoalDialog({
             <Label htmlFor="eg-target">Meta</Label>
             <CurrencyInput id="eg-target" value={target} onValueChange={setTarget} />
           </div>
+          <div className="grid gap-2">
+            <Label>Figurinha do sonho</Label>
+            <SymbolPicker
+              options={GOAL_ICONS}
+              value={icon || inferGoalIcon(name)}
+              onChange={setIcon}
+              ariaLabel="Figurinha do sonho"
+            />
+          </div>
         </div>
         <DialogFooter>
           <Button variant="ghost" onClick={onClose}>
@@ -622,7 +634,7 @@ function EditGoalDialog({
             disabled={!name.trim()}
             onClick={() => {
               if (!goalId) return;
-              onSave(goalId, { name: name.trim(), target });
+              onSave(goalId, { name: name.trim(), target, icon: icon || inferGoalIcon(name) });
               toast.success("Cofre atualizado");
               onClose();
             }}
