@@ -152,6 +152,7 @@ export interface AurinState {
   addCustomCategory: (name: string) => void;
   removeCustomCategory: (name: string) => void;
   addRecurring: (item: Omit<Recurring, "id" | "lastApplied">) => void;
+  updateRecurring: (id: string, patch: Partial<Omit<Recurring, "id">>) => void;
   removeRecurring: (id: string) => void;
   applyRecurring: () => number;
   addTransaction: (tx: NewTransaction) => void;
