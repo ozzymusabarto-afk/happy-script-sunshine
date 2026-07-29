@@ -3,12 +3,7 @@ import { Check, Crown, ExternalLink, Loader2, RefreshCw, Sparkles } from "lucide
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { usePremiumSync } from "@/hooks/use-premium-sync";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -86,8 +81,7 @@ export function PremiumDialog({
     toast.info("Ainda não recebemos a confirmação da Hotmart. Tente de novo em instantes.");
   };
 
-  const priceLabel =
-    cycle === "yearly" ? PREMIUM_PRICE.yearlyLabel : PREMIUM_PRICE.monthlyLabel;
+  const priceLabel = cycle === "yearly" ? PREMIUM_PRICE.yearlyLabel : PREMIUM_PRICE.monthlyLabel;
 
   if (plan === "premium") {
     return (
@@ -213,10 +207,7 @@ export function PremiumDialog({
                   onClick={() => setPayment(opt.id)}
                 >
                   <Crown
-                    className={cn(
-                      "h-4 w-4",
-                      payment === opt.id ? "text-gold" : "text-primary",
-                    )}
+                    className={cn("h-4 w-4", payment === opt.id ? "text-gold" : "text-primary")}
                   />
                   <span className="min-w-0 text-left">
                     <span className="block truncate text-sm font-medium">{opt.label}</span>
@@ -238,8 +229,8 @@ export function PremiumDialog({
 
             {!isCheckoutConfigured(cycle) && (
               <p className="mt-2 text-[11px] text-muted-foreground">
-                Link do checkout {cycle === "yearly" ? "anual" : "mensal"} ainda não
-                configurado. Cole a URL da Hotmart em <code>src/lib/plan.ts</code>.
+                Link do checkout {cycle === "yearly" ? "anual" : "mensal"} ainda não configurado.
+                Cole a URL da Hotmart em <code>src/lib/plan.ts</code>.
               </p>
             )}
 
@@ -249,8 +240,8 @@ export function PremiumDialog({
                   Concluiu o pagamento na Hotmart?
                 </p>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Assim que a compra for aprovada, o Premium é liberado sozinho. Use o
-                  mesmo e-mail da sua conta AURIN{email ? ` (${email})` : ""}.
+                  Assim que a compra for aprovada, o Premium é liberado sozinho. Use o mesmo e-mail
+                  da sua conta AURIN{email ? ` (${email})` : ""}.
                 </p>
                 <Button
                   variant="outline"
@@ -270,8 +261,8 @@ export function PremiumDialog({
 
             {!email && (
               <p className="mt-3 text-[11px] text-muted-foreground">
-                Dica: entre com o Google em “Minha conta” antes de pagar — assim o Premium
-                acompanha você em qualquer aparelho.
+                Dica: entre com o Google em “Minha conta” antes de pagar — assim o Premium acompanha
+                você em qualquer aparelho.
               </p>
             )}
           </div>

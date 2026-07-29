@@ -116,7 +116,6 @@ export const DEFAULT_REMINDER: ReminderSettings = {
   quietTo: "07:00",
 };
 
-
 export interface AurinState {
   hasOnboarded: boolean;
   plan: PlanId;
@@ -234,7 +233,6 @@ const demoState = () => ({
 });
 
 const initial = emptyState();
-
 
 function expandInstallments(tx: NewTransaction, cards: CreditCard[]): Transaction[] {
   const count = Math.max(1, Math.floor(tx.installments ?? 1));
@@ -356,7 +354,6 @@ export const useAurinStore = create<AurinState>()(
         return created.length;
       },
 
-
       addTransaction: (tx) =>
         set((state) => {
           const created = expandInstallments(tx, state.cards);
@@ -418,14 +415,17 @@ export const useAurinStore = create<AurinState>()(
         })),
 
       removeGoal: (id) =>
-        set((state) => ({ goals: state.goals.filter((g) => g.id !== id || g.id === TREASURY_GOAL_ID) })),
-
+        set((state) => ({
+          goals: state.goals.filter((g) => g.id !== id || g.id === TREASURY_GOAL_ID),
+        })),
 
       depositToGoal: (id, amount) =>
         set((state) => {
           const goal = state.goals.find((g) => g.id === id);
           return {
-            goals: state.goals.map((g) => (g.id === id ? { ...g, balance: g.balance + amount } : g)),
+            goals: state.goals.map((g) =>
+              g.id === id ? { ...g, balance: g.balance + amount } : g,
+            ),
             xp: state.xp + 50,
             celebration:
               state.celebrationsEnabled && goal
@@ -443,7 +443,8 @@ export const useAurinStore = create<AurinState>()(
           };
         }),
 
-      addAsset: (asset) => set((state) => ({ assets: [...state.assets, { ...asset, id: uid() }], xp: state.xp + 30 })),
+      addAsset: (asset) =>
+        set((state) => ({ assets: [...state.assets, { ...asset, id: uid() }], xp: state.xp + 30 })),
 
       removeAsset: (id) => set((state) => ({ assets: state.assets.filter((a) => a.id !== id) })),
 
@@ -518,9 +519,10 @@ export const useAurinStore = create<AurinState>()(
           return {
             debts: state.debts.map((d) => (d.id === id ? { ...d, paid: d.paid + value } : d)),
             transactions: [tx, ...state.transactions],
-            badges: cleared && !state.badges.includes("sem-correntes")
-              ? [...state.badges, "sem-correntes"]
-              : state.badges,
+            badges:
+              cleared && !state.badges.includes("sem-correntes")
+                ? [...state.badges, "sem-correntes"]
+                : state.badges,
             xp: state.xp + 40 + (cleared ? 120 : 0),
             celebration: state.celebrationsEnabled
               ? {
@@ -625,7 +627,6 @@ export const useAurinStore = create<AurinState>()(
   ),
 );
 
-
 /* ---------------------------------- seletores --------------------------------- */
 
 export const currentMonthKey = () => new Date().toISOString().slice(0, 7);
@@ -647,9 +648,7 @@ export function monthTotals(transactions: Transaction[], key: string) {
 }
 
 export function totalWealth(goals: Goal[], assets: FixedAsset[]) {
-  return (
-    goals.reduce((sum, g) => sum + g.balance, 0) + assets.reduce((sum, a) => sum + a.value, 0)
-  );
+  return goals.reduce((sum, g) => sum + g.balance, 0) + assets.reduce((sum, a) => sum + a.value, 0);
 }
 
 export function flowSeries(transactions: Transaction[], months = 6) {
@@ -682,7 +681,9 @@ export function budgetRows(
   split: Record<string, number>,
   costCeiling: number,
 ) {
-  const spentByCategory = new Map(categoryBreakdown(transactions, key).map((c) => [c.category, c.value]));
+  const spentByCategory = new Map(
+    categoryBreakdown(transactions, key).map((c) => [c.category, c.value]),
+  );
   return COST_CATEGORIES.map((category) => {
     const limit = (costCeiling * (split[category] ?? 0)) / 100;
     const spent = spentByCategory.get(category) ?? 0;
@@ -753,11 +754,7 @@ export function cardInvoices(
     .sort((a, b) => (a.key < b.key ? -1 : 1));
 }
 
-export function cardSummary(
-  card: CreditCard,
-  transactions: Transaction[],
-  paidInvoices: string[],
-) {
+export function cardSummary(card: CreditCard, transactions: Transaction[], paidInvoices: string[]) {
   const invoices = cardInvoices(card, transactions, paidInvoices);
   const nowKey = currentInvoiceKey(card);
   const open = invoices.filter((i) => !i.paid && i.key >= nowKey);
@@ -792,7 +789,8 @@ export function debtSummary(debts: Debt[]) {
   const remaining = Math.max(0, total - paid);
   const weightedRate =
     remaining > 0
-      ? debts.reduce((s, d) => s + d.interestRate * Math.max(0, d.principal - d.paid), 0) / remaining
+      ? debts.reduce((s, d) => s + d.interestRate * Math.max(0, d.principal - d.paid), 0) /
+        remaining
       : 0;
   const monthly = debts.reduce(
     (s, d) => s + (d.installments > 0 ? d.principal / d.installments : 0),
@@ -814,9 +812,15 @@ export type Strategy = "avalanche" | "snowball";
 /** Simula a quitação das dívidas com um valor mensal disponível. */
 export function simulatePayoff(debts: Debt[], monthlyBudget: number, strategy: Strategy) {
   let items = debts
-    .map((d) => ({ id: d.id, name: d.name, balance: Math.max(0, d.principal - d.paid), rate: d.interestRate / 100 }))
+    .map((d) => ({
+      id: d.id,
+      name: d.name,
+      balance: Math.max(0, d.principal - d.paid),
+      rate: d.interestRate / 100,
+    }))
     .filter((d) => d.balance > 0);
-  if (!items.length || monthlyBudget <= 0) return { months: 0, interest: 0, series: [] as { month: number; saldo: number }[] };
+  if (!items.length || monthlyBudget <= 0)
+    return { months: 0, interest: 0, series: [] as { month: number; saldo: number }[] };
 
   const series: { month: number; saldo: number }[] = [
     { month: 0, saldo: items.reduce((s, i) => s + i.balance, 0) },
@@ -877,7 +881,8 @@ export function earnedBadges(state: {
 
   if (state.transactions.some((t) => t.savedTenPercent)) unlocked.add("primeira-moeda");
   if (reserve && reserve.balance >= avgExpense * 3) unlocked.add("escudo-babilonia");
-  if (state.goals.some((g) => g.kind === "investimento" && g.balance > 0)) unlocked.add("multiplicador");
+  if (state.goals.some((g) => g.kind === "investimento" && g.balance > 0))
+    unlocked.add("multiplicador");
   if (loggingStreak(state.transactions) >= 7) unlocked.add("consistencia");
   if (income > 0 && tithe >= income * 0.1 - 0.01) unlocked.add("senhor-dizimo");
   if (state.assets.length > 0) unlocked.add("arquiteto-futuro");
@@ -885,9 +890,7 @@ export function earnedBadges(state: {
   const cards = state.cards ?? [];
   if (
     cards.length > 0 &&
-    cards.every(
-      (c) => cardSummary(c, state.transactions, state.paidInvoices ?? []).usage <= 70,
-    )
+    cards.every((c) => cardSummary(c, state.transactions, state.paidInvoices ?? []).usage <= 70)
   )
     unlocked.add("mestre-fatura");
 

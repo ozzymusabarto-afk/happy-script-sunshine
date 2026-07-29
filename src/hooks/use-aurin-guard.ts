@@ -47,15 +47,7 @@ export function useMorningReminder(
   const cfgRef = useRef(config);
   cfgRef.current = config;
 
-  const {
-    enabled,
-    time,
-    lastShown,
-    frequency,
-    quietEnabled,
-    quietFrom,
-    quietTo,
-  } = config;
+  const { enabled, time, lastShown, frequency, quietEnabled, quietFrom, quietTo } = config;
   const daysKey = config.days.join(",");
 
   useEffect(() => {
@@ -69,8 +61,7 @@ export function useMorningReminder(
       if (cfg.lastShown === day) return;
       if (!isReminderDay(cfg.frequency, cfg.days)) return;
       if (cfg.quietEnabled && inQuietHours(cfg.quietFrom, cfg.quietTo)) return;
-      const sent =
-        notificationsSupported() && showReminderNotification(ctxRef.current, voice);
+      const sent = notificationsSupported() && showReminderNotification(ctxRef.current, voice);
       if (!sent) fallbackRef.current(reminderMessage(ctxRef.current, voice));
       markRef.current(day);
     };
@@ -98,7 +89,6 @@ export function useAppLock(hasPin: boolean, autoLockMinutes: number, hydrated: b
     checkedOnLoad.current = true;
     setLocked(hasPin);
   }, [hydrated, hasPin]);
-
 
   useEffect(() => {
     if (!hasPin) return;

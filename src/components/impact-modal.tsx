@@ -87,9 +87,7 @@ export function ImpactModal() {
 
   return (
     <Dialog open onOpenChange={(o) => !o && dismiss()}>
-      <DialogContent
-        className="max-h-[85vh] max-w-md overflow-hidden border-primary/40 p-0"
-      >
+      <DialogContent className="max-h-[85vh] max-w-md overflow-hidden border-primary/40 p-0">
         <div className="relative max-h-[85vh] overflow-y-auto">
           <div
             className="pointer-events-none absolute inset-0"

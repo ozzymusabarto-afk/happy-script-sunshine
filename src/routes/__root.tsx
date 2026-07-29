@@ -100,7 +100,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:title", content: "AURIN — Tesouro da Babilônia" },
       {
         property: "og:description",
-        content: "Do caos financeiro à riqueza com a sabedoria de Arkad em uma interface fintech moderna.",
+        content:
+          "Do caos financeiro à riqueza com a sabedoria de Arkad em uma interface fintech moderna.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

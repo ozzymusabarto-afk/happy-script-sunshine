@@ -46,8 +46,7 @@ export const getPremiumStatus = createServerFn({ method: "GET" })
 
     if (!row) return INACTIVE;
 
-    const expired =
-      row.expires_at != null && new Date(row.expires_at).getTime() < Date.now();
+    const expired = row.expires_at != null && new Date(row.expires_at).getTime() < Date.now();
 
     return {
       active: Boolean(row.active) && !expired,

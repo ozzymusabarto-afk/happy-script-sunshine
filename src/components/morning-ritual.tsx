@@ -5,12 +5,7 @@ import { ArrowRight, HandCoins, Sparkles, Sunrise, Target } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { brl, TREASURY_GOAL_ID, type Goal } from "@/lib/aurin";
 import { futureValue, monthsOfFreedom } from "@/lib/impact";
-import {
-  goalIcon,
-  inferGoalIcon,
-  SymbolBadge,
-  userSymbol,
-} from "@/lib/symbols";
+import { goalIcon, inferGoalIcon, SymbolBadge, userSymbol } from "@/lib/symbols";
 import { useAurinStore } from "@/store/aurin-store";
 import { dailyLine, greeting, longDate } from "@/lib/tone";
 import { cn } from "@/lib/utils";
@@ -47,10 +42,7 @@ export function MorningRitual({
 
   const dreamProgress = useMemo(() => {
     if (dreams.length === 0) return 0;
-    const sum = dreams.reduce(
-      (acc, g) => acc + Math.min(1, g.balance / (g.target || 1)),
-      0,
-    );
+    const sum = dreams.reduce((acc, g) => acc + Math.min(1, g.balance / (g.target || 1)), 0);
     return (sum / dreams.length) * 100;
   }, [dreams]);
 
@@ -214,7 +206,6 @@ export function MorningRitual({
                               ? "Praticamente lá — mais um gesto e é seu."
                               : "Ainda no começo, e começar já é muito."}
                       </p>
-
                     </div>
                   );
                 })}
@@ -224,9 +215,7 @@ export function MorningRitual({
 
           <Card className="min-w-0 border-primary/30 bg-background/50">
             <CardContent className="flex h-full flex-col pt-6">
-              <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                Um passo hoje
-              </p>
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">Um passo hoje</p>
               <div className="mt-4 flex items-start gap-3">
                 <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary/15 text-primary">
                   {nextStep.icon}

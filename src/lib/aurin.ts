@@ -104,7 +104,13 @@ export const CARD_COLORS = [
 
 /* --------------------------------- dívidas --------------------------------- */
 
-export type DebtType = "rotativo" | "emprestimo" | "financiamento" | "chequeespecial" | "pessoal" | "outro";
+export type DebtType =
+  | "rotativo"
+  | "emprestimo"
+  | "financiamento"
+  | "chequeespecial"
+  | "pessoal"
+  | "outro";
 
 export const DEBT_LABELS: Record<DebtType, string> = {
   rotativo: "Rotativo do cartão",
@@ -214,7 +220,6 @@ export const BUDGET_SPLIT: Record<string, number> = {
   Outros: 8,
 };
 
-
 export const PAYMENT_LABELS: Record<PaymentMethod, string> = {
   pix: "Pix",
   cartao: "Cartão",
@@ -245,9 +250,7 @@ export function levelFor(xp: number) {
   for (let i = 0; i < LEVELS.length; i++) if (xp >= LEVELS[i].xp) index = i;
   const current = LEVELS[index];
   const next = LEVELS[index + 1];
-  const progress = next
-    ? ((xp - current.xp) / (next.xp - current.xp)) * 100
-    : 100;
+  const progress = next ? ((xp - current.xp) / (next.xp - current.xp)) * 100 : 100;
   return {
     level: index + 1,
     title: current.title,
@@ -311,9 +314,7 @@ export const monthKey = (iso: string) => iso.slice(0, 7);
 
 export const monthLabel = (key: string) => {
   const [y, m] = key.split("-").map(Number);
-  return new Date(y, m - 1, 1)
-    .toLocaleDateString("pt-BR", { month: "short" })
-    .replace(".", "");
+  return new Date(y, m - 1, 1).toLocaleDateString("pt-BR", { month: "short" }).replace(".", "");
 };
 
 export interface BadgeDef {
@@ -399,7 +400,10 @@ export function invoiceCycleFor(card: Pick<CreditCard, "closingDay" | "dueDay">,
   return { key, due, year, month0 };
 }
 
-export function currentInvoiceKey(card: Pick<CreditCard, "closingDay" | "dueDay">, base = new Date()) {
+export function currentInvoiceKey(
+  card: Pick<CreditCard, "closingDay" | "dueDay">,
+  base = new Date(),
+) {
   const iso = `${base.getFullYear()}-${pad2(base.getMonth() + 1)}-${pad2(base.getDate())}`;
   return invoiceCycleFor(card, iso).key;
 }

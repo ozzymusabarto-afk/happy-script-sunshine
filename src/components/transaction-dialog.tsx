@@ -106,9 +106,7 @@ export function TransactionDialog({ open, onOpenChange, editing }: Props) {
   }, [open, editing]);
 
   const categories =
-    type === "entrada"
-      ? [...INCOME_CATEGORIES]
-      : [...EXPENSE_CATEGORIES, ...customCategories];
+    type === "entrada" ? [...INCOME_CATEGORIES] : [...EXPENSE_CATEGORIES, ...customCategories];
   const numericAmount = amount;
   const isCard = method === "cartao" && type === "saida";
   const installmentCount = Math.max(1, Math.min(24, Number(installments) || 1));
