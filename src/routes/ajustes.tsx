@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import {
+  BookOpen,
   Download,
   Plus,
   RefreshCw,
