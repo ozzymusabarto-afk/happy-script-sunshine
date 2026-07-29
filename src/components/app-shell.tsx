@@ -7,6 +7,7 @@ import { PremiumButton, useIsPremium } from "@/components/premium-gate";
 import { OnboardingDialog } from "@/components/onboarding-dialog";
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
+  CloudUpload,
   Coins,
   Compass,
   Crown,
