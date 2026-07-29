@@ -1,6 +1,17 @@
 import { useEffect, useMemo, useRef } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { Coins, Crown, Flame, Landmark, Lock, Shield, TrendingUp, Trophy } from "lucide-react";
+import {
+  Coins,
+  CreditCard,
+  Crown,
+  Flame,
+  HandCoins,
+  Landmark,
+  Lock,
+  Shield,
+  TrendingUp,
+  Trophy,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
