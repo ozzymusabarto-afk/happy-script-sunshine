@@ -90,11 +90,15 @@ export function useMorningReminder(
 export function useAppLock(hasPin: boolean, autoLockMinutes: number, hydrated: boolean) {
   const [locked, setLocked] = useState(false);
   const hiddenAt = useRef<number | null>(null);
+  const checkedOnLoad = useRef(false);
 
   useEffect(() => {
-    if (!hydrated) return;
+    // Só bloqueia na abertura do app. Criar o PIN durante a sessão não tranca ninguém.
+    if (!hydrated || checkedOnLoad.current) return;
+    checkedOnLoad.current = true;
     setLocked(hasPin);
   }, [hydrated, hasPin]);
+
 
   useEffect(() => {
     if (!hasPin) return;
