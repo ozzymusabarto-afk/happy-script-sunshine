@@ -103,6 +103,8 @@ export function TransactionDialog({ open, onOpenChange, editing }: Props) {
       setInstallments("1");
     }
     setErrors({});
+    // Reinicia o formulário só ao abrir/trocar o lançamento em edição.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, editing]);
 
   const categories =
