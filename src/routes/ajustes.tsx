@@ -81,6 +81,7 @@ function Settings() {
   const markBackup = useAurinStore((s) => s.markBackup);
 
   const [newCategory, setNewCategory] = useState("");
+  const [editingRec, setEditingRec] = useState<string | null>(null);
   const [rec, setRec] = useState({
     title: "",
     amount: 0,
@@ -90,6 +91,18 @@ function Settings() {
     savedTenPercent: true,
   });
   const fileRef = useRef<HTMLInputElement>(null);
+
+  const resetRecForm = () => {
+    setEditingRec(null);
+    setRec({
+      title: "",
+      amount: 0,
+      type: "saida",
+      category: "Moradia",
+      day: 5,
+      savedTenPercent: true,
+    });
+  };
 
   const categoryOptions =
     rec.type === "entrada" ? [...INCOME_CATEGORIES] : [...EXPENSE_CATEGORIES, ...customCategories];
