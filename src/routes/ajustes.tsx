@@ -70,6 +70,7 @@ function Settings() {
   const removeCustomCategory = useAurinStore((s) => s.removeCustomCategory);
   const recurring = useAurinStore((s) => s.recurring);
   const addRecurring = useAurinStore((s) => s.addRecurring);
+  const updateRecurring = useAurinStore((s) => s.updateRecurring);
   const removeRecurring = useAurinStore((s) => s.removeRecurring);
   const celebrationsEnabled = useAurinStore((s) => s.celebrationsEnabled);
   const setCelebrationsEnabled = useAurinStore((s) => s.setCelebrationsEnabled);
