@@ -32,7 +32,7 @@ export const Route = createFileRoute("/jornada")({
       {
         name: "description",
         content:
-          "Suba de Aprendiz de Babilônia a AURIN Master conquistando XP, streaks e insígnias douradas.",
+          "Acompanhe seu progresso, sua constância diária e as insígnias douradas conquistadas na jornada.",
       },
       { property: "og:title", content: "Jornada e Conquistas — AURIN" },
       {
@@ -87,11 +87,16 @@ function JourneyPage() {
 
   return (
     <div className="space-y-6">
-      <header>
-        <h1 className="font-display text-2xl font-extrabold sm:text-3xl">Jornada e Conquistas</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Disciplina diária transforma aprendizes em guardiões do ouro.
-        </p>
+      <header className="flex items-center gap-3">
+        <SymbolBadge symbol={userSymbol(profileSymbol)} size="lg" />
+        <div className="min-w-0">
+          <h1 className="truncate font-display text-2xl font-extrabold sm:text-3xl">
+            {profileName ? `Jornada de ${profileName}` : "Sua jornada"}
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Constância diária é o que transforma escolhas simples em liberdade.
+          </p>
+        </div>
       </header>
 
       <Card className="relative overflow-hidden border-primary/30">
