@@ -107,11 +107,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   usePremiumAutoSync();
 
-
-
-
-
-
   if (locked) return <LockScreen onUnlock={unlock} />;
 
   return (
@@ -124,8 +119,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <Landmark className="h-5 w-5" />
             </span>
             <span className="min-w-0">
-              <span className="block font-display text-lg font-extrabold tracking-tight">AURIN</span>
-              <span className="block truncate text-xs text-muted-foreground">Tesouro da Babilônia</span>
+              <span className="block font-display text-lg font-extrabold tracking-tight">
+                AURIN
+              </span>
+              <span className="block truncate text-xs text-muted-foreground">
+                Tesouro da Babilônia
+              </span>
             </span>
           </Link>
 
@@ -174,8 +173,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </Link>
           </nav>
 
-
-
           <div className="mt-auto space-y-3">
             {premium ? (
               <p className="flex items-center gap-2 rounded-xl border border-primary/30 bg-primary/10 px-3 py-2 text-xs font-semibold text-primary">
@@ -185,18 +182,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <PremiumButton className="w-full justify-center" />
             )}
             <div className="rounded-xl border border-border bg-card p-4">
-            <p className="text-xs uppercase tracking-wide text-muted-foreground">Tesouro total</p>
-            <p className="mt-1 font-display text-xl font-bold text-gold">{brl(wealth)}</p>
-            <div className="mt-3 space-y-1 text-xs text-muted-foreground">
-              <p className="flex justify-between gap-2">
-                <span>Entrou este mês</span>
-                <span className="text-success">{brl(month.income)}</span>
-              </p>
-              <p className="flex justify-between gap-2">
-                <span>Escolhas do mês</span>
-                <span className="text-foreground">{brl(month.expense)}</span>
-              </p>
-            </div>
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">Tesouro total</p>
+              <p className="mt-1 font-display text-xl font-bold text-gold">{brl(wealth)}</p>
+              <div className="mt-3 space-y-1 text-xs text-muted-foreground">
+                <p className="flex justify-between gap-2">
+                  <span>Entrou este mês</span>
+                  <span className="text-success">{brl(month.income)}</span>
+                </p>
+                <p className="flex justify-between gap-2">
+                  <span>Escolhas do mês</span>
+                  <span className="text-foreground">{brl(month.expense)}</span>
+                </p>
+              </div>
             </div>
           </div>
         </aside>
@@ -223,7 +220,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 </div>
               </div>
 
-
               <div className="flex shrink-0 items-center gap-2">
                 {!premium && <PremiumButton className="hidden sm:inline-flex lg:hidden" />}
                 <Button
@@ -248,7 +244,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </div>
             </div>
           </header>
-
 
           <main className="min-w-0 flex-1 px-4 pb-24 pt-5 sm:px-6 lg:pb-10">{children}</main>
           <ImpactModal />

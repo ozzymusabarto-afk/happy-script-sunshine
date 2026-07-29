@@ -6,8 +6,10 @@ import { Input } from "@/components/ui/input";
  * Campo de valor em reais com máscara por centavos.
  * O usuário digita apenas números: 1250 → R$ 12,50 → R$ 1.250,00.
  */
-export interface CurrencyInputProps
-  extends Omit<React.ComponentProps<typeof Input>, "value" | "onChange" | "type"> {
+export interface CurrencyInputProps extends Omit<
+  React.ComponentProps<typeof Input>,
+  "value" | "onChange" | "type"
+> {
   /** Valor em reais (ex.: 1250.5). */
   value: number;
   onValueChange: (value: number) => void;

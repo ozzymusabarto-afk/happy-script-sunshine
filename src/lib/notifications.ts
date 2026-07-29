@@ -44,8 +44,11 @@ export function morningMessage(ctx: MorningContext) {
     );
   }
   if (ctx.monthsOfPeace && ctx.monthsOfPeace > 0) {
-    const meses = ctx.monthsOfPeace < 1 ? "algumas semanas" : `${Math.floor(ctx.monthsOfPeace)} mês(es)`;
-    options.push(`${hello} Você já comprou ${meses} de tranquilidade. Vamos somar mais um pouco hoje?`);
+    const meses =
+      ctx.monthsOfPeace < 1 ? "algumas semanas" : `${Math.floor(ctx.monthsOfPeace)} mês(es)`;
+    options.push(
+      `${hello} Você já comprou ${meses} de tranquilidade. Vamos somar mais um pouco hoje?`,
+    );
   }
   if (ctx.streakDays && ctx.streakDays > 1) {
     options.push(`${hello} ${ctx.streakDays} dias seguidos cuidando do seu futuro. Bonito de ver.`);
@@ -110,7 +113,10 @@ export interface ReminderVoice {
   customMessage?: string | null;
 }
 
-const TONE_TEMPLATES: Record<Exclude<ReminderTone, "personalizado">, (ctx: MorningContext, hello: string) => string[]> = {
+const TONE_TEMPLATES: Record<
+  Exclude<ReminderTone, "personalizado">,
+  (ctx: MorningContext, hello: string) => string[]
+> = {
   sereno: (ctx, hello) => [
     `${hello} Respire. Um registro simples hoje já move seu futuro um passo à frente.`,
     `${hello} A riqueza chega para quem guarda com constância — e você está guardando.`,
@@ -166,11 +172,7 @@ export function showReminderNotification(ctx: MorningContext, voice?: ReminderVo
 }
 
 /** O dia de hoje entra na frequência escolhida? */
-export function isReminderDay(
-  frequency: ReminderFrequency,
-  days: number[],
-  date = new Date(),
-) {
+export function isReminderDay(frequency: ReminderFrequency, days: number[], date = new Date()) {
   const dow = date.getDay();
   if (frequency === "diario") return true;
   if (frequency === "dias-uteis") return dow >= 1 && dow <= 5;

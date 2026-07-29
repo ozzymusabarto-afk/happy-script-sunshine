@@ -88,9 +88,7 @@ function Settings() {
   const fileRef = useRef<HTMLInputElement>(null);
 
   const categoryOptions =
-    rec.type === "entrada"
-      ? [...INCOME_CATEGORIES]
-      : [...EXPENSE_CATEGORIES, ...customCategories];
+    rec.type === "entrada" ? [...INCOME_CATEGORIES] : [...EXPENSE_CATEGORIES, ...customCategories];
 
   const exportData = () => {
     const state = useAurinStore.getState();
@@ -354,10 +352,7 @@ function Settings() {
               </div>
               <div className="space-y-2 sm:col-span-2">
                 <Label>Categoria</Label>
-                <Select
-                  value={rec.category}
-                  onValueChange={(v) => setRec({ ...rec, category: v })}
-                >
+                <Select value={rec.category} onValueChange={(v) => setRec({ ...rec, category: v })}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -539,7 +534,6 @@ function Settings() {
             </p>
           </CardContent>
         </Card>
-
       </div>
     </div>
   );

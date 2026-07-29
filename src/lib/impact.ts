@@ -65,11 +65,7 @@ export interface DreamProgress {
  * Avanço causado por um aporte em um cofre: percentual antes/depois e
  * quantos meses de espera aquele valor eliminou (dado o ritmo mensal).
  */
-export function dreamProgress(
-  goal: Goal,
-  amount: number,
-  monthlyPace: number,
-): DreamProgress {
+export function dreamProgress(goal: Goal, amount: number, monthlyPace: number): DreamProgress {
   const after = goal.balance;
   const before = Math.max(0, after - amount);
   const target = goal.target > 0 ? goal.target : after || 1;
@@ -123,11 +119,7 @@ export function formatDays(days: number) {
  * "Paz de espírito": combina os dias de liberdade comprados por um valor com
  * o alívio de dívida que ele representa. Escala 0–100, sempre positiva.
  */
-export function peaceGain(
-  amount: number,
-  transactions: Transaction[],
-  debtRemaining = 0,
-) {
+export function peaceGain(amount: number, transactions: Transaction[], debtRemaining = 0) {
   if (amount <= 0) return { points: 0, days: 0 };
   const { days } = daysOfFreedom(amount, transactions);
   const relief = debtRemaining > 0 ? Math.min(1, amount / debtRemaining) : 0;

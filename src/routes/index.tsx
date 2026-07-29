@@ -17,13 +17,7 @@ import { LABELS, TONE_BG, TONE_LABEL, TONE_TEXT, pillarTone } from "@/lib/tone";
 import { monthsOfFreedom } from "@/lib/impact";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import {
-  brl,
-  formatDate,
-  monthLabel,
-  quoteOfTheDay,
-  PAYMENT_LABELS,
-} from "@/lib/aurin";
+import { brl, formatDate, monthLabel, quoteOfTheDay, PAYMENT_LABELS } from "@/lib/aurin";
 import {
   cardSummary,
   currentMonthKey,
@@ -51,6 +45,8 @@ export const Route = createFileRoute("/")({
         property: "og:description",
         content: "Visão completa do seu ouro: fluxo mensal, categorias e as leis da Babilônia.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Dashboard,
@@ -82,13 +78,22 @@ function Dashboard() {
       })),
     [flow],
   );
-  const freedomMonths = useMemo(() => monthsOfFreedom(wealth, transactions), [wealth, transactions]);
+  const freedomMonths = useMemo(
+    () => monthsOfFreedom(wealth, transactions),
+    [wealth, transactions],
+  );
   const vaults = useMemo(
     () =>
       [...goals]
         .sort((a, b) => b.balance / (b.target || 1) - a.balance / (a.target || 1))
         .slice(0, 3)
-        .map((g) => ({ id: g.id, name: g.name, icon: g.icon, balance: g.balance, target: g.target })),
+        .map((g) => ({
+          id: g.id,
+          name: g.name,
+          icon: g.icon,
+          balance: g.balance,
+          target: g.target,
+        })),
     [goals],
   );
   const recent = useMemo(
@@ -176,7 +181,6 @@ function Dashboard() {
         </Card>
       )}
 
-
       <div className="grid gap-4 sm:grid-cols-3">
         <StatTile
           icon={<ArrowUpRight className="h-4 w-4" />}
@@ -202,7 +206,6 @@ function Dashboard() {
           }
         />
       </div>
-
 
       <div className="grid gap-4 lg:grid-cols-3">
         <Card className="lg:col-span-2">
@@ -265,7 +268,6 @@ function Dashboard() {
             </p>
           </CardContent>
         </Card>
-
       </div>
 
       <Card>
@@ -312,9 +314,7 @@ function Dashboard() {
               Sabedoria do dia
             </p>
             <p className="mt-1 font-display text-lg leading-snug">"{quote}"</p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              — O Homem Mais Rico da Babilônia
-            </p>
+            <p className="mt-1 text-xs text-muted-foreground">— O Homem Mais Rico da Babilônia</p>
           </div>
         </CardContent>
       </Card>
@@ -434,10 +434,7 @@ function StatTile({
       <div className="min-w-0">
         <p className="truncate text-xs text-muted-foreground">{label}</p>
         <p
-          className={cn(
-            "truncate font-display text-lg font-bold",
-            tone === "gold" && "text-gold",
-          )}
+          className={cn("truncate font-display text-lg font-bold", tone === "gold" && "text-gold")}
         >
           {value}
         </p>

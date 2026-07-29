@@ -45,9 +45,7 @@ const EVENING_LINES = [
 
 /** Índice estável por dia, para a frase não trocar a cada render. */
 function dayIndex(date: Date, size: number) {
-  const seed = Number(
-    `${date.getFullYear()}${date.getMonth() + 1}${date.getDate()}`,
-  );
+  const seed = Number(`${date.getFullYear()}${date.getMonth() + 1}${date.getDate()}`);
   return seed % size;
 }
 
@@ -88,7 +86,6 @@ export const WORDS = {
   futureCoins: "Moedas do Futuro",
   achievements: "Conquistas",
 } as const;
-
 
 /** Estado de um pilar de orçamento, sempre sem julgamento. */
 export function pillarTone(percent: number): ToneLevel {
@@ -238,7 +235,8 @@ export function rescueEncouragement(opts: {
 }) {
   const { progress, months, seed = 0.5, name } = opts;
   const who = name?.trim() ? `${name.trim()}, ` : "";
-  if (progress >= 100) return `${who}todas as correntes caíram. Agora todo o ouro trabalha só por você.`;
+  if (progress >= 100)
+    return `${who}todas as correntes caíram. Agora todo o ouro trabalha só por você.`;
   const openings = [
     `${who}${progress.toFixed(0)}% do seu futuro já está livre.`,
     `${who}você já libertou ${progress.toFixed(0)}% do caminho.`,
@@ -279,4 +277,3 @@ export function mentorPraise(opts: {
       : "algumas horas de liberdade";
   return `${pick(openings, seed)} ${money(amount)} guardados hoje compraram ${dayText} e viram ${money(future)} em dez anos.`;
 }
-

@@ -16,17 +16,28 @@ const payloadSchema = z.object({
   hottok: z.string().max(512).optional(),
   data: z
     .object({
-      buyer: z.object({ email: z.string().email().max(320).optional() }).partial().optional(),
+      buyer: z
+        .object({ email: z.string().email().max(320).optional() })
+        .partial()
+        .optional(),
       purchase: z
         .object({
           transaction: z.string().max(120).optional(),
           approved_date: z.number().int().nonnegative().optional(),
-          offer: z.object({ code: z.string().max(120).optional() }).partial().optional(),
+          offer: z
+            .object({ code: z.string().max(120).optional() })
+            .partial()
+            .optional(),
         })
         .partial()
         .optional(),
       subscription: z
-        .object({ plan: z.object({ name: z.string().max(200).optional() }).partial().optional() })
+        .object({
+          plan: z
+            .object({ name: z.string().max(200).optional() })
+            .partial()
+            .optional(),
+        })
         .partial()
         .optional(),
     })
@@ -46,8 +57,7 @@ const REVOKE_EVENTS = new Set([
 ]);
 
 function planFromPayload(payload: HotmartPayload): "monthly" | "yearly" {
-  const name =
-    payload.data?.subscription?.plan?.name ?? payload.data?.purchase?.offer?.code ?? "";
+  const name = payload.data?.subscription?.plan?.name ?? payload.data?.purchase?.offer?.code ?? "";
   return /anual|year|annual/i.test(name) ? "yearly" : "monthly";
 }
 

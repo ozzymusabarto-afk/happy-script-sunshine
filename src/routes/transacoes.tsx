@@ -39,6 +39,8 @@ export const Route = createFileRoute("/transacoes")({
         property: "og:description",
         content: "Histórico completo de transações com filtros por categoria, tipo e pagamento.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: TransactionsPage,
@@ -73,7 +75,10 @@ function TransactionsPage() {
   const totals = useMemo(() => {
     let income = 0;
     let expense = 0;
-    for (const t of filtered) t.type === "entrada" ? (income += t.amount) : (expense += t.amount);
+    for (const t of filtered) {
+      if (t.type === "entrada") income += t.amount;
+      else expense += t.amount;
+    }
     return { income, expense };
   }, [filtered]);
 

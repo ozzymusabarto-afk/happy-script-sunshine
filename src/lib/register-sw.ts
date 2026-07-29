@@ -17,7 +17,7 @@ export function registerServiceWorker() {
     host.endsWith(".lovableproject-dev.com") ||
     host === "beta.lovable.dev" ||
     host.endsWith(".beta.lovable.dev") ||
-    new URLSearchParams(window.location.search).has("sw") ;
+    new URLSearchParams(window.location.search).has("sw");
 
   if (blocked) {
     void navigator.serviceWorker.getRegistrations().then((regs) => {

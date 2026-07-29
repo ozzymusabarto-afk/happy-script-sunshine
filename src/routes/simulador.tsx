@@ -47,14 +47,10 @@ function SimulatorPage() {
   const freedom = useMemo(() => daysOfFreedom(amount, transactions), [amount, transactions]);
   const future = useMemo(() => futureValue(amount, years), [amount, years]);
   const summary = useMemo(() => debtSummary(debts), [debts]);
-  const month = useMemo(
-    () => monthTotals(transactions, currentMonthKey()),
-    [transactions],
-  );
+  const month = useMemo(() => monthTotals(transactions, currentMonthKey()), [transactions]);
 
   const dream = goals.find((g) => g.id !== TREASURY_GOAL_ID) ?? goals[0];
-  const dreamShare =
-    dream && dream.target > 0 ? Math.min(100, (amount / dream.target) * 100) : 0;
+  const dreamShare = dream && dream.target > 0 ? Math.min(100, (amount / dream.target) * 100) : 0;
 
   const verdict = useMemo(() => {
     if (amount <= 0) return null;
@@ -90,8 +86,8 @@ function SimulatorPage() {
           Simulador de Decisões
         </h1>
         <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-          Antes de gastar, veja com carinho quanto tempo de paz aquela escolha custa — e o que
-          ela poderia virar se ficasse com você.
+          Antes de gastar, veja com carinho quanto tempo de paz aquela escolha custa — e o que ela
+          poderia virar se ficasse com você.
         </p>
       </header>
 

@@ -103,12 +103,12 @@ export function TransactionDialog({ open, onOpenChange, editing }: Props) {
       setInstallments("1");
     }
     setErrors({});
+    // Reinicia o formulário só ao abrir/trocar o lançamento em edição.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, editing]);
 
   const categories =
-    type === "entrada"
-      ? [...INCOME_CATEGORIES]
-      : [...EXPENSE_CATEGORIES, ...customCategories];
+    type === "entrada" ? [...INCOME_CATEGORIES] : [...EXPENSE_CATEGORIES, ...customCategories];
   const numericAmount = amount;
   const isCard = method === "cartao" && type === "saida";
   const installmentCount = Math.max(1, Math.min(24, Number(installments) || 1));

@@ -36,7 +36,9 @@ function snapshot() {
   const state = useAurinStore.getState();
   const { celebration: _c, security: _s, ...rest } = state;
   return JSON.parse(
-    JSON.stringify(Object.fromEntries(Object.entries(rest).filter(([, v]) => typeof v !== "function"))),
+    JSON.stringify(
+      Object.fromEntries(Object.entries(rest).filter(([, v]) => typeof v !== "function")),
+    ),
   ) as Record<string, unknown>;
 }
 
@@ -138,7 +140,9 @@ function AccountPage() {
   return (
     <div className="space-y-6">
       <header className="reveal-step">
-        <p className="text-xs uppercase tracking-[0.2em] text-primary">Sua jornada, sempre com você</p>
+        <p className="text-xs uppercase tracking-[0.2em] text-primary">
+          Sua jornada, sempre com você
+        </p>
         <h1 className="font-display text-2xl font-extrabold sm:text-3xl">Minha conta na nuvem</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Entre com o Google para guardar sua jornada em segurança e recuperá-la em qualquer

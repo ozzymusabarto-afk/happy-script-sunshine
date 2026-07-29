@@ -41,14 +41,15 @@ export const Route = createFileRoute("/libertacao")({
       { title: "Plano de Libertação | AURIN" },
       {
         name: "description",
-        content:
-          "Veja quanto da sua paz já foi reconquistada e a data em que você fica livre.",
+        content: "Veja quanto da sua paz já foi reconquistada e a data em que você fica livre.",
       },
       { property: "og:title", content: "Plano de Libertação | AURIN" },
       {
         property: "og:description",
         content: "Cada pagamento solta uma corrente e antecipa a sua paz.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: DebtsPage,
@@ -112,9 +113,7 @@ function DebtsPage() {
     <div className="space-y-6">
       <header className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
         <div className="min-w-0">
-          <h1 className="font-display text-2xl font-extrabold sm:text-3xl">
-            Plano de Libertação
-          </h1>
+          <h1 className="font-display text-2xl font-extrabold sm:text-3xl">Plano de Libertação</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {rescueEncouragement({
               progress: summary.progress,
@@ -142,7 +141,9 @@ function DebtsPage() {
         />
         <Stat
           label="Sua liberdade chega em"
-          value={summary.monthsToFreedom > 0 ? `${summary.monthsToFreedom} meses` : "Você já é livre"}
+          value={
+            summary.monthsToFreedom > 0 ? `${summary.monthsToFreedom} meses` : "Você já é livre"
+          }
           tone="success"
         />
       </div>
@@ -286,9 +287,7 @@ function DebtsPage() {
           <div className="rounded-xl border border-border bg-secondary/40 p-4">
             <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
               <p className="text-sm font-semibold">Correntes se rompendo</p>
-              <span className="font-display text-sm font-bold text-gold">
-                {freedomDate}
-              </span>
+              <span className="font-display text-sm font-bold text-gold">{freedomDate}</span>
             </div>
             <div className="mt-4 space-y-4">
               {milestones.map((m, i) => (

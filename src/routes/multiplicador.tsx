@@ -40,13 +40,7 @@ import {
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { GOAL_LABELS, TREASURY_GOAL_ID, brl, brlCompact, type GoalKind } from "@/lib/aurin";
-import {
-  GOAL_ICONS,
-  goalIcon,
-  inferGoalIcon,
-  SymbolBadge,
-  SymbolPicker,
-} from "@/lib/symbols";
+import { GOAL_ICONS, goalIcon, inferGoalIcon, SymbolBadge, SymbolPicker } from "@/lib/symbols";
 import { cn } from "@/lib/utils";
 import { currentMonthKey, monthTotals, useAurinStore } from "@/store/aurin-store";
 
@@ -64,6 +58,8 @@ export const Route = createFileRoute("/multiplicador")({
         property: "og:description",
         content: "Cofres, reserva de emergência, ativos fixos e simulador de Moedas do Futuro.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: MultiplierPage,
@@ -153,8 +149,7 @@ function MultiplierPage() {
             onClick={() => (lockedDreams ? setSalesOpen(true) : setGoalOpen(true))}
             className="shrink-0 bg-gold text-primary-foreground hover:opacity-90"
           >
-            {lockedDreams ? <Crown className="h-4 w-4" /> : <Plus className="h-4 w-4" />} Novo
-            cofre
+            {lockedDreams ? <Crown className="h-4 w-4" /> : <Plus className="h-4 w-4" />} Novo cofre
           </Button>
         </div>
 
@@ -167,10 +162,10 @@ function MultiplierPage() {
                   <div className="flex min-w-0 items-start gap-3">
                     <SymbolBadge symbol={goalIcon(goal.icon ?? inferGoalIcon(goal.name))} />
                     <div className="min-w-0">
-                    <CardTitle className="truncate text-base">{goal.name}</CardTitle>
-                    <Badge variant="outline" className="mt-2 border-primary/40 text-primary">
-                      {GOAL_LABELS[goal.kind]}
-                    </Badge>
+                      <CardTitle className="truncate text-base">{goal.name}</CardTitle>
+                      <Badge variant="outline" className="mt-2 border-primary/40 text-primary">
+                        {GOAL_LABELS[goal.kind]}
+                      </Badge>
                     </div>
                   </div>
                   <div className="flex shrink-0 items-center">
@@ -182,19 +177,19 @@ function MultiplierPage() {
                     >
                       <Pencil className="h-4 w-4 text-muted-foreground" />
                     </Button>
-                  {goal.id !== TREASURY_GOAL_ID && (
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      aria-label="Remover cofre"
-                      onClick={() => {
-                        removeGoal(goal.id);
-                        toast.success("Cofre removido");
-                      }}
-                    >
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
-                  )}
+                    {goal.id !== TREASURY_GOAL_ID && (
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        aria-label="Remover cofre"
+                        onClick={() => {
+                          removeGoal(goal.id);
+                          toast.success("Cofre removido");
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    )}
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -221,7 +216,12 @@ function MultiplierPage() {
       <section>
         <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
           <h2 className="font-display text-lg font-bold">Habitação e Renda Futura</h2>
-          <Button size="sm" variant="secondary" onClick={() => setAssetOpen(true)} className="shrink-0">
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={() => setAssetOpen(true)}
+            className="shrink-0"
+          >
             <Plus className="h-4 w-4" /> Novo ativo
           </Button>
         </div>
@@ -275,11 +275,7 @@ function MultiplierPage() {
         onOpenChange={setSalesOpen}
         highlight="Cofres de sonho ilimitados"
       />
-      <EditGoalDialog
-        goalId={editGoalId}
-        onClose={() => setEditGoalId(null)}
-        onSave={updateGoal}
-      />
+      <EditGoalDialog goalId={editGoalId} onClose={() => setEditGoalId(null)} onSave={updateGoal} />
       <DepositDialog
         goalId={depositId}
         onClose={() => setDepositId(null)}
@@ -428,7 +424,9 @@ function CompoundSimulator() {
             ))}
           </div>
           <div className="mt-4 rounded-xl border border-accent/30 bg-accent/10 p-3 text-sm">
-            <span className="font-semibold text-accent">Moedas do Futuro trabalhando por você:</span>{" "}
+            <span className="font-semibold text-accent">
+              Moedas do Futuro trabalhando por você:
+            </span>{" "}
             {last.aportes > 0
               ? `cada R$ 1 aportado virou R$ ${(last.total / last.aportes).toFixed(2)}.`
               : "aumente seus aportes para ver o efeito."}
@@ -605,6 +603,8 @@ function EditGoalDialog({
       setTarget(goal.target);
       setIcon(goal.icon ?? inferGoalIcon(goal.name));
     }
+    // Recarrega os campos apenas quando muda o cofre em edição.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [goal?.id]);
 
   return (
@@ -692,7 +692,9 @@ function DepositDialog({
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 font-display">
-            {goal && <SymbolBadge symbol={goalIcon(goal.icon ?? inferGoalIcon(goal.name))} size="sm" />}
+            {goal && (
+              <SymbolBadge symbol={goalIcon(goal.icon ?? inferGoalIcon(goal.name))} size="sm" />
+            )}
             Depositar Ouro
           </DialogTitle>
           <DialogDescription className="truncate">{goal?.name}</DialogDescription>

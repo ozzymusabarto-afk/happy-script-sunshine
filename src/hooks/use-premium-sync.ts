@@ -29,7 +29,6 @@ export function usePremiumSync() {
     }
   }, [setPlan]);
 
-
   return { check, checking };
 }
 

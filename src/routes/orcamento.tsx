@@ -7,14 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Slider } from "@/components/ui/slider";
 import { PILLARS, brl, type PillarId } from "@/lib/aurin";
-import {
-  TONE_BG,
-  TONE_LABEL,
-  TONE_TEXT,
-  monthMood,
-  pillarMessage,
-  pillarTone,
-} from "@/lib/tone";
+import { TONE_BG, TONE_LABEL, TONE_TEXT, monthMood, pillarMessage, pillarTone } from "@/lib/tone";
 import { cn } from "@/lib/utils";
 import {
   budgetRows,
@@ -38,6 +31,8 @@ export const Route = createFileRoute("/orcamento")({
         property: "og:description",
         content: "Três pilares babilônicos para manter seus gastos no lugar certo.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: BudgetPage,
@@ -69,7 +64,8 @@ function BudgetPage() {
   );
 
   const totalSplit = Object.values(split).reduce((a, b) => a + b, 0);
-  const isDefault = pillarSplit.custo === 70 && pillarSplit.reserva === 20 && pillarSplit.ouro === 10;
+  const isDefault =
+    pillarSplit.custo === 70 && pillarSplit.reserva === 20 && pillarSplit.ouro === 10;
 
   return (
     <div className="space-y-6">
@@ -78,8 +74,8 @@ function BudgetPage() {
           Seu ritmo do mês — 70/20/10
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Aqui não há cobrança: só clareza. Cada moeda que entra tem um lugar combinado, e sempre
-          dá para reencontrar o ritmo.
+          Aqui não há cobrança: só clareza. Cada moeda que entra tem um lugar combinado, e sempre dá
+          para reencontrar o ritmo.
         </p>
       </header>
 
@@ -182,7 +178,10 @@ function BudgetPage() {
               ) : (
                 <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-success" />
               )}
-              {monthMood(pillars.some((p) => p.percent > 100), month.tithe > 0)}
+              {monthMood(
+                pillars.some((p) => p.percent > 100),
+                month.tithe > 0,
+              )}
             </p>
           </div>
         </CardContent>

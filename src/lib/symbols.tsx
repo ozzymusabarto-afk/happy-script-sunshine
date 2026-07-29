@@ -55,16 +55,61 @@ export function userSymbol(id?: string | null): SymbolOption {
 
 /** Figurinhas dos Cofres de Sonhos, com palavras-chave para sugestão automática. */
 export const GOAL_ICONS: (SymbolOption & { keywords: string[] })[] = [
-  { id: "casa", label: "Casa Própria", icon: Home, keywords: ["casa", "lar", "apart", "morad", "imóvel", "imovel"] },
-  { id: "carro", label: "Carro", icon: Car, keywords: ["carro", "moto", "veícul", "veicul", "auto"] },
-  { id: "viagem", label: "Viagem", icon: Plane, keywords: ["viag", "trip", "praia", "europa", "férias", "ferias"] },
+  {
+    id: "casa",
+    label: "Casa Própria",
+    icon: Home,
+    keywords: ["casa", "lar", "apart", "morad", "imóvel", "imovel"],
+  },
+  {
+    id: "carro",
+    label: "Carro",
+    icon: Car,
+    keywords: ["carro", "moto", "veícul", "veicul", "auto"],
+  },
+  {
+    id: "viagem",
+    label: "Viagem",
+    icon: Plane,
+    keywords: ["viag", "trip", "praia", "europa", "férias", "ferias"],
+  },
   { id: "liberdade", label: "Liberdade", icon: Bird, keywords: ["liberdade", "livre", "independ"] },
-  { id: "estudos", label: "Estudos", icon: GraduationCap, keywords: ["estud", "curso", "facul", "escola", "mba"] },
-  { id: "reserva", label: "Reserva", icon: ShieldCheck, keywords: ["reserva", "emerg", "segur", "proteç", "protec"] },
-  { id: "familia", label: "Família", icon: Heart, keywords: ["famíl", "famil", "filh", "casamento", "amor", "saúde", "saude"] },
-  { id: "negocio", label: "Negócio", icon: Store, keywords: ["negóc", "negoc", "empres", "loja", "startup"] },
-  { id: "aposentadoria", label: "Aposentadoria", icon: Sunrise, keywords: ["aposent", "futuro", "velhice"] },
-  { id: "tesouro", label: "Tesouro", icon: Coins, keywords: ["tesouro", "ouro", "invest", "dízimo", "dizimo"] },
+  {
+    id: "estudos",
+    label: "Estudos",
+    icon: GraduationCap,
+    keywords: ["estud", "curso", "facul", "escola", "mba"],
+  },
+  {
+    id: "reserva",
+    label: "Reserva",
+    icon: ShieldCheck,
+    keywords: ["reserva", "emerg", "segur", "proteç", "protec"],
+  },
+  {
+    id: "familia",
+    label: "Família",
+    icon: Heart,
+    keywords: ["famíl", "famil", "filh", "casamento", "amor", "saúde", "saude"],
+  },
+  {
+    id: "negocio",
+    label: "Negócio",
+    icon: Store,
+    keywords: ["negóc", "negoc", "empres", "loja", "startup"],
+  },
+  {
+    id: "aposentadoria",
+    label: "Aposentadoria",
+    icon: Sunrise,
+    keywords: ["aposent", "futuro", "velhice"],
+  },
+  {
+    id: "tesouro",
+    label: "Tesouro",
+    icon: Coins,
+    keywords: ["tesouro", "ouro", "invest", "dízimo", "dizimo"],
+  },
 ];
 
 export const DEFAULT_GOAL_ICON = "tesouro";

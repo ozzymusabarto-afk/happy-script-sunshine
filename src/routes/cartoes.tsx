@@ -1,6 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { AlertTriangle, CalendarClock, CreditCard as CardIcon, Pencil, Plus, Trash2 } from "lucide-react";
+import {
+  AlertTriangle,
+  CalendarClock,
+  CreditCard as CardIcon,
+  Pencil,
+  Plus,
+  Trash2,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -52,6 +59,8 @@ export const Route = createFileRoute("/cartoes")({
         property: "og:description",
         content: "Limite, fatura atual e próxima fatura de cada cartão em um só lugar.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: CardsPage,
@@ -241,7 +250,8 @@ function CardsPage() {
             invoice={active.current}
             onPay={() =>
               active.current &&
-              (payInvoice(active.card.id, active.current.key), toast.success("Fatura marcada como paga"))
+              (payInvoice(active.card.id, active.current.key),
+              toast.success("Fatura marcada como paga"))
             }
           />
           <InvoicePanel
@@ -272,7 +282,11 @@ function Stat({
         <p
           className={cn(
             "mt-1 font-display text-2xl font-extrabold",
-            tone === "success" ? "text-success" : tone === "destructive" ? "text-destructive" : "text-gold",
+            tone === "success"
+              ? "text-success"
+              : tone === "destructive"
+                ? "text-destructive"
+                : "text-gold",
           )}
         >
           {value}
@@ -288,7 +302,13 @@ function InvoicePanel({
   onPay,
 }: {
   title: string;
-  invoice?: { key: string; due: string; total: number; items: { id: string; title: string; date: string; amount: number }[]; paid: boolean };
+  invoice?: {
+    key: string;
+    due: string;
+    total: number;
+    items: { id: string; title: string; date: string; amount: number }[];
+    paid: boolean;
+  };
   onPay?: () => void;
 }) {
   return (
@@ -312,7 +332,10 @@ function InvoicePanel({
             </p>
             <ul className="divide-y divide-border">
               {invoice.items.slice(0, 8).map((item) => (
-                <li key={item.id} className="grid grid-cols-[minmax(0,1fr)_auto] gap-3 py-2 text-sm">
+                <li
+                  key={item.id}
+                  className="grid grid-cols-[minmax(0,1fr)_auto] gap-3 py-2 text-sm"
+                >
                   <span className="truncate">{item.title}</span>
                   <span className="shrink-0 text-muted-foreground">{brl(item.amount)}</span>
                 </li>
@@ -324,7 +347,10 @@ function InvoicePanel({
               </p>
             )}
             {onPay && !invoice.paid && (
-              <Button onClick={onPay} className="w-full bg-gold text-primary-foreground hover:opacity-90">
+              <Button
+                onClick={onPay}
+                className="w-full bg-gold text-primary-foreground hover:opacity-90"
+              >
                 Pagar fatura
               </Button>
             )}

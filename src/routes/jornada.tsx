@@ -1,15 +1,6 @@
 import { useEffect, useMemo, useRef } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import {
-  Coins,
-  Crown,
-  Flame,
-  Landmark,
-  Lock,
-  Shield,
-  TrendingUp,
-  Trophy,
-} from "lucide-react";
+import { Coins, Crown, Flame, Landmark, Lock, Shield, TrendingUp, Trophy } from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
@@ -40,6 +31,8 @@ export const Route = createFileRoute("/jornada")({
         property: "og:description",
         content: "Níveis, XP, streak de registro diário e insígnias inspiradas em Arkad.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: JourneyPage,
@@ -154,28 +147,28 @@ function JourneyPage() {
           {list.map((badge) => {
             const Icon = BADGE_ICONS[badge.id] ?? Trophy;
             return (
-            <div
-              key={badge.id}
-              className={cn(
-                "grid grid-cols-[auto_minmax(0,1fr)] items-start gap-3 rounded-xl border p-4 transition-colors",
-                badge.unlocked
-                  ? "border-primary/40 bg-primary/5 shadow-gold"
-                  : "border-border bg-secondary/40 opacity-60",
-              )}
-            >
-              <span
+              <div
+                key={badge.id}
                 className={cn(
-                  "grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-background",
-                  badge.unlocked ? "text-primary" : "text-muted-foreground",
+                  "grid grid-cols-[auto_minmax(0,1fr)] items-start gap-3 rounded-xl border p-4 transition-colors",
+                  badge.unlocked
+                    ? "border-primary/40 bg-primary/5 shadow-gold"
+                    : "border-border bg-secondary/40 opacity-60",
                 )}
               >
-                {badge.unlocked ? <Icon className="h-5 w-5" /> : <Lock className="h-4 w-4" />}
-              </span>
-              <div className="min-w-0">
-                <p className="truncate text-sm font-semibold">{badge.name}</p>
-                <p className="mt-1 text-xs text-muted-foreground">{badge.description}</p>
+                <span
+                  className={cn(
+                    "grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-background",
+                    badge.unlocked ? "text-primary" : "text-muted-foreground",
+                  )}
+                >
+                  {badge.unlocked ? <Icon className="h-5 w-5" /> : <Lock className="h-4 w-4" />}
+                </span>
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold">{badge.name}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{badge.description}</p>
+                </div>
               </div>
-            </div>
             );
           })}
         </CardContent>
@@ -196,12 +189,19 @@ function JourneyPage() {
                 <span
                   className={cn(
                     "grid h-8 w-8 shrink-0 place-items-center rounded-full text-xs font-bold",
-                    reached ? "bg-gold text-primary-foreground" : "bg-secondary text-muted-foreground",
+                    reached
+                      ? "bg-gold text-primary-foreground"
+                      : "bg-secondary text-muted-foreground",
                   )}
                 >
                   {i + 1}
                 </span>
-                <span className={cn("truncate text-sm", reached ? "font-medium" : "text-muted-foreground")}>
+                <span
+                  className={cn(
+                    "truncate text-sm",
+                    reached ? "font-medium" : "text-muted-foreground",
+                  )}
+                >
                   {step.title}
                 </span>
                 <span className="shrink-0 text-xs text-muted-foreground">{step.xp} XP</span>
@@ -213,10 +213,11 @@ function JourneyPage() {
 
       <Card className="border-accent/30">
         <CardContent className="pt-6 text-sm text-muted-foreground">
-          Sétima cura de Arkad — <span className="text-foreground">aumente sua capacidade de ganhar</span>:
-          este mês você registrou {month.income > 0 ? "entradas de" : "nenhuma entrada"}
-          {month.income > 0 && <span className="text-success"> {brl(month.income)}</span>}.
-          Estude, aprimore seu ofício e o ouro seguirá o conhecimento.
+          Sétima cura de Arkad —{" "}
+          <span className="text-foreground">aumente sua capacidade de ganhar</span>: este mês você
+          registrou {month.income > 0 ? "entradas de" : "nenhuma entrada"}
+          {month.income > 0 && <span className="text-success"> {brl(month.income)}</span>}. Estude,
+          aprimore seu ofício e o ouro seguirá o conhecimento.
         </CardContent>
       </Card>
     </div>
