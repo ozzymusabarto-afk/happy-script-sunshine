@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 import {
   Download,
   Plus,
@@ -73,6 +73,8 @@ function Settings() {
   const loadDemoData = useAurinStore((s) => s.loadDemoData);
   const clearAll = useAurinStore((s) => s.clearAll);
   const importState = useAurinStore((s) => s.importState);
+  const lastBackupAt = useAurinStore((s) => s.lastBackupAt);
+  const markBackup = useAurinStore((s) => s.markBackup);
 
   const [newCategory, setNewCategory] = useState("");
   const [rec, setRec] = useState({
@@ -103,6 +105,7 @@ function Settings() {
     a.download = `aurin-backup-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
+    markBackup();
     toast.success("Backup salvo. Sua jornada está guardada com você.");
   };
 
