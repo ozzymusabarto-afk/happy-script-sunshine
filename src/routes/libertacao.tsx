@@ -530,7 +530,7 @@ function DebtDialog({
             Cancelar
           </Button>
           <Button onClick={submit} className="bg-gold text-primary-foreground hover:opacity-90">
-            Registrar
+            {editing ? "Salvar alterações" : "Registrar"}
           </Button>
         </DialogFooter>
       </DialogContent>
