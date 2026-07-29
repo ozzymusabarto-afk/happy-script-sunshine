@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 
+import { GuidedTour } from "@/components/guided-tour";
 import { ImpactModal } from "@/components/impact-modal";
 import { InstallPrompt } from "@/components/install-prompt";
 import { LockScreen } from "@/components/lock-screen";
@@ -278,6 +279,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       <InstallPrompt />
       <TransactionDialog open={open} onOpenChange={setOpen} />
+      <GuidedTour />
       {hydrated && <OnboardingDialog />}
     </div>
   );

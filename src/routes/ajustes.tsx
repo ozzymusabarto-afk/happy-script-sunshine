@@ -4,6 +4,7 @@ import {
   BookOpen,
   Download,
   Plus,
+  PlayCircle,
   RefreshCw,
   Repeat,
   Sparkles,
@@ -15,6 +16,7 @@ import {
 import { toast } from "sonner";
 
 import { CurrencyInput } from "@/components/currency-input";
+import { openGuidedTour } from "@/components/guided-tour";
 import { ReminderCard, SecurityCard } from "@/components/security-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -152,6 +154,20 @@ function Settings() {
         </span>
       </Link>
 
+      <button
+        type="button"
+        onClick={openGuidedTour}
+        className="reveal-step flex w-full items-center gap-3 rounded-xl border border-border p-4 text-left transition-colors hover:bg-accent"
+      >
+        <PlayCircle className="h-5 w-5 shrink-0 text-primary" />
+        <span className="min-w-0 flex-1">
+          <span className="block text-sm font-semibold">Tutorial guiado em 8 passos</span>
+          <span className="block text-xs text-muted-foreground">
+            Slides curtos mostrando o que fazer em cada etapa. Pode pular e assistir de novo quando
+            quiser.
+          </span>
+        </span>
+      </button>
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Perfil */}
@@ -525,8 +541,18 @@ function Settings() {
             />
 
             <div className="flex flex-wrap gap-3">
-              <Button variant="outline" onClick={loadDemoData}>
-                <RefreshCw className="h-4 w-4" /> Carregar exemplo
+              <Button
+                variant="outline"
+                onClick={() => {
+                  const ok = window.confirm(
+                    "Isto substitui o que está neste aparelho por um exemplo pronto, só para você ver como o app fica preenchido. Dá para voltar ao zero depois. Continuar?",
+                  );
+                  if (!ok) return;
+                  loadDemoData();
+                  toast.success("Exemplo carregado. Use \u201cComeçar do zero\u201d quando quiser seus próprios dados.");
+                }}
+              >
+                <RefreshCw className="h-4 w-4" /> Ver com dados de exemplo
               </Button>
               <Button
                 variant="ghost"
