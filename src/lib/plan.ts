@@ -76,8 +76,8 @@ export type PaymentOptionId = (typeof PAYMENT_OPTIONS)[number]["id"];
  * checkout ainda não foi configurado (em vez de abrir uma aba em branco).
  * ------------------------------------------------------------------ */
 export const HOTMART_CHECKOUT = {
-  monthly: "COLE_AQUI_O_LINK_DO_PLANO_MENSAL",
-  yearly: "COLE_AQUI_O_LINK_DO_PLANO_ANUAL",
+  monthly: "https://pay.hotmart.com/A106935709S",
+  yearly: "https://pay.hotmart.com/A106935709S?off=iro1h7c6",
 } as const;
 
 /**
