@@ -157,11 +157,14 @@ function MultiplierPage() {
             return (
               <Card key={goal.id} className="min-w-0">
                 <CardHeader className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2 pb-3">
-                  <div className="min-w-0">
+                  <div className="flex min-w-0 items-start gap-3">
+                    <SymbolBadge symbol={goalIcon(goal.icon ?? inferGoalIcon(goal.name))} />
+                    <div className="min-w-0">
                     <CardTitle className="truncate text-base">{goal.name}</CardTitle>
                     <Badge variant="outline" className="mt-2 border-primary/40 text-primary">
                       {GOAL_LABELS[goal.kind]}
                     </Badge>
+                    </div>
                   </div>
                   <div className="flex shrink-0 items-center">
                     <Button
@@ -494,6 +497,7 @@ function GoalDialog({
     onSubmit(parsed.data);
     toast.success("Cofre criado");
     setName("");
+    setIcon("");
     setTarget(0);
     setBalance(0);
     setError("");
@@ -516,6 +520,15 @@ function GoalDialog({
               maxLength={60}
               onChange={(e) => setName(e.target.value)}
               placeholder="Ex.: Liberdade Financeira"
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label>Figurinha do sonho</Label>
+            <SymbolPicker
+              options={GOAL_ICONS}
+              value={icon || inferGoalIcon(name)}
+              onChange={setIcon}
+              ariaLabel="Figurinha do sonho"
             />
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
