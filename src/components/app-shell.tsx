@@ -187,9 +187,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-gold text-primary-foreground lg:hidden">
                   <Landmark className="h-4 w-4" />
                 </span>
+                <SymbolBadge symbol={userSymbol(profileSymbol)} className="hidden lg:grid" />
                 <div className="min-w-0">
                   <p className="truncate font-display text-sm font-bold sm:text-base">
-                    {profileName ? `${profileName} · ${level.title}` : level.title}
+                    {profileName || "Sua jornada"}
                   </p>
                   <div className="mt-1 flex items-center gap-2">
                     <Progress value={level.progress} className="h-1.5 w-28 sm:w-44" />
@@ -199,6 +200,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   </div>
                 </div>
               </div>
+
 
               <div className="flex shrink-0 items-center gap-2">
                 {!premium && <PremiumButton className="hidden sm:inline-flex lg:hidden" />}
