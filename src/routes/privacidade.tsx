@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Lock, Mail, ShieldCheck, Smartphone } from "lucide-react";
 
-import { AppShell } from "@/components/app-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const Route = createFileRoute("/privacidade")({
@@ -51,7 +50,7 @@ const BLOCKS = [
 
 function PrivacidadePage() {
   return (
-    <AppShell>
+    <>
       <div className="mx-auto w-full max-w-3xl space-y-6">
         <header className="space-y-2">
           <h1 className="font-display text-2xl font-extrabold tracking-tight sm:text-3xl">
@@ -98,6 +97,6 @@ function PrivacidadePage() {
           </CardContent>
         </Card>
       </div>
-    </AppShell>
+    </>
   );
 }
