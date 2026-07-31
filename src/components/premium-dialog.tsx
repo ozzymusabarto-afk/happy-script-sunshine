@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { usePremiumSync } from "@/hooks/use-premium-sync";
 import { supabase } from "@/integrations/supabase/client";
+import { logEvent } from "@/lib/analytics.functions";
 import {
   FREE_FEATURES,
   PAYMENT_OPTIONS,
