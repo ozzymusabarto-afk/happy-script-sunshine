@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TransacoesRouteImport } from './routes/transacoes'
 import { Route as SimuladorRouteImport } from './routes/simulador'
+import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as OrcamentoRouteImport } from './routes/orcamento'
 import { Route as MultiplicadorRouteImport } from './routes/multiplicador'
 import { Route as ManualRouteImport } from './routes/manual'
@@ -31,6 +32,11 @@ const TransacoesRoute = TransacoesRouteImport.update({
 const SimuladorRoute = SimuladorRouteImport.update({
   id: '/simulador',
   path: '/simulador',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacidadeRoute = PrivacidadeRouteImport.update({
+  id: '/privacidade',
+  path: '/privacidade',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OrcamentoRoute = OrcamentoRouteImport.update({
@@ -100,6 +106,7 @@ export interface FileRoutesByFullPath {
   '/manual': typeof ManualRoute
   '/multiplicador': typeof MultiplicadorRoute
   '/orcamento': typeof OrcamentoRoute
+  '/privacidade': typeof PrivacidadeRoute
   '/simulador': typeof SimuladorRoute
   '/transacoes': typeof TransacoesRoute
   '/api/public/hotmart': typeof ApiPublicHotmartRoute
@@ -115,6 +122,7 @@ export interface FileRoutesByTo {
   '/manual': typeof ManualRoute
   '/multiplicador': typeof MultiplicadorRoute
   '/orcamento': typeof OrcamentoRoute
+  '/privacidade': typeof PrivacidadeRoute
   '/simulador': typeof SimuladorRoute
   '/transacoes': typeof TransacoesRoute
   '/api/public/hotmart': typeof ApiPublicHotmartRoute
@@ -131,6 +139,7 @@ export interface FileRoutesById {
   '/manual': typeof ManualRoute
   '/multiplicador': typeof MultiplicadorRoute
   '/orcamento': typeof OrcamentoRoute
+  '/privacidade': typeof PrivacidadeRoute
   '/simulador': typeof SimuladorRoute
   '/transacoes': typeof TransacoesRoute
   '/api/public/hotmart': typeof ApiPublicHotmartRoute
@@ -148,6 +157,7 @@ export interface FileRouteTypes {
     | '/manual'
     | '/multiplicador'
     | '/orcamento'
+    | '/privacidade'
     | '/simulador'
     | '/transacoes'
     | '/api/public/hotmart'
@@ -163,6 +173,7 @@ export interface FileRouteTypes {
     | '/manual'
     | '/multiplicador'
     | '/orcamento'
+    | '/privacidade'
     | '/simulador'
     | '/transacoes'
     | '/api/public/hotmart'
@@ -178,6 +189,7 @@ export interface FileRouteTypes {
     | '/manual'
     | '/multiplicador'
     | '/orcamento'
+    | '/privacidade'
     | '/simulador'
     | '/transacoes'
     | '/api/public/hotmart'
@@ -194,6 +206,7 @@ export interface RootRouteChildren {
   ManualRoute: typeof ManualRoute
   MultiplicadorRoute: typeof MultiplicadorRoute
   OrcamentoRoute: typeof OrcamentoRoute
+  PrivacidadeRoute: typeof PrivacidadeRoute
   SimuladorRoute: typeof SimuladorRoute
   TransacoesRoute: typeof TransacoesRoute
   ApiPublicHotmartRoute: typeof ApiPublicHotmartRoute
@@ -213,6 +226,13 @@ declare module '@tanstack/react-router' {
       path: '/simulador'
       fullPath: '/simulador'
       preLoaderRoute: typeof SimuladorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacidade': {
+      id: '/privacidade'
+      path: '/privacidade'
+      fullPath: '/privacidade'
+      preLoaderRoute: typeof PrivacidadeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/orcamento': {
@@ -306,6 +326,7 @@ const rootRouteChildren: RootRouteChildren = {
   ManualRoute: ManualRoute,
   MultiplicadorRoute: MultiplicadorRoute,
   OrcamentoRoute: OrcamentoRoute,
+  PrivacidadeRoute: PrivacidadeRoute,
   SimuladorRoute: SimuladorRoute,
   TransacoesRoute: TransacoesRoute,
   ApiPublicHotmartRoute: ApiPublicHotmartRoute,
@@ -313,13 +334,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
