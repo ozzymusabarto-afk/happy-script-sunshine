@@ -51,20 +51,23 @@ function AdminPage() {
   const checkAdmin = useServerFn(getIsAdmin);
   const listRows = useServerFn(listPremiumStatus);
   const savePremium = useServerFn(setPremiumForEmail);
+  const loadMetrics = useServerFn(getAdminMetrics);
 
   const [state, setState] = useState<"loading" | "denied" | "ok">("loading");
   const [rows, setRows] = useState<Row[]>([]);
+  const [metrics, setMetrics] = useState<AdminMetrics | null>(null);
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
 
   const refresh = useCallback(async () => {
     try {
-      const result = await listRows();
+      const [result, metricsResult] = await Promise.all([listRows(), loadMetrics()]);
       setRows(result.rows as Row[]);
+      setMetrics(metricsResult.metrics);
     } catch {
       toast.error("Não consegui carregar as assinaturas agora.");
     }
-  }, [listRows]);
+  }, [listRows, loadMetrics]);
 
   useEffect(() => {
     let alive = true;
