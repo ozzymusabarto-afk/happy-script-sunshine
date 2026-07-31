@@ -75,6 +75,9 @@ export function PremiumDialog({
   const confirmPayment = async () => {
     const result = await check();
     if (result.active) {
+      void logEvent({ data: { event: "premium_activated", meta: { cycle } } }).catch(
+        () => undefined,
+      );
       toast.success("Premium liberado! Suas novas ferramentas já estão disponíveis.");
       close(false);
       return;
