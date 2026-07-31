@@ -147,6 +147,37 @@ function AdminPage() {
         </p>
       </header>
 
+      {metrics && (
+        <section className="reveal-step space-y-3">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <Stat label="Contas criadas" value={metrics.accounts} hint={`+${metrics.accounts_new_7d} em 7 dias`} />
+            <Stat label="Premium ativos" value={metrics.premium_active} hint={`${metrics.premium_monthly} mensal · ${metrics.premium_yearly} anual`} />
+            <Stat
+              label="Gratuitas (estimativa)"
+              value={Math.max(0, metrics.accounts - metrics.premium_active)}
+              hint={`${metrics.premium_inactive} inativas/expiradas`}
+            />
+            <Stat label="Backups na nuvem" value={metrics.cloud_backups} hint="jornadas sincronizadas" />
+          </div>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <Stat label="Aberturas hoje" value={metrics.opens_today} hint={`${metrics.opens_7d} em 7 dias`} />
+            <Stat label="Aberturas 30 dias" value={metrics.opens_30d} hint="uso recorrente" />
+            <Stat label="Viram o Premium" value={metrics.premium_views} hint={`${metrics.checkout_clicks} foram ao checkout`} />
+            <Stat
+              label="Conversão"
+              value={
+                metrics.premium_views > 0
+                  ? `${Math.round((metrics.activations / metrics.premium_views) * 100)}%`
+                  : "—"
+              }
+              hint={`${metrics.activations} ativações`}
+            />
+          </div>
+        </section>
+      )}
+
+
+
       <Card className="reveal-step">
         <CardHeader>
           <CardTitle className="text-base">Liberar ou revogar Premium</CardTitle>
