@@ -39,10 +39,13 @@ export function PremiumDialog({
 
   useEffect(() => {
     if (!open) return;
+    void logEvent({ data: { event: "premium_view", meta: { highlight: highlight ?? "geral" } } }).catch(
+      () => undefined,
+    );
     void supabase.auth.getSession().then(({ data }) => {
       setEmail(data.session?.user.email ?? null);
     });
-  }, [open]);
+  }, [open, highlight]);
 
   const close = (v: boolean) => {
     onOpenChange(v);
@@ -61,6 +64,9 @@ export function PremiumDialog({
       toast.error("Não consegui montar o link de pagamento. Confira a URL da Hotmart.");
       return;
     }
+    void logEvent({ data: { event: "checkout_click", meta: { cycle, payment } } }).catch(
+      () => undefined,
+    );
     window.open(url, "_blank", "noopener,noreferrer");
     setWaiting(true);
   };
