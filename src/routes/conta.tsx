@@ -46,9 +46,11 @@ function AccountPage() {
   const [session, setSession] = useState<Session | null>(null);
   const [busy, setBusy] = useState(false);
   const [remoteAt, setRemoteAt] = useState<string | null>(null);
+  const [guardian, setGuardian] = useState(false);
   const importState = useAurinStore((s) => s.importState);
   const markBackup = useAurinStore((s) => s.markBackup);
   const lastBackupAt = useAurinStore((s) => s.lastBackupAt);
+  const readStatus = useServerFn(getPremiumStatus);
 
   const refreshRemote = useCallback(async (userId: string) => {
     const { data } = await supabase
@@ -71,6 +73,17 @@ function AccountPage() {
     return () => sub.subscription.unsubscribe();
   }, [refreshRemote]);
 
+  // Selo discreto do guardião: o servidor decide, o cliente só exibe.
+  useEffect(() => {
+    if (!session?.user) {
+      setGuardian(false);
+      return;
+    }
+    void readStatus()
+      .then((status) => setGuardian(status.plan === "admin"))
+      .catch(() => setGuardian(false));
+  }, [session, readStatus]);
+
   const signIn = async () => {
     setBusy(true);
     const result = await lovable.auth.signInWithOAuth("google", {
@@ -82,6 +95,7 @@ function AccountPage() {
       return;
     }
     if (result.redirected) return;
+    void logEvent({ data: { event: "signin" } }).catch(() => undefined);
     toast.success("Conta conectada. Sua jornada está protegida.");
   };
 
