@@ -6,7 +6,9 @@ import { InstallPrompt } from "@/components/install-prompt";
 import { LockScreen } from "@/components/lock-screen";
 import { PremiumButton, useIsPremium } from "@/components/premium-gate";
 import { OnboardingDialog } from "@/components/onboarding-dialog";
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
+
+import { useAdminShortcut } from "@/hooks/use-admin-shortcut";
 import {
   BookOpen,
   CloudUpload,
@@ -109,6 +111,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   );
 
   usePremiumAutoSync();
+
+  // Porta discreta do guardião: Ctrl+Shift+U.
+  const navigate = useNavigate();
+  useAdminShortcut(() => {
+    void navigate({ to: "/admin" });
+  });
 
   if (locked) return <LockScreen onUnlock={unlock} />;
 
