@@ -86,7 +86,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     void logEvent({ data: { event: "app_open" } }).catch(() => undefined);
   }, []);
 
-
   // Lançamentos fixos do mês entram sozinhos assim que o app abre.
   useEffect(() => {
     if (!hydrated) return;

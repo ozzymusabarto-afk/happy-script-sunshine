@@ -28,7 +28,8 @@ export const logEvent = createServerFn({ method: "POST" })
     const meta: Record<string, string | number | boolean> = {};
     for (const [key, value] of Object.entries(input.meta ?? {}).slice(0, 8)) {
       if (typeof value === "string") meta[key.slice(0, 40)] = value.slice(0, 80);
-      else if (typeof value === "number" || typeof value === "boolean") meta[key.slice(0, 40)] = value;
+      else if (typeof value === "number" || typeof value === "boolean")
+        meta[key.slice(0, 40)] = value;
     }
     return { event, meta };
   })

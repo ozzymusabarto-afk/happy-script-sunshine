@@ -40,9 +40,9 @@ export function PremiumDialog({
 
   useEffect(() => {
     if (!open) return;
-    void logEvent({ data: { event: "premium_view", meta: { highlight: highlight ?? "geral" } } }).catch(
-      () => undefined,
-    );
+    void logEvent({
+      data: { event: "premium_view", meta: { highlight: highlight ?? "geral" } },
+    }).catch(() => undefined);
     void supabase.auth.getSession().then(({ data }) => {
       setEmail(data.session?.user.email ?? null);
     });
