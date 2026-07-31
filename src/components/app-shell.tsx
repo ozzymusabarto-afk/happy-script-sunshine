@@ -80,6 +80,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     registerServiceWorker();
   }, []);
 
+  // Registro leve de abertura do app (sem nenhum dado financeiro).
+  useEffect(() => {
+    void logEvent({ data: { event: "app_open" } }).catch(() => undefined);
+  }, []);
+
+
   // Lançamentos fixos do mês entram sozinhos assim que o app abre.
   useEffect(() => {
     if (!hydrated) return;
