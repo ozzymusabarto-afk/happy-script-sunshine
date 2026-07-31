@@ -33,6 +33,7 @@ import { TransactionDialog } from "@/components/transaction-dialog";
 import { useAurinHydrated } from "@/hooks/use-aurin-hydrated";
 import { useAppLock, useMorningReminder } from "@/hooks/use-aurin-guard";
 import { usePremiumAutoSync } from "@/hooks/use-premium-sync";
+import { logEvent } from "@/lib/analytics.functions";
 import { brl, levelFor, TREASURY_GOAL_ID } from "@/lib/aurin";
 import { registerServiceWorker } from "@/lib/register-sw";
 import { SymbolBadge, userSymbol } from "@/lib/symbols";
