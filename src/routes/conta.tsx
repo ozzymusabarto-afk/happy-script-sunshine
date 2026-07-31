@@ -192,7 +192,14 @@ function AccountPage() {
                 <p className="text-xs text-muted-foreground">
                   Última cópia na nuvem: {fmt(remoteAt)} · Último backup local: {fmt(lastBackupAt)}
                 </p>
+                {guardian && (
+                  <p className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/10 px-3 py-1 text-[11px] font-semibold text-primary">
+                    <ShieldCheck className="h-3.5 w-3.5" /> Modo Guardião — acesso completo para
+                    testes
+                  </p>
+                )}
               </div>
+
 
               <div className="flex flex-wrap gap-2">
                 <Button
