@@ -7,7 +7,13 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { getIsAdmin, listPremiumStatus, setPremiumForEmail } from "@/lib/admin.functions";
+import {
+  getAdminMetrics,
+  getIsAdmin,
+  listPremiumStatus,
+  setPremiumForEmail,
+  type AdminMetrics,
+} from "@/lib/admin.functions";
 
 export const Route = createFileRoute("/admin")({
   ssr: false,
