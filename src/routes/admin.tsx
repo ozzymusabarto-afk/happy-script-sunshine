@@ -46,6 +46,24 @@ type Row = {
   updated_at: string;
 };
 
+function Stat({
+  label,
+  value,
+  hint,
+}: {
+  label: string;
+  value: number | string;
+  hint?: string;
+}) {
+  return (
+    <div className="rounded-xl border border-border bg-card p-3">
+      <p className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</p>
+      <p className="mt-1 font-display text-xl font-bold text-gold">{value}</p>
+      {hint && <p className="mt-0.5 text-[11px] text-muted-foreground">{hint}</p>}
+    </div>
+  );
+}
+
 function AdminPage() {
   const navigate = useNavigate();
   const checkAdmin = useServerFn(getIsAdmin);
