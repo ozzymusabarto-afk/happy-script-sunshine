@@ -110,6 +110,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   usePremiumAutoSync();
 
+  // Porta discreta do guardião: Ctrl+Shift+U.
+  const navigate = useNavigate();
+  useAdminShortcut(() => {
+    void navigate({ to: "/admin" });
+  });
+
   if (locked) return <LockScreen onUnlock={unlock} />;
 
   return (
