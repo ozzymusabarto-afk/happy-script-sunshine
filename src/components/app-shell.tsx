@@ -188,7 +188,20 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <CloudUpload className="h-4 w-4 shrink-0" />
               <span className="truncate">Minha conta</span>
             </Link>
+            <Link
+              to="/privacidade"
+              className={cn(
+                "flex items-center gap-3 rounded-lg px-3 py-2 text-xs font-medium transition-colors",
+                pathname.startsWith("/privacidade")
+                  ? "text-primary"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              <ShieldCheck className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate">Privacidade e termos</span>
+            </Link>
           </nav>
+
 
           <div className="mt-auto space-y-3">
             {premium ? (
