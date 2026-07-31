@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { lovable } from "@/integrations/lovable/index";
 import { supabase } from "@/integrations/supabase/client";
+import { logEvent } from "@/lib/analytics.functions";
+import { getPremiumStatus } from "@/lib/premium.functions";
 import { useAurinStore } from "@/store/aurin-store";
 
 export const Route = createFileRoute("/conta")({
