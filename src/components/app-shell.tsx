@@ -33,6 +33,7 @@ import { TransactionDialog } from "@/components/transaction-dialog";
 import { useAurinHydrated } from "@/hooks/use-aurin-hydrated";
 import { useAppLock, useMorningReminder } from "@/hooks/use-aurin-guard";
 import { usePremiumAutoSync } from "@/hooks/use-premium-sync";
+import { logEvent } from "@/lib/analytics.functions";
 import { brl, levelFor, TREASURY_GOAL_ID } from "@/lib/aurin";
 import { registerServiceWorker } from "@/lib/register-sw";
 import { SymbolBadge, userSymbol } from "@/lib/symbols";
@@ -78,6 +79,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   // Modo offline: só registra no app publicado, nunca no editor.
   useEffect(() => {
     registerServiceWorker();
+  }, []);
+
+  // Registro leve de abertura do app (sem nenhum dado financeiro).
+  useEffect(() => {
+    void logEvent({ data: { event: "app_open" } }).catch(() => undefined);
   }, []);
 
   // Lançamentos fixos do mês entram sozinhos assim que o app abre.

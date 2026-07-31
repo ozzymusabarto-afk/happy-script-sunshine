@@ -29,6 +29,33 @@ export type Database = {
         }
         Relationships: []
       }
+      app_events: {
+        Row: {
+          created_at: string
+          email: string | null
+          event: string
+          id: string
+          meta: Json
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          event: string
+          id?: string
+          meta?: Json
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          event?: string
+          id?: string
+          meta?: Json
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       aurin_backups: {
         Row: {
           created_at: string
@@ -115,6 +142,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_metrics: { Args: never; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

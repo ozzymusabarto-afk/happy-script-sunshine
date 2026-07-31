@@ -16,6 +16,35 @@ export const getIsAdmin = createServerFn({ method: "GET" })
     return { admin: Boolean(data) };
   });
 
+export type AdminMetrics = {
+  accounts: number;
+  accounts_new_7d: number;
+  accounts_new_30d: number;
+  cloud_backups: number;
+  premium_active: number;
+  premium_inactive: number;
+  premium_monthly: number;
+  premium_yearly: number;
+  opens_today: number;
+  opens_7d: number;
+  opens_30d: number;
+  premium_views: number;
+  checkout_clicks: number;
+  activations: number;
+};
+
+/** Números do app para o painel do guardião. A própria função no banco valida o papel. */
+export const getAdminMetrics = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data, error } = await context.supabase.rpc("admin_metrics");
+    if (error) {
+      console.error("[admin] leitura de métricas falhou");
+      throw new Error("Não consegui ler os números agora.");
+    }
+    return { metrics: data as unknown as AdminMetrics };
+  });
+
 /** Lista os últimos registros de assinatura. Só administradores conseguem ler. */
 export const listPremiumStatus = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])

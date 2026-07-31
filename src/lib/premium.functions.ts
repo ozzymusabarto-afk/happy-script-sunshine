@@ -17,6 +17,14 @@ export const getPremiumStatus = createServerFn({ method: "GET" })
     const claims = context.claims as { email?: string } | undefined;
     const email = claims?.email?.trim().toLowerCase() ?? null;
 
+    // Guardião do app: acesso completo para testar tudo, decidido no servidor.
+    const { data: admin } = await context.supabase.rpc("is_admin", {
+      _user_id: context.userId,
+    });
+    if (admin) {
+      return { active: true as const, plan: "admin", expiresAt: null };
+    }
+
     const byUser = await context.supabase
       .from("premium_status")
       .select("active, plan, expires_at")

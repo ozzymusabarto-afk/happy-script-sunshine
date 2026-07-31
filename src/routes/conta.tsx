@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import type { Session } from "@supabase/supabase-js";
 import { CloudDownload, CloudUpload, LogOut, RefreshCw, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
@@ -8,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { lovable } from "@/integrations/lovable/index";
 import { supabase } from "@/integrations/supabase/client";
+import { logEvent } from "@/lib/analytics.functions";
+import { getPremiumStatus } from "@/lib/premium.functions";
 import { useAurinStore } from "@/store/aurin-store";
 
 export const Route = createFileRoute("/conta")({
@@ -46,9 +49,11 @@ function AccountPage() {
   const [session, setSession] = useState<Session | null>(null);
   const [busy, setBusy] = useState(false);
   const [remoteAt, setRemoteAt] = useState<string | null>(null);
+  const [guardian, setGuardian] = useState(false);
   const importState = useAurinStore((s) => s.importState);
   const markBackup = useAurinStore((s) => s.markBackup);
   const lastBackupAt = useAurinStore((s) => s.lastBackupAt);
+  const readStatus = useServerFn(getPremiumStatus);
 
   const refreshRemote = useCallback(async (userId: string) => {
     const { data } = await supabase
@@ -71,6 +76,17 @@ function AccountPage() {
     return () => sub.subscription.unsubscribe();
   }, [refreshRemote]);
 
+  // Selo discreto do guardião: o servidor decide, o cliente só exibe.
+  useEffect(() => {
+    if (!session?.user) {
+      setGuardian(false);
+      return;
+    }
+    void readStatus()
+      .then((status) => setGuardian(status.plan === "admin"))
+      .catch(() => setGuardian(false));
+  }, [session, readStatus]);
+
   const signIn = async () => {
     setBusy(true);
     const result = await lovable.auth.signInWithOAuth("google", {
@@ -82,6 +98,7 @@ function AccountPage() {
       return;
     }
     if (result.redirected) return;
+    void logEvent({ data: { event: "signin" } }).catch(() => undefined);
     toast.success("Conta conectada. Sua jornada está protegida.");
   };
 
@@ -175,6 +192,12 @@ function AccountPage() {
                 <p className="text-xs text-muted-foreground">
                   Última cópia na nuvem: {fmt(remoteAt)} · Último backup local: {fmt(lastBackupAt)}
                 </p>
+                {guardian && (
+                  <p className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/10 px-3 py-1 text-[11px] font-semibold text-primary">
+                    <ShieldCheck className="h-3.5 w-3.5" /> Modo Guardião — acesso completo para
+                    testes
+                  </p>
+                )}
               </div>
 
               <div className="flex flex-wrap gap-2">

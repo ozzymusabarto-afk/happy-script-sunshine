@@ -7,7 +7,13 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { getIsAdmin, listPremiumStatus, setPremiumForEmail } from "@/lib/admin.functions";
+import {
+  getAdminMetrics,
+  getIsAdmin,
+  listPremiumStatus,
+  setPremiumForEmail,
+  type AdminMetrics,
+} from "@/lib/admin.functions";
 
 export const Route = createFileRoute("/admin")({
   ssr: false,
@@ -40,25 +46,38 @@ type Row = {
   updated_at: string;
 };
 
+function Stat({ label, value, hint }: { label: string; value: number | string; hint?: string }) {
+  return (
+    <div className="rounded-xl border border-border bg-card p-3">
+      <p className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</p>
+      <p className="mt-1 font-display text-xl font-bold text-gold">{value}</p>
+      {hint && <p className="mt-0.5 text-[11px] text-muted-foreground">{hint}</p>}
+    </div>
+  );
+}
+
 function AdminPage() {
   const navigate = useNavigate();
   const checkAdmin = useServerFn(getIsAdmin);
   const listRows = useServerFn(listPremiumStatus);
   const savePremium = useServerFn(setPremiumForEmail);
+  const loadMetrics = useServerFn(getAdminMetrics);
 
   const [state, setState] = useState<"loading" | "denied" | "ok">("loading");
   const [rows, setRows] = useState<Row[]>([]);
+  const [metrics, setMetrics] = useState<AdminMetrics | null>(null);
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
 
   const refresh = useCallback(async () => {
     try {
-      const result = await listRows();
+      const [result, metricsResult] = await Promise.all([listRows(), loadMetrics()]);
       setRows(result.rows as Row[]);
+      setMetrics(metricsResult.metrics);
     } catch {
       toast.error("Não consegui carregar as assinaturas agora.");
     }
-  }, [listRows]);
+  }, [listRows, loadMetrics]);
 
   useEffect(() => {
     let alive = true;
@@ -138,12 +157,61 @@ function AdminPage() {
         </p>
       </header>
 
+      {metrics && (
+        <section className="reveal-step space-y-3">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <Stat
+              label="Contas criadas"
+              value={metrics.accounts}
+              hint={`+${metrics.accounts_new_7d} em 7 dias`}
+            />
+            <Stat
+              label="Premium ativos"
+              value={metrics.premium_active}
+              hint={`${metrics.premium_monthly} mensal · ${metrics.premium_yearly} anual`}
+            />
+            <Stat
+              label="Gratuitas (estimativa)"
+              value={Math.max(0, metrics.accounts - metrics.premium_active)}
+              hint={`${metrics.premium_inactive} inativas/expiradas`}
+            />
+            <Stat
+              label="Backups na nuvem"
+              value={metrics.cloud_backups}
+              hint="jornadas sincronizadas"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <Stat
+              label="Aberturas hoje"
+              value={metrics.opens_today}
+              hint={`${metrics.opens_7d} em 7 dias`}
+            />
+            <Stat label="Aberturas 30 dias" value={metrics.opens_30d} hint="uso recorrente" />
+            <Stat
+              label="Viram o Premium"
+              value={metrics.premium_views}
+              hint={`${metrics.checkout_clicks} foram ao checkout`}
+            />
+            <Stat
+              label="Conversão"
+              value={
+                metrics.premium_views > 0
+                  ? `${Math.round((metrics.activations / metrics.premium_views) * 100)}%`
+                  : "—"
+              }
+              hint={`${metrics.activations} ativações`}
+            />
+          </div>
+        </section>
+      )}
+
       <Card className="reveal-step">
         <CardHeader>
           <CardTitle className="text-base">Liberar ou revogar Premium</CardTitle>
           <CardDescription>
-            Use o mesmo e-mail com que a pessoa entra no AURIN. A mudança vale na próxima abertura do
-            app dela.
+            Use o mesmo e-mail com que a pessoa entra no AURIN. A mudança vale na próxima abertura
+            do app dela.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
