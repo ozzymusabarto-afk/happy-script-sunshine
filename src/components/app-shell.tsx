@@ -22,6 +22,7 @@ import {
   Plus,
   ScrollText,
   Settings,
+  ShieldCheck,
   Sparkles,
   TrendingUp,
 } from "lucide-react";
