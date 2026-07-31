@@ -16,7 +16,11 @@ export function usePremiumSync() {
     setChecking(true);
     try {
       const { data } = await supabase.auth.getSession();
-      if (!data.session) return { signedIn: false, active: false };
+      if (!data.session) {
+        // Sem sessão não existe compra reconhecida: o cache local volta ao gratuito.
+        setPlan("free");
+        return { signedIn: false, active: false };
+      }
       // O servidor é a fonte de verdade; o plano local é só cache de interface.
       const status = await getPremiumStatus();
       setPlan(status.active ? "premium" : "free");
