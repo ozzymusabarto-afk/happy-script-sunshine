@@ -13,6 +13,7 @@ import {
   Trophy,
 } from "lucide-react";
 import { toast } from "sonner";
+import { PremiumButton } from "@/components/premium-gate";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -189,6 +190,12 @@ function JourneyPage() {
           })}
         </CardContent>
       </Card>
+
+        <Card>
+          <CardContent className="pt-6">
+            <PremiumButton label="Seja Premium e acelere" feature="Jornada Ilimitada" />
+          </CardContent>
+        </Card>
 
       <Card>
         <CardHeader>
