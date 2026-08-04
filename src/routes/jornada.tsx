@@ -190,6 +190,13 @@ function JourneyPage() {
         </CardContent>
       </Card>
 
+        <Card>
+          <CardContent className="pt-6">
+            <PremiumButton label="Seja Premium e acelere" feature="Jornada Ilimitada" />
+          </CardContent>
+        </Card>
+      </Card>
+
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Trilha dos títulos</CardTitle>
