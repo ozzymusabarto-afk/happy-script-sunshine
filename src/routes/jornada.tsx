@@ -195,7 +195,6 @@ function JourneyPage() {
             <PremiumButton label="Seja Premium e acelere" feature="Jornada Ilimitada" />
           </CardContent>
         </Card>
-      </Card>
 
       <Card>
         <CardHeader>
