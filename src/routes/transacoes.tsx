@@ -85,7 +85,7 @@ function TransactionsPage() {
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="font-display text-2xl font-extrabold sm:text-3xl">Registro das Moedas</h1>
+        <h1 className="font-display text-2xl font-extrabold sm:text-3xl">Moedas (gastos e entradas)</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Cada moeda anotada é uma moeda sob controle. {filtered.length} registro(s) encontrados.
         </p>
@@ -109,8 +109,8 @@ function TransactionsPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value={ALL}>Todos os tipos</SelectItem>
-              <SelectItem value="entrada">Ouro Entrada</SelectItem>
-              <SelectItem value="saida">Ouro Saída</SelectItem>
+              <SelectItem value="entrada">Entradas (receitas)</SelectItem>
+              <SelectItem value="saida">Saídas (gastos)</SelectItem>
             </SelectContent>
           </Select>
           <Select value={category} onValueChange={setCategory}>

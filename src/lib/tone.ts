@@ -50,7 +50,8 @@ function dayIndex(date: Date, size: number) {
 }
 
 /** Frase de clareza do dia, sensível ao horário. */
-export function dailyLine(date = new Date()) {
+export function dailyLine(date = new Date(), hasActivity = true) {
+  if (!hasActivity) return "Sua jornada começa com um passo: crie seu primeiro cofre.";
   const evening = date.getHours() >= 18 || date.getHours() < 5;
   const pool = evening ? EVENING_LINES : MORNING_LINES;
   return pool[dayIndex(date, pool.length)];
@@ -58,17 +59,17 @@ export function dailyLine(date = new Date()) {
 
 /** Rótulos acolhedores usados no lugar dos termos frios. */
 export const LABELS = {
-  debts: "Resgate de Paz",
+  debts: "Resgate de Paz (dívidas)",
   debtsShort: "Paz",
   balance: "O que já é seu",
-  expense: "Escolhas do mês",
+  expense: "Escolhas do mês (gastos)",
   income: "Entrou este mês",
   budget: "Seu ritmo do mês",
 } as const;
 
 /**
- * Vocabulário oficial do AURIN. Nenhuma tela deve usar as palavras antigas
- * ("dívida", "débito", "juros", "quitação"): tudo vira jornada e conquista.
+ * Vocabulário temático do AURIN, acompanhado de termos financeiros simples
+ * quando necessário para dar clareza ao primeiro uso.
  */
 export const WORDS = {
   rescue: "Resgate de Paz",
@@ -275,5 +276,5 @@ export function mentorPraise(opts: {
     days >= 1
       ? `${Math.round(days)} dia${Math.round(days) === 1 ? "" : "s"} de liberdade`
       : "algumas horas de liberdade";
-  return `${pick(openings, seed)} ${money(amount)} guardados hoje compraram ${dayText} e viram ${money(future)} em dez anos.`;
+  return `${pick(openings, seed)} ${money(amount)} guardados hoje representam ${dayText} e poderiam chegar a ${money(future)} em dez anos, nesta simulação.`;
 }
