@@ -13,6 +13,7 @@ import {
 import { openGuidedTour } from "@/components/guided-tour";
 import { FreedomMeter, JourneyTrail, VaultJar } from "@/components/journey-visuals";
 import { MorningRitual } from "@/components/morning-ritual";
+import { useLocalNow } from "@/hooks/use-local-now";
 import { QuickAdd } from "@/components/quick-add";
 import { LABELS, TONE_BG, TONE_LABEL, TONE_TEXT, pillarTone } from "@/lib/tone";
 import { monthsOfFreedom } from "@/lib/impact";
@@ -54,6 +55,7 @@ export const Route = createFileRoute("/")({
 });
 
 function Dashboard() {
+  const now = useLocalNow();
   const transactions = useAurinStore((s) => s.transactions);
   const goals = useAurinStore((s) => s.goals);
   const assets = useAurinStore((s) => s.assets);
@@ -129,7 +131,7 @@ function Dashboard() {
   const monthlyPace = month.tithe > 0 ? month.tithe : month.income * 0.1;
   const titheTarget = month.income * 0.1;
   const tithePercent = titheTarget > 0 ? Math.min(100, (month.tithe / titheTarget) * 100) : 0;
-  const quote = quoteOfTheDay();
+  const quote = now ? quoteOfTheDay(now) : null;
 
   return (
     <div className="space-y-6">
@@ -336,7 +338,7 @@ function Dashboard() {
             <p className="text-xs uppercase tracking-wide text-muted-foreground">
               Sabedoria do dia
             </p>
-            <p className="mt-1 font-display text-lg leading-snug">"{quote}"</p>
+            <p className="mt-1 font-display text-lg leading-snug">{quote ? `“${quote}”` : "Sabedoria para sua jornada."}</p>
             <p className="mt-1 text-xs text-muted-foreground">— Sabedoria da Babilônia</p>
           </div>
         </CardContent>

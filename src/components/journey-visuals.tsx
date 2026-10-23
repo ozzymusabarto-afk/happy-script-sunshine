@@ -31,7 +31,7 @@ export function JourneyTrail({ stops }: { stops: TrailStop[] }) {
         </p>
         <Badge variant="outline" className="border-primary/40 text-primary">
           <Trophy className="mr-1 h-3 w-3" />
-          Sequência viva
+          {wins > 0 ? "Sequência viva" : "Comece sua sequência"}
         </Badge>
       </div>
 
@@ -138,7 +138,9 @@ export function VaultJar({ item, delay = 0 }: { item: VaultItem; delay?: number 
             <GoldCounter value={item.balance} />
           </p>
           <p className="mt-0.5 truncate text-xs text-muted-foreground">
-            {done
+            {item.target <= 0
+              ? "Defina uma meta para acompanhar seu progresso."
+              : done
               ? "Sonho conquistado!"
               : (item.hint ?? `Faltam ${brl(Math.max(0, item.target - item.balance))}`)}
           </p>
@@ -198,7 +200,7 @@ export function FreedomMeter({ months, wealth }: { months: number; wealth: numbe
             Liberdade acumulada
           </p>
           <p className="font-display text-xl font-bold text-gold">
-            {months.toFixed(1)} meses sem trabalhar
+            {months.toFixed(1)} meses estimados
           </p>
         </div>
       </div>
