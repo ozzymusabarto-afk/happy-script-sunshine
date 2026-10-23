@@ -3,6 +3,9 @@ import { Link } from "@tanstack/react-router";
 import { ArrowRight, HandCoins, Sparkles, Sunrise, Target } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { SimulationNotice } from "@/components/simulation-notice";
+import { useLocalNow } from "@/hooks/use-local-now";
 import { brl, TREASURY_GOAL_ID, type Goal } from "@/lib/aurin";
 import { futureValue, monthsOfFreedom } from "@/lib/impact";
 import { goalIcon, inferGoalIcon, SymbolBadge, userSymbol } from "@/lib/symbols";
@@ -18,6 +21,7 @@ interface Props {
   titheGap: number;
   debtRemaining: number;
   monthlyPace: number;
+  hasActivity: boolean;
 }
 
 /**
@@ -32,7 +36,9 @@ export function MorningRitual({
   titheGap,
   debtRemaining,
   monthlyPace,
+  hasActivity,
 }: Props) {
+  const now = useLocalNow();
   const profileName = useAurinStore((s) => s.profile.name);
   const profileSymbol = useAurinStore((s) => s.profile.symbol);
   const dreams = useMemo(
@@ -49,6 +55,15 @@ export function MorningRitual({
   const future = futureValue(wealth, 10);
 
   const nextStep = useMemo(() => {
+    if (dreams.length === 0) {
+      return {
+        icon: <Target className="h-4 w-4" />,
+        title: "Crie seu primeiro cofre",
+        detail: "Escolha um sonho e defina quanto quer guardar. Você pode começar com saldo zero.",
+        to: "/multiplicador" as const,
+        cta: "Criar cofre",
+      };
+    }
     if (!titheDone && titheGap > 0) {
       return {
         icon: <Sparkles className="h-4 w-4" />,
@@ -106,7 +121,7 @@ export function MorningRitual({
       <div className="relative">
         <div className="reveal-step flex items-center gap-2 text-xs uppercase tracking-[0.22em] text-primary">
           <Sunrise className="h-3.5 w-3.5" />
-          {greeting()}
+          {now ? greeting(now) : "Boas-vindas"}
           {profileName && (
             <span className="flex items-center gap-1.5 normal-case tracking-normal text-foreground">
               <SymbolBadge symbol={userSymbol(profileSymbol)} size="sm" />
@@ -119,13 +134,13 @@ export function MorningRitual({
           className="reveal-step mt-3 max-w-2xl font-display text-2xl font-extrabold leading-tight sm:text-3xl"
           style={{ animationDelay: "0.06s" }}
         >
-          {dailyLine()}
+          {now ? dailyLine(now, hasActivity) : "Um passo de cada vez na sua jornada."}
         </h1>
         <p
           className="reveal-step mt-2 text-sm text-muted-foreground"
           style={{ animationDelay: "0.1s" }}
         >
-          {longDate()}
+          {now ? longDate(now) : "Seu tempo, seu ritmo."}
         </p>
 
         <div
@@ -143,20 +158,22 @@ export function MorningRitual({
             highlight
           />
           <FutureTile
-            label="Em 10 anos isso vira"
+            label="Projeção em 10 anos"
             value={brl(future)}
-            hint="Se o que já é seu apenas continuar rendendo."
+            hint="Valor estimado com uma taxa hipotética."
           />
           <FutureTile
-            label="Tranquilidade garantida"
+            label="Reserva (tempo estimado)"
             value={
               freedomMonths >= 12
                 ? `${(freedomMonths / 12).toFixed(1)} anos`
                 : `${Math.max(0, freedomMonths).toFixed(1)} meses`
             }
-            hint="Tempo que você viveria sem depender de mais nada."
+            hint="Estimativa baseada nos gastos registrados; sem histórico, usa R$ 50 por dia como referência."
           />
         </div>
+
+        <SimulationNotice />
 
         <div
           className="reveal-step mt-4 grid gap-4 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]"
@@ -170,7 +187,9 @@ export function MorningRitual({
               <div className="mt-4 space-y-4">
                 {focus.length === 0 && (
                   <p className="text-sm text-muted-foreground">
-                    Todos os sonhos atuais já estão completos. Que tal sonhar mais alto?
+                    {dreams.length === 0
+                      ? "Você ainda não criou um cofre de sonho. Escolha seu primeiro objetivo."
+                      : "Todos os sonhos atuais já estão completos. Que tal sonhar mais alto?"}
                   </p>
                 )}
                 {focus.map((g) => {
@@ -225,13 +244,12 @@ export function MorningRitual({
                   <p className="mt-1 text-sm text-muted-foreground">{nextStep.detail}</p>
                 </div>
               </div>
-              <Link
-                to={nextStep.to}
-                className="mt-5 inline-flex w-fit items-center gap-2 rounded-full border border-primary/40 px-4 py-2 text-sm font-medium text-primary transition-all duration-200 hover:bg-primary/10 hover:shadow-gold"
-              >
+              <Button asChild variant="outline" className="mt-5 w-fit border-primary/40 text-primary">
+                <Link to={nextStep.to}>
                 {nextStep.cta}
                 <ArrowRight className="h-3.5 w-3.5" />
-              </Link>
+                </Link>
+              </Button>
               <p className="mt-auto pt-5 text-xs text-muted-foreground">
                 O que já é seu: <span className="font-semibold text-foreground">{brl(wealth)}</span>
               </p>

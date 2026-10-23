@@ -8,3 +8,7 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Render visitor-local clock values through `useLocalNow` after hydration; SSR cannot know the visitor timezone and must use a neutral placeholder.
+- Reuse `SimulationNotice` beside investment projections so assumptions and educational limitations remain consistent.
+- Keep primary navigation in AppShell and put secondary destinations in its shared More menu so desktop and mobile offer the same pages.

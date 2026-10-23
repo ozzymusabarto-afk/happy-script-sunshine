@@ -3,6 +3,7 @@ import { Coins, Flame, Quote, Sparkles, Unlink } from "lucide-react";
 
 import { GoldCounter, usePrefersReducedMotion } from "@/components/gold-counter";
 import { Badge } from "@/components/ui/badge";
+import { SimulationNotice } from "@/components/simulation-notice";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
@@ -128,12 +129,12 @@ export function ImpactModal() {
                 show={step >= 1}
                 delay={0}
                 icon={<Coins className="h-4 w-4" />}
-                label={isDebt ? "Juros que você deixou de pagar" : "Em 10 anos isso vira"}
+                label={isDebt ? "Economia hipotética de juros" : "Projeção em 10 anos"}
                 value={brl(isDebt ? amount * 0.4 : in10)}
                 hint={
                   isDebt
-                    ? "Cada real pago hoje mata juros de amanhã."
-                    : `Crescimento de ${brl(in10 - amount)} sem você mover um dedo.`
+                    ? "Exemplo ilustrativo de 40% do pagamento, não calculado pela taxa da sua dívida."
+                    : `Crescimento hipotético de ${brl(in10 - amount)}.`
                 }
               />
               <ImpactCard
@@ -178,6 +179,8 @@ export function ImpactModal() {
                 />
               )}
             </div>
+
+            <SimulationNotice />
 
             <div
               className={cn(

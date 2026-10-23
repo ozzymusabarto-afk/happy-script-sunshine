@@ -11,6 +11,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { PremiumDialog } from "@/components/premium-dialog";
+import { SimulationNotice } from "@/components/simulation-notice";
 import { useIsPremium } from "@/components/premium-gate";
 import { FREE_LIMITS } from "@/lib/plan";
 import { toast } from "sonner";
@@ -106,7 +107,7 @@ function MultiplierPage() {
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="font-display text-2xl font-extrabold sm:text-3xl">Multiplicador de Ouro</h1>
+        <h1 className="font-display text-2xl font-extrabold sm:text-3xl">Multiplicador de Ouro (cofres e investimentos)</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           "Faça de cada moeda um trabalhador que gera filhos para você."
         </p>
@@ -115,7 +116,7 @@ function MultiplierPage() {
       <div className="grid gap-3 sm:grid-cols-3">
         <Card className="border-primary/30">
           <CardContent className="pt-6">
-            <p className="text-xs uppercase tracking-wide text-muted-foreground">Ouro em cofres</p>
+            <p className="text-xs uppercase tracking-wide text-muted-foreground">Ouro em cofres (dinheiro guardado)</p>
             <p className="mt-1 font-display text-xl font-bold text-gold">
               {brl(goals.reduce((s, g) => s + g.balance, 0))}
             </p>
@@ -379,13 +380,14 @@ function CompoundSimulator() {
 
           <div className="rounded-xl border border-primary/30 bg-primary/10 p-4">
             <p className="text-xs uppercase tracking-wide text-muted-foreground">
-              Tesouro em {years} anos
+              Tesouro estimado em {years} anos
             </p>
             <p className="mt-1 font-display text-2xl font-extrabold text-gold">{brl(last.total)}</p>
             <p className="mt-2 text-xs text-muted-foreground">
               Aportes: {brl(last.aportes)} · Moedas do Futuro:{" "}
               <span className="font-semibold text-success">{brl(last.juros)}</span>
             </p>
+            <SimulationNotice customRate />
           </div>
         </div>
 

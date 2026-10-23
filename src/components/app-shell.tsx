@@ -20,6 +20,7 @@ import {
   Landmark,
   LayoutDashboard,
   Plus,
+  MoreHorizontal,
   ScrollText,
   Settings,
   ShieldCheck,
@@ -30,6 +31,7 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuLabel } from "@/components/ui/dropdown-menu";
 import { TransactionDialog } from "@/components/transaction-dialog";
 import { useAurinHydrated } from "@/hooks/use-aurin-hydrated";
 import { useAppLock, useMorningReminder } from "@/hooks/use-aurin-guard";
@@ -42,16 +44,67 @@ import { cn } from "@/lib/utils";
 import { currentMonthKey, monthTotals, totalWealth, useAurinStore } from "@/store/aurin-store";
 
 const NAV = [
-  { to: "/", label: "Templo", icon: LayoutDashboard },
-  { to: "/transacoes", label: "Moedas", icon: ScrollText },
-  { to: "/orcamento", label: "Meu ritmo", short: "Ritmo", icon: Coins },
+  { to: "/", label: "Início", icon: LayoutDashboard },
+  { to: "/transacoes", label: "Gastos", icon: ScrollText },
+  { to: "/orcamento", label: "Ritmo", icon: Coins },
   { to: "/cartoes", label: "Cartões", icon: CreditCard },
-  { to: "/libertacao", label: "Resgate de Paz", short: "Paz", icon: HandCoins },
-  { to: "/simulador", label: "Simulador", short: "Simular", icon: Compass },
-  { to: "/multiplicador", label: "Multiplicador", short: "Multipl.", icon: TrendingUp },
   { to: "/jornada", label: "Jornada", icon: Sparkles },
-  { to: "/manual", label: "Guia do AURIN", short: "Guia", icon: BookOpen },
 ] as const;
+
+const MORE_NAV = [
+  { to: "/libertacao", label: "Resgate de Paz (dívidas)", icon: HandCoins },
+  { to: "/simulador", label: "Simulador de Decisões", icon: Compass },
+  { to: "/multiplicador", label: "Multiplicador (cofres)", icon: TrendingUp },
+  { to: "/manual", label: "Guia do AURIN", icon: BookOpen },
+  { to: "/ajustes", label: "Meus dados", icon: Settings },
+  { to: "/conta", label: "Minha conta", icon: CloudUpload },
+  { to: "/privacidade", label: "Privacidade e termos", icon: ShieldCheck },
+] as const;
+
+function PlanSummary() {
+  const premium = useIsPremium();
+  return premium ? (
+    <p className="flex items-center gap-2 text-xs font-semibold text-primary">
+      <Crown className="h-3.5 w-3.5" /> Premium ativo
+    </p>
+  ) : (
+    <div className="space-y-2">
+      <p className="text-xs font-semibold">Você está no plano grátis</p>
+      <p className="text-xs leading-relaxed text-muted-foreground">
+        Gastos, ritmo, cartões, 1 cofre de sonho e 1 dívida ativa são grátis.
+        Premium: Simulador de Decisões e cofres e dívidas ilimitados.
+      </p>
+      <PremiumButton className="w-full justify-center" label="Seja Premium · Ver planos" />
+    </div>
+  );
+}
+
+function MoreMenu({ mobile = false, active = false }: { mobile?: boolean; active?: boolean }) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" aria-label="Mais" className={cn(
+          mobile
+            ? "h-auto min-w-0 flex-1 flex-col gap-1 rounded-none px-1 py-2.5 text-[10px]"
+            : "w-full justify-start gap-3 px-3 py-2.5 text-sm",
+          active ? "text-primary" : "text-muted-foreground",
+        )}>
+          <MoreHorizontal className="h-4 w-4 shrink-0" /> Mais
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent side={mobile ? "top" : "right"} align="end" className="w-72 max-w-[calc(100vw-2rem)]">
+        <DropdownMenuLabel>Mais no AURIN</DropdownMenuLabel>
+        {MORE_NAV.map((item) => (
+          <DropdownMenuItem asChild key={item.to}>
+            <Link to={item.to} className="py-2.5"><item.icon className="h-4 w-4" />{item.label}</Link>
+          </DropdownMenuItem>
+        ))}
+        <DropdownMenuSeparator />
+        <div className="p-3"><PlanSummary /></div>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
@@ -165,55 +218,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 </Link>
               );
             })}
-            <Link
-              to="/ajustes"
-              className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
-                pathname.startsWith("/ajustes")
-                  ? "bg-primary/15 text-primary"
-                  : "text-muted-foreground hover:bg-sidebar-accent hover:text-foreground",
-              )}
-            >
-              <Settings className="h-4 w-4 shrink-0" />
-              <span className="truncate">Meus dados</span>
-            </Link>
-            <Link
-              to="/conta"
-              className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
-                pathname.startsWith("/conta")
-                  ? "bg-primary/15 text-primary"
-                  : "text-muted-foreground hover:bg-sidebar-accent hover:text-foreground",
-              )}
-            >
-              <CloudUpload className="h-4 w-4 shrink-0" />
-              <span className="truncate">Minha conta</span>
-            </Link>
-            <Link
-              to="/privacidade"
-              className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2 text-xs font-medium transition-colors",
-                pathname.startsWith("/privacidade")
-                  ? "text-primary"
-                  : "text-muted-foreground hover:text-foreground",
-              )}
-            >
-              <ShieldCheck className="h-3.5 w-3.5 shrink-0" />
-              <span className="truncate">Privacidade e termos</span>
-            </Link>
+            <MoreMenu active={MORE_NAV.some((item) => pathname.startsWith(item.to))} />
           </nav>
 
 
           <div className="mt-auto space-y-3">
-            {premium ? (
-              <p className="flex items-center gap-2 rounded-xl border border-primary/30 bg-primary/10 px-3 py-2 text-xs font-semibold text-primary">
-                <Crown className="h-3.5 w-3.5" /> Premium ativo
-              </p>
-            ) : (
-              <PremiumButton className="w-full justify-center" />
-            )}
+            <PlanSummary />
             <div className="rounded-xl border border-border bg-card p-4">
-              <p className="text-xs uppercase tracking-wide text-muted-foreground">Tesouro total</p>
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">Tesouro (patrimônio total)</p>
               <p className="mt-1 font-display text-xl font-bold text-gold">{brl(wealth)}</p>
               <div className="mt-3 space-y-1 text-xs text-muted-foreground">
                 <p className="flex justify-between gap-2">
@@ -221,7 +233,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   <span className="text-success">{brl(month.income)}</span>
                 </p>
                 <p className="flex justify-between gap-2">
-                  <span>Escolhas do mês</span>
+                  <span>Escolhas (gastos)</span>
                   <span className="text-foreground">{brl(month.expense)}</span>
                 </p>
               </div>
@@ -252,7 +264,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </div>
 
               <div className="flex shrink-0 items-center gap-2">
-                {!premium && <PremiumButton className="hidden sm:inline-flex lg:hidden" />}
+                {!premium && <PremiumButton className="lg:hidden" label="Grátis · Ver Premium" />}
                 <Button
                   asChild
                   variant="ghost"
@@ -283,7 +295,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       {/* Bottom nav mobile */}
       <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-sidebar/95 backdrop-blur lg:hidden">
-        <div className="flex snap-x overflow-x-auto pb-[env(safe-area-inset-bottom)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="flex pb-[env(safe-area-inset-bottom)]">
           {NAV.map((item) => {
             const active = item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
             return (
@@ -291,17 +303,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 key={item.to}
                 to={item.to}
                 className={cn(
-                  "flex min-w-[4.5rem] flex-1 shrink-0 snap-start flex-col items-center gap-1 py-2.5 text-[10px] font-medium transition-colors",
+                  "flex min-w-0 flex-1 flex-col items-center gap-1 py-2.5 text-[10px] font-medium transition-colors",
                   active ? "text-primary" : "text-muted-foreground",
                 )}
               >
                 <item.icon className="h-4 w-4" />
                 <span className="w-full truncate px-0.5 text-center">
-                  {"short" in item ? item.short : item.label}
+                  {item.label}
                 </span>
               </Link>
             );
           })}
+          <MoreMenu mobile active={MORE_NAV.some((item) => pathname.startsWith(item.to))} />
         </div>
       </nav>
 

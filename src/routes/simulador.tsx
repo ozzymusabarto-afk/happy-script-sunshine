@@ -4,6 +4,7 @@ import { Compass, Crown, HeartHandshake, Sparkles, TrendingUp } from "lucide-rea
 
 import { CurrencyInput } from "@/components/currency-input";
 import { PremiumGate } from "@/components/premium-gate";
+import { SimulationNotice } from "@/components/simulation-notice";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
@@ -90,6 +91,8 @@ function SimulatorPage() {
           poderia virar se ficasse com você.
         </p>
       </header>
+
+      <SimulationNotice />
 
       <PremiumGate
         feature="Simulador de Decisões"

@@ -13,6 +13,7 @@ import {
 import { openGuidedTour } from "@/components/guided-tour";
 import { FreedomMeter, JourneyTrail, VaultJar } from "@/components/journey-visuals";
 import { MorningRitual } from "@/components/morning-ritual";
+import { useLocalNow } from "@/hooks/use-local-now";
 import { QuickAdd } from "@/components/quick-add";
 import { LABELS, TONE_BG, TONE_LABEL, TONE_TEXT, pillarTone } from "@/lib/tone";
 import { monthsOfFreedom } from "@/lib/impact";
@@ -54,6 +55,7 @@ export const Route = createFileRoute("/")({
 });
 
 function Dashboard() {
+  const now = useLocalNow();
   const transactions = useAurinStore((s) => s.transactions);
   const goals = useAurinStore((s) => s.goals);
   const assets = useAurinStore((s) => s.assets);
@@ -129,7 +131,7 @@ function Dashboard() {
   const monthlyPace = month.tithe > 0 ? month.tithe : month.income * 0.1;
   const titheTarget = month.income * 0.1;
   const tithePercent = titheTarget > 0 ? Math.min(100, (month.tithe / titheTarget) * 100) : 0;
-  const quote = quoteOfTheDay();
+  const quote = now ? quoteOfTheDay(now) : null;
 
   return (
     <div className="space-y-6">
@@ -156,6 +158,7 @@ function Dashboard() {
         titheGap={Math.max(0, titheTarget - month.tithe)}
         debtRemaining={debts.remaining}
         monthlyPace={monthlyPace}
+        hasActivity={transactions.length > 0 || wealth > 0 || debtList.some((d) => d.paid > 0)}
       />
 
       <QuickAdd />
@@ -207,17 +210,19 @@ function Dashboard() {
         />
         <StatTile
           icon={<ArrowDownRight className="h-4 w-4" />}
-          label="Escolhas do mês"
+          label="Escolhas do mês (gastos)"
           value={brl(month.expense)}
           tone="neutral"
         />
         <StatTile
           icon={<Coins className="h-4 w-4" />}
-          label="Ouro guardado (10%)"
+          label="Ouro guardado (reserva de 10%)"
           value={brl(month.tithe)}
           tone="gold"
           hint={
-            tithePercent >= 99.5
+            month.income <= 0
+              ? "Registre sua primeira entrada para calcular os 10%."
+              : tithePercent >= 99.5
               ? "Você se pagou primeiro este mês."
               : `Faltam ${brl(Math.max(0, titheTarget - month.tithe))} para os 10%.`
           }
@@ -270,7 +275,7 @@ function Dashboard() {
           </CardHeader>
           <CardContent>
             <p className="font-display text-2xl font-extrabold text-gold">
-              {debts.progress.toFixed(0)}% livre
+              {debtList.length === 0 ? "Sem dívidas registradas" : `${debts.progress.toFixed(0)}% livre`}
             </p>
             <p className="text-xs text-muted-foreground">
               {debts.remaining > 0
@@ -279,7 +284,9 @@ function Dashboard() {
             </p>
             <Progress value={Math.min(100, debts.progress)} className="mt-3 h-2" />
             <p className="mt-3 text-xs text-muted-foreground">
-              {debts.monthsToFreedom > 0
+              {debtList.length === 0
+                ? "Se houver uma dívida, registre para planejar seus pagamentos."
+                : debts.monthsToFreedom > 0
                 ? `No ritmo atual, liberdade em ${debts.monthsToFreedom} meses.`
                 : "Você já está livre — siga construindo."}
             </p>
@@ -296,7 +303,8 @@ function Dashboard() {
         </CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-3">
           {pillars.map((p) => {
-            const meta = PILLARS.find((x) => x.id === p.id)!;
+            const meta = PILLARS.find((x) => x.id === p.id);
+            if (!meta) return null;
             const tone = pillarTone(p.percent);
             return (
               <div key={p.id} className="min-w-0">
@@ -330,7 +338,7 @@ function Dashboard() {
             <p className="text-xs uppercase tracking-wide text-muted-foreground">
               Sabedoria do dia
             </p>
-            <p className="mt-1 font-display text-lg leading-snug">"{quote}"</p>
+            <p className="mt-1 font-display text-lg leading-snug">{quote ? `“${quote}”` : "Sabedoria para sua jornada."}</p>
             <p className="mt-1 text-xs text-muted-foreground">— Sabedoria da Babilônia</p>
           </div>
         </CardContent>
